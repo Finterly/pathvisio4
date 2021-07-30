@@ -1,7 +1,6 @@
-libGPML<img width="22%" align="right" src=".graphics/bigcateye.svg">
+pathvisio4 draft <img width="22%" align="right" src=".graphics/bigcateye.svg">
 =============================================================================
 
-libGPML is an open-source Java library for working with [GPML (Graphical Pathway Markup Language)](https://pathvisio.github.io/documentation/GPML). 
 
 Table of contents
 -----------------
@@ -19,35 +18,15 @@ Table of contents
 Introduction
 ------------
 
-libGPML is a programming library that helps you read, write, validate, manipulate, and convert files and data streams in the [GPML (Graphical Pathway Markup Language)](https://pathvisio.github.io/documentation/GPML) format.  
-
-Why not simply use a generic XML parsing library?  A specialized library such as libGPML offers many advantages over using a generic XML library directly.  Here are some:
-
-* **Java object model**.  libGPML's object model and API are designed around GPML and the operations that are commonly needed when working with GPML.
-
-* **Validation**. libGPML implements all the validation rules defined in the GPML specifications.
-
-* **Conversion**: libGPML can convert between GPML2013a and GPML2021. Conversions between GPML2013a and older 
-
-libGPML works on Linux, Windows, and  MacOS X, and other operating systems. 
 
 Library Architecture
 ------------
-
-libGPML consists of mainly the ....Documentation in progres...and java object model classes.  
-
-
-<p align="center">
-  <img width="80%" src=".graphics/java_model_diagram.svg">
-  <br>
-  <em>Figure 1: libGPML Java Object Model</em>
-</p>
 
 
 
 Getting Started
 ------------
-* [Documentation site](https://pathvisio.github.io/libGPML) 
+* [Documentation site]() 
 
 Dependencies
 ------------
@@ -89,13 +68,11 @@ We welcome contributions to libGPML!  Please read our [contribution guidelines](
 License
 -------
 
-libGPML is available for free under the terms of the 
 
 
 Authors and history
 ---------------------------
 
-libGPML's main authors are [Finterly Hu](https://github.com/Finterly), [Martina Summer-Kutmon](https://github.com/mkutmon), with contributions from many others.  We especially thank the following (in alphabetical order):
 
 * ...
 * ....
