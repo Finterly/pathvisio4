@@ -37,8 +37,8 @@ import org.pathvisio.io.PathwayExporter;
 import org.pathvisio.io.PathwayImporter;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.util.Utils;
-import org.pathvisio.core.view.VPathwayWrapper;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.view.VPathwayWrapper;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * This class manages loading, importing and exporting a PathwayModel and

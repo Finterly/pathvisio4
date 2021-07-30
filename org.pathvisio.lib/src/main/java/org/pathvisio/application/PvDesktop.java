@@ -43,11 +43,11 @@ import org.pathvisio.application.data.DBConnDerby;
 import org.pathvisio.application.data.DBConnectorSwing;
 import org.pathvisio.application.gex.CachedData;
 import org.pathvisio.application.gex.GexManager;
-import org.pathvisio.desktop.plugin.IPluginManager;
-import org.pathvisio.desktop.plugin.PluginRepoPreference;
-import org.pathvisio.desktop.util.StandaloneCompat;
-import org.pathvisio.desktop.visualization.VisualizationEvent;
-import org.pathvisio.desktop.visualization.VisualizationManager;
+import org.pathvisio.application.plugin.IPluginManager;
+import org.pathvisio.application.plugin.PluginRepoPreference;
+import org.pathvisio.util.application.StandaloneCompat;
+import org.pathvisio.application.visualization.VisualizationEvent;
+import org.pathvisio.application.visualization.VisualizationManager;
 import org.pathvisio.gui.PathwayElementMenuListener.PathwayElementMenuHook;
 import org.pathvisio.gui.SwingEngine;
 
