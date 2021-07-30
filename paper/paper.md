@@ -1,5 +1,5 @@
 ---
-title: 'libGPML: a Java Library for reading, writing, and converting GPML'
+title: 'pathvisio4: '
 tags:
   - bioinformatics
   - pathvisio
