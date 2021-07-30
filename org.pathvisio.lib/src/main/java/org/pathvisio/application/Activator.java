@@ -18,9 +18,9 @@ package org.pathvisio.application;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.pathvisio.core.Engine;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.gui.SwingEngine;
+import org.pathvisio.controller.Engine;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.controller.SwingEngine;
 
 /**
  * This class activates 

@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop;
+package org.pathvisio.application;
 
 import javax.swing.JPanel;
 

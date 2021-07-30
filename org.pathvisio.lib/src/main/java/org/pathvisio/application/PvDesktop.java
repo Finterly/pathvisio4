@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop;
+package org.pathvisio.application;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,20 +29,20 @@ import javax.swing.JTabbedPane;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.pathvisio.core.ApplicationEvent;
-import org.pathvisio.core.Engine.ApplicationEventListener;
-import org.pathvisio.core.data.GdbEvent;
-import org.pathvisio.core.data.GdbManager.GdbEventListener;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.controller.data.GdbEvent;
+import org.pathvisio.controller.data.GdbManager.GdbEventListener;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.PathwayModel;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.data.DataException;
-import org.pathvisio.desktop.data.DBConnDerby;
-import org.pathvisio.desktop.data.DBConnectorSwing;
-import org.pathvisio.desktop.gex.CachedData;
-import org.pathvisio.desktop.gex.GexManager;
+import org.pathvisio.application.data.DBConnDerby;
+import org.pathvisio.application.data.DBConnectorSwing;
+import org.pathvisio.application.gex.CachedData;
+import org.pathvisio.application.gex.GexManager;
 import org.pathvisio.desktop.plugin.IPluginManager;
 import org.pathvisio.desktop.plugin.PluginRepoPreference;
 import org.pathvisio.desktop.util.StandaloneCompat;
