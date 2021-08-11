@@ -56,7 +56,7 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
-public abstract class GraphicsShape extends GraphicsShapedElement implements LinkProvider, Adjustable {
+public abstract class GraphicsRotatable implements LinkProvider, Adjustable {
 
 	protected Rotatable gdata = null;
 
@@ -82,7 +82,7 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 	 * 
 	 * @param canvas - the VPathway this Shape will be part of
 	 */
-	public GraphicsShape(VPathwayModel canvas) {
+	public GraphicsRotatable(VPathwayModel canvas) {
 		super(canvas);
 	}
 
@@ -352,7 +352,7 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 	 */
 	protected void setHandleLocation() {
 		Point p;
-		if (gdata.getShapeStyleProperty().getShapeType() == null || gdata.getShapeType().isResizeable()) {
+		if (gdata.getShapeStyleProp().getShapeType() == null || gdata.getShapeType().isResizeable()) {
 
 			if (handleN != null) {
 				p = mToExternal(0, -gdata.getRectProperty().getHeight() / 2);
@@ -430,10 +430,10 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 
 		java.awt.Shape s = null;
 
-		if (gdata.getShapeStyleProperty().getShapeType() == null || gdata.getShapeType() == ShapeType.NONE) {
+		if (gdata.getShapeStyleProp().getShapeType() == null || gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
-			s = gdata.getShapeType().getShape(mw, mh);
+			s = gdata.getShapeStyleProp().getShapeType().getShape(mw, mh);
 		}
 
 		AffineTransform t = new AffineTransform();
@@ -448,9 +448,9 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 		if (sw > 0)
 			if (mw * mh > 0) // Workaround, batik balks if the shape is zero sized.
 			{
-				if (gdata.getShapeStyleProperty().getBorderStyle() == LineStyleType.DOUBLE) {
+				if (gdata.getShapeStyleProp().getBorderStyle() == LineStyleType.DOUBLE) {
 					// correction factor for composite stroke
-					sw = (float) (gdata.getShapeStyleProperty().getBorderWidth() * 4);
+					sw = (float) (gdata.getShapeStyleProp().getBorderWidth() * 4);
 				}
 				Stroke stroke = new BasicStroke(sw);
 				s = stroke.createStrokedShape(s);
@@ -521,7 +521,7 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 			FontMetrics fm = g.getFontMetrics();
 			int lh = fm.getHeight();
 			int yoffset = area.y + fm.getAscent();
-			switch (gdata.getValign()) {
+			switch (gdata.getFontProp().getVAlign()) {
 			case MIDDLE:
 				yoffset += (area.height - (lines.length * lh)) / 2;
 				break;
@@ -542,7 +542,7 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 				Rectangle2D tb = fm.getStringBounds(ats.getIterator(), 0, lines[i].length(), g);
 
 				int xoffset = area.x;
-				switch (gdata.getAlign()) {
+				switch (gdata.getFontProp().getHAlign()) {
 				case CENTER:
 					xoffset += (int) (area.width / 2) - (int) (tb.getWidth() / 2);
 					break;

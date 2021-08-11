@@ -35,13 +35,14 @@ import org.pathvisio.core.view.VPathwayModel;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.debug.DebugList;
 import org.pathvisio.model.type.LineStyleType;
+import org.pathvisio.view.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.*;
 
 /**
  * This class is a parent class for all graphics that can be added to a
  * VPathway.
  */
-public abstract class GraphicsShapedElement extends Graphics {
+public abstract class GraphicsShapedElement extends Graphics implements GraphIdContainer{
 
 //	protected ShapedElement gdata = null; //TODO 
 

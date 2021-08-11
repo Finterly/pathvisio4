@@ -20,15 +20,16 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
 import org.pathvisio.model.State;
+import org.pathvisio.view.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.ShapedElement;
 
 /**
- * This class represents the view of a {@link State} PathwayElement.\
+ * This class represents the view of a {@link State} PathwayElement.
  * 
  * @author unknown, finterly
  */
-public class VState extends GraphicsShape { // TODO rotatable?
+public class VState extends GraphicsRotatable implements GraphIdContainer {
 
 	protected State gdata = null;
 

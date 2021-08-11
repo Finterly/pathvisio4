@@ -26,11 +26,12 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 
 import org.pathvisio.model.type.AnchorShapeType;
-import org.pathvisio.core.view.Adjustable;
-import org.pathvisio.core.view.AnchorShape;
-import org.pathvisio.core.view.LinkProvider;
-import org.pathvisio.core.view.ShapeRegistry;
-import org.pathvisio.core.view.model.Handle.Freedom;
+import org.pathvisio.view.Adjustable;
+import org.pathvisio.view.AnchorShape;
+import org.pathvisio.view.LinkProvider;
+import org.pathvisio.view.ShapeRegistry;
+import org.pathvisio.view.model.GraphLink.GraphIdContainer;
+import org.pathvisio.view.model.Handle.Freedom;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.LinePoint;
 
@@ -42,7 +43,7 @@ import org.pathvisio.model.LinePoint;
  * 
  * @author unknown, finterly
  */
-public class VAnchor extends VElement implements LinkProvider, Adjustable {
+public class VAnchor extends VElement implements LinkProvider, Adjustable, GraphIdContainer{
 	private Anchor mAnchor;
 	private VLine line;
 	private Handle handle;
