@@ -18,7 +18,7 @@ package org.pathvisio.view;
 
 import java.awt.geom.Point2D;
 
-import org.pathvisio.core.view.model.LinkAnchor;
+import org.pathvisio.view.model.LinkAnchor;
 
 /**
  * Classes that implement this interface can provide anchor points to

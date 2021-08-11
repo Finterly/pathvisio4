@@ -35,30 +35,31 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
-import org.pathvisio.core.ApplicationEvent;
-import org.pathvisio.core.Engine;
-import org.pathvisio.core.Engine.ApplicationEventListener;
-import org.pathvisio.core.model.GroupStyle;
-import org.pathvisio.core.model.MLine;
-import org.pathvisio.core.model.MState;
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.PathwayElement.MPoint;
-import org.pathvisio.core.model.ShapeType;
-import org.pathvisio.core.util.Resources;
-import org.pathvisio.core.util.Utils;
-import org.pathvisio.core.view.SelectionBox.SelectionEvent;
-import org.pathvisio.core.view.SelectionBox.SelectionListener;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.VDataNode;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VGroup;
-import org.pathvisio.core.view.model.VLine;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.model.type.GroupType;
+import org.pathvisio.model.Interaction;
+import org.pathvisio.model.State;
+//import org.pathvisio.core.model.ObjectType;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.LinePoint;
+import org.pathvisio.model.type.ShapeType;
+import org.pathvisio.util.core.Resources;
+import org.pathvisio.util.core.Utils;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.SelectionBox;
+import org.pathvisio.view.model.VDataNode;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VGroup;
+import org.pathvisio.view.model.VLine;
+import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.model.SelectionBox.SelectionEvent;
+import org.pathvisio.view.model.SelectionBox.SelectionListener;
 import org.pathvisio.view.connector.ConnectorShape;
 import org.pathvisio.view.connector.FreeConnectorShape;
 
-import static org.pathvisio.core.model.ObjectType.STATE;
+//import static org.pathvisio.model.ObjectType.STATE;
 
 /**
  * A collection of {@link Action}s related to the pathway view. An instance of this class contains
@@ -409,8 +410,8 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	
 	/**
 	 * Selects all objects of a given objectType
+	 * 
 	 * @author anwesha
-	 *
 	 */
 	private class SelectObjectAction extends AbstractAction {
 		private ObjectType objtype;

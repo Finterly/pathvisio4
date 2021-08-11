@@ -32,11 +32,11 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayElementEvent;
 import org.pathvisio.model.PathwayElementListener;
 import org.pathvisio.model.StaticProperty;
-import org.pathvisio.view.SelectionBox.SelectionEvent;
-import org.pathvisio.view.SelectionBox.SelectionListener;
 import org.pathvisio.view.model.Graphics;
 import org.pathvisio.view.model.VElement;
 import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.model.SelectionBox.SelectionEvent;
+import org.pathvisio.view.model.SelectionBox.SelectionListener;
 
 /**
  * The backpage panel for the Swing version of PathVisio. This pane shows annotation

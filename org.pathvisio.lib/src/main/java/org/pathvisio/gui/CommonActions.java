@@ -29,44 +29,42 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
-import org.pathvisio.core.ApplicationEvent;
-import org.pathvisio.core.Engine;
-import org.pathvisio.core.Engine.ApplicationEventListener;
-import org.pathvisio.core.Globals;
-import org.pathvisio.core.biopax.BiopaxReferenceManager;
-import org.pathvisio.core.biopax.PublicationXref;
-import org.pathvisio.core.model.CellularComponentType;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.controller.Globals;
+//import org.pathvisio.controller.biopax.BiopaxReferenceManager;
+//import org.pathvisio.controller.biopax.PublicationXref;
+//import org.pathvisio.controller.model.CellularComponentType;
 import org.pathvisio.model.type.ConnectorType;
 import org.pathvisio.model.type.DataNodeType;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.PathwayModel;
-import org.pathvisio.core.model.Pathway.StatusFlagEvent;
-import org.pathvisio.core.model.Pathway.StatusFlagListener;
-import org.pathvisio.core.model.PathwayElement;
+import org.pathvisio.model.PathwayModel.StatusFlagEvent;
+import org.pathvisio.model.PathwayModel.StatusFlagListener;
+import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.type.ShapeType;
-import org.pathvisio.core.util.Resources;
-import org.pathvisio.core.view.DefaultTemplates;
-import org.pathvisio.view.VLabel;
-import org.pathvisio.core.view.LayoutType;
-import org.pathvisio.core.view.MIMShapes;
-import org.pathvisio.core.view.SelectionBox;
-import org.pathvisio.core.view.Template;
-import org.pathvisio.core.view.VPathway;
-import org.pathvisio.core.view.ViewActions;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.Handle;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.util.core.Resources;
+import org.pathvisio.view.DefaultTemplates;
+import org.pathvisio.view.model.VLabel;
+import org.pathvisio.view.LayoutType;
+import org.pathvisio.view.MIMShapes;
+import org.pathvisio.view.SelectionBox;
+import org.pathvisio.view.Template;
+import org.pathvisio.view.ViewActions;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.Handle;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.gui.AboutDlg;
 import org.pathvisio.gui.PathwayElementDialog;
 import org.pathvisio.gui.PublicationXRefDialog;
-import org.pathvisio.model.type.LineStyleType;
 
 /**
  * A collection of {@link Action}s that may be used throughout the program (e.g.
  * in toolbars, menubars and right-click menu). These actions are registered to
- * the proper group in {@ViewActions} when a new {@link VPathway} is created.
+ * the proper group in {@ViewActions} when a new {@link VPathwayModel} is created.
  * 
  * @author thomas
  * @see {@link ViewActions}
@@ -256,17 +254,17 @@ public class CommonActions implements ApplicationEventListener {
 		// actions for "Basic interactions" section
 		newInteractionActions = new Action[] {
 				new NewElementAction(e,
-						new DefaultTemplates.InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.LINE, ArrowHeadType.UNDIRECTED,
+						new DefaultTemplates.InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, ArrowHeadType.UNDIRECTED,
 								ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
-						new DefaultTemplates.InteractionTemplate("arrow", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, LineType.ARROW,
+						new DefaultTemplates.InteractionTemplate("arrow", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, ArrowHeadType.DIRECTED,
 								ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("dashedline", LineStyleType.DASHED, ArrowHeadType.UNDIRECTED, ArrowHeadType.UNDIRECTED,
 								ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("dashedarrow", LineStyleType.DASHED, ArrowHeadType.UNDIRECTED,
-								LineType.ARROW, ConnectorType.STRAIGHT)),
+								ArrowHeadType.DIRECTED, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("elbow", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, ArrowHeadType.UNDIRECTED,
 								ConnectorType.ELBOW)),

@@ -48,13 +48,14 @@ import org.pathvisio.io.ConverterException;
 import org.pathvisio.model.GpmlFormat;
 import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.Pathway.StatusFlagEvent;
-import org.pathvisio.core.model.PathwayIO;
+import org.pathvisio.io.PathwayIO;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.Preference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.util.core.ProgressKeeper;
 import org.pathvisio.util.core.Utils;
 import org.pathvisio.view.VPathwayWrapper;
+import org.pathvisio.gui.CommonActions;
 import org.pathvisio.gui.MainPanel;
 import org.pathvisio.gui.dialog.NewPathwayDialog;
 import org.pathvisio.gui.dialog.OkCancelDialog;
@@ -68,7 +69,7 @@ import org.pathvisio.gui.view.VPathwaySwing;
  * It keeps the main panel, the main frame and has
  * helper functions for opening, closing, importing and exporting Pathways.
  */
-public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlagListener, HyperlinkListener 
+public class SwingEngine implements ApplicationEventListener, PathwayModel.StatusFlagListener, HyperlinkListener 
 {
 	private MainPanel mainPanel;
 

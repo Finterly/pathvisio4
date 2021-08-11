@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * event sent by VPathway upon modification of one or more VPathwayElements.

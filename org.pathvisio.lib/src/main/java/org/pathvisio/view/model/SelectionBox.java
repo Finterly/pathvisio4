@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -27,11 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.view.model.Graphics;
-import org.pathvisio.view.model.Handle;
-import org.pathvisio.view.model.VElement;
-import org.pathvisio.view.model.VGroup;
-import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.Adjustable;
 
 /**
  * This class implements a selectionbox

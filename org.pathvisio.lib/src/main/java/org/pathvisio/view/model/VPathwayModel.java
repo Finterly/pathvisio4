@@ -56,7 +56,6 @@ import org.pathvisio.view.KeyEvent;
 import org.pathvisio.view.LayoutType;
 import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.MouseEvent;
-import org.pathvisio.view.SelectionBox;
 import org.pathvisio.view.Template;
 import org.pathvisio.view.UndoAction;
 import org.pathvisio.view.UndoManager;
@@ -66,11 +65,11 @@ import org.pathvisio.view.VPathwayEvent;
 import org.pathvisio.view.VPathwayListener;
 import org.pathvisio.view.VPathwayWrapper;
 import org.pathvisio.view.ViewActions;
-import org.pathvisio.view.SelectionBox.SelectionListener;
 import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
 import org.pathvisio.view.ViewActions.KeyMoveAction;
 import org.pathvisio.view.ViewActions.TextFormattingAction;
 import org.pathvisio.view.model.Handle.Freedom;
+import org.pathvisio.view.model.SelectionBox.SelectionListener;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
@@ -81,12 +80,13 @@ import org.pathvisio.view.model.Handle.Freedom;
  * this class.
  */
 public class VPathwayModel implements PathwayListener {
+
 	private static final double FUZZY_SIZE = 8; // fuzz-factor around mouse cursor
 	static final int ZORDER_SELECTIONBOX = Integer.MAX_VALUE;
 	static final int ZORDER_HANDLE = Integer.MAX_VALUE - 1;
 
-	// flags for cursor change if mouse is over a
-	// label with href and ctrl button is pressed
+	// flags for cursor change if mouse is over a label with href and ctrl button is
+	// pressed
 	private boolean stateCtrl = false;
 	private boolean stateEntered = false;
 	private VElement lastEnteredElement = null;
@@ -97,22 +97,29 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Returns true if snap to anchors is enabled
+	 * 
+	 * @return true if snap to anchors is enabled, false otherwise.
 	 */
 	public boolean isSnapToAnchors() {
 		return PreferenceManager.getCurrent().getBoolean(GlobalPreference.SNAP_TO_ANCHOR);
 	}
 
 	/**
-	 * Returns true if the selection capability of this VPathway is enabled
+	 * Returns true if the selection capability of this VPathwayModel is enabled
+	 * 
+	 * @return true is selection capability is enabled, false otherwise.
 	 */
 	public boolean getSelectionEnabled() {
 		return selectionEnabled;
 	}
 
 	/**
-	 * You can disable the selection capability of this VPathway by passing false.
-	 * This is not used within PathVisio, but it is meant for embedding VPathway in
-	 * other applications, where selections may not be needed.
+	 * Sets selection capability of this VPathwayModel. You can disable the
+	 * selection capability of this VPathwayModel by passing false. This is not used
+	 * within PathVisio, but it is meant for embedding VPathway in other
+	 * applications, where selections may not be needed.
+	 * 
+	 * @param value the boolean value to set selection capability to.
 	 */
 	public void setSelectionEnabled(boolean value) {
 		selectionEnabled = value;
@@ -172,20 +179,15 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Constructor for this class.
 	 *
-	 * @param parent
-	 *            Optional gui-specific wrapper for this VPathway
+	 * @param parent Optional gui-specific wrapper for this VPathway
 	 */
-	public VPathwayModel(VPathwayWrapper parent)
-	{
-		//NOTE: you need to call PreferenceManager.init() at application start,
+	public VPathwayModel(VPathwayWrapper parent) {
+		// NOTE: you need to call PreferenceManager.init() at application start,
 		// before instantiating a VPathway
-		//This used to be called by Engine.init(), but not anymore.
-		//TODO: make preferencemanager a non-static object, so this check is obsolete.
-		if (PreferenceManager.getCurrent() == null)
-		{
-			throw new InstantiationError(
-					"Please call PreferenceManager.init() before instantiating a VPathway"
-			);
+		// This used to be called by Engine.init(), but not anymore.
+		// TODO: make preferencemanager a non-static object, so this check is obsolete.
+		if (PreferenceManager.getCurrent() == null) {
+			throw new InstantiationError("Please call PreferenceManager.init() before instantiating a VPathway");
 		}
 		this.parent = parent;
 
@@ -193,9 +195,9 @@ public class VPathwayModel implements PathwayListener {
 
 		selection = new SelectionBox(this);
 
-		//Code that uses VPathway have to initialize
-		//the keyboard actions explicitly, if necessary.
-		//registerKeyboardActions();
+		// Code that uses VPathway have to initialize
+		// the keyboard actions explicitly, if necessary.
+		// registerKeyboardActions();
 	}
 
 	/**
@@ -238,7 +240,7 @@ public class VPathwayModel implements PathwayListener {
 //			mi.markDirty();
 //			break;
 		else {
-			//TODO 
+			// TODO
 		}
 		return result;
 	}
@@ -698,8 +700,8 @@ public class VPathwayModel implements PathwayListener {
 
 		public void actionPerformed(ActionEvent e) {
 			if (!tooltipDisplayed) {
-				fireVPathwayEvent(new VPathwayEvent(VPathwayModel.this, getObjectsAt(lastEvent.getLocation()), lastEvent,
-						VPathwayEventType.ELEMENT_HOVER));
+				fireVPathwayEvent(new VPathwayEvent(VPathwayModel.this, getObjectsAt(lastEvent.getLocation()),
+						lastEvent, VPathwayEventType.ELEMENT_HOVER));
 				tooltipDisplayed = true;
 			}
 		}
@@ -1547,8 +1549,8 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Calculate the board size. Calls {@link VElement#getVBounds()} for
-	 * every element and adds all results together to obtain the board size
+	 * Calculate the board size. Calls {@link VElement#getVBounds()} for every
+	 * element and adds all results together to obtain the board size
 	 */
 	public Dimension calculateVSize() {
 		Rectangle2D bounds = new Rectangle2D.Double();

@@ -28,7 +28,7 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.view.model.VPathwayModel;
 
 /**
- * Wrapper for VPathway that handles toolkit (swing / SWT) dependent differences.
+ * Wrapper for VPathwayModel that handles toolkit (swing / SWT) dependent differences.
  */
 public abstract interface VPathwayWrapper
 {
