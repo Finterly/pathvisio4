@@ -23,7 +23,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.core.view.Adjustable;
+import org.pathvisio.view.Adjustable;
 
 /**
  * A Handle is a little marker (like a little

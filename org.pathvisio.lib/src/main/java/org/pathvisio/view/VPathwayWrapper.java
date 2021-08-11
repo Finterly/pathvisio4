@@ -23,9 +23,9 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * Wrapper for VPathway that handles toolkit (swing / SWT) dependent differences.
@@ -39,10 +39,10 @@ public abstract interface VPathwayWrapper
 	/** signal to indicate that the pathway changed size */
 	public void resized();
 
-	public VPathwayModel createVPathway();
+	public VPathwayModel createVPathwayModel();
 
 	public void registerKeyboardAction(KeyStroke k, Action a);
-	public void copyToClipboard(Pathway source, List<PathwayElement> copyElements);
+	public void copyToClipboard(PathwayModel source, List<PathwayElement> copyElements);
 	public void pasteFromClipboard();
 	public void positionPasteFromClipboard(Point cursorPosition);
 

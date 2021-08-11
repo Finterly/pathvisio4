@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.view;
 
-import org.pathvisio.core.view.model.Handle;
+import org.pathvisio.view.model.Handle;
 
 /**
  * Any object that has handles and can be adjusted by them

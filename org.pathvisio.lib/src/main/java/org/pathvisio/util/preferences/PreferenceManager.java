@@ -30,8 +30,9 @@ import javax.swing.JOptionPane;
 
 import org.pathvisio.debug.Logger;
 import org.pathvisio.util.ColorUtils;
-import org.pathvisio.core.util.CommonsFileUtils;
-import org.pathvisio.core.util.Utils;
+import org.pathvisio.util.core.ColorConverter;
+import org.pathvisio.util.core.CommonsFileUtils;
+import org.pathvisio.util.core.Utils;
 
 /**
  * Loads & saves application preferences

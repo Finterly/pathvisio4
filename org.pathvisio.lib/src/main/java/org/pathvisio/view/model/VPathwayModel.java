@@ -42,36 +42,35 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
-import org.pathvisio.core.Engine;
+import org.pathvisio.controller.Engine;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.type.*;
 //import org.pathvisio.model.Pathway.StatusFlagEvent;
 import org.pathvisio.model.*;
-import org.pathvisio.model.element.*;
-import org.pathvisio.core.model.PathwayEvent;
-import org.pathvisio.core.model.PathwayListener;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
+import org.pathvisio.io.listener.PathwayEvent;
+import org.pathvisio.io.listener.PathwayListener;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.util.Utils;
-import org.pathvisio.core.view.KeyEvent;
-import org.pathvisio.core.view.LayoutType;
-import org.pathvisio.core.view.LinkProvider;
-import org.pathvisio.core.view.MouseEvent;
-import org.pathvisio.core.view.SelectionBox;
-import org.pathvisio.core.view.Template;
-import org.pathvisio.core.view.UndoAction;
-import org.pathvisio.core.view.UndoManager;
-import org.pathvisio.core.view.VElementMouseEvent;
-import org.pathvisio.core.view.VElementMouseListener;
-import org.pathvisio.core.view.VPathwayEvent;
-import org.pathvisio.core.view.VPathwayListener;
-import org.pathvisio.core.view.VPathwayWrapper;
-import org.pathvisio.core.view.ViewActions;
-import org.pathvisio.core.view.SelectionBox.SelectionListener;
-import org.pathvisio.core.view.VPathwayEvent.VPathwayEventType;
-import org.pathvisio.core.view.ViewActions.KeyMoveAction;
-import org.pathvisio.core.view.ViewActions.TextFormattingAction;
-import org.pathvisio.core.view.model.Handle.Freedom;
+import org.pathvisio.view.KeyEvent;
+import org.pathvisio.view.LayoutType;
+import org.pathvisio.view.LinkProvider;
+import org.pathvisio.view.MouseEvent;
+import org.pathvisio.view.SelectionBox;
+import org.pathvisio.view.Template;
+import org.pathvisio.view.UndoAction;
+import org.pathvisio.view.UndoManager;
+import org.pathvisio.view.VElementMouseEvent;
+import org.pathvisio.view.VElementMouseListener;
+import org.pathvisio.view.VPathwayEvent;
+import org.pathvisio.view.VPathwayListener;
+import org.pathvisio.view.VPathwayWrapper;
+import org.pathvisio.view.ViewActions;
+import org.pathvisio.view.SelectionBox.SelectionListener;
+import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
+import org.pathvisio.view.ViewActions.KeyMoveAction;
+import org.pathvisio.view.ViewActions.TextFormattingAction;
+import org.pathvisio.view.model.Handle.Freedom;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
@@ -176,7 +175,7 @@ public class VPathwayModel implements PathwayListener {
 	 * @param parent
 	 *            Optional gui-specific wrapper for this VPathway
 	 */
-	public VPathway(VPathwayWrapper parent)
+	public VPathwayModel(VPathwayWrapper parent)
 	{
 		//NOTE: you need to call PreferenceManager.init() at application start,
 		// before instantiating a VPathway

@@ -42,15 +42,15 @@ import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.model.type.VAlignType;
 import org.pathvisio.util.ColorUtils;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.core.util.Resources;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.GraphicsShape;
-import org.pathvisio.core.view.model.VDataNode;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VLine;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.util.core.Resources;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.GraphicsShape;
+import org.pathvisio.view.model.VDataNode;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VLine;
+import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.model.type.ArrowHeadType;
 
 /**
@@ -584,7 +584,7 @@ public abstract class DefaultTemplates {
 		PathwayElement lastCatLine2;
 		PathwayElement lastReverseLine;
 
-		public PathwayElement[] addElements(Pathway p, double mx, double my) {
+		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
 			Template dnt = new DataNodeTemplate(DataNodeType.PROTEIN);
 			lastCatalyst = dnt.addElements(p, mx + lastStartNode.getMWidth(), my - OFFSET_CATALYST)[0];

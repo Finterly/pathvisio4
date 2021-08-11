@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.core.view.DefaultLinkAnchorDelegate;
-import org.pathvisio.core.view.GroupPainter;
-import org.pathvisio.core.view.GroupPainterRegistry;
-import org.pathvisio.core.view.LinkProvider;
-import org.pathvisio.core.view.VElementMouseEvent;
-import org.pathvisio.core.view.VElementMouseListener;
+import org.pathvisio.view.DefaultLinkAnchorDelegate;
+import org.pathvisio.view.GroupPainter;
+import org.pathvisio.view.GroupPainterRegistry;
+import org.pathvisio.view.LinkProvider;
+import org.pathvisio.view.VElementMouseEvent;
+import org.pathvisio.view.VElementMouseListener;
 import org.pathvisio.model.Group;
 import org.pathvisio.model.LineElement;
 
@@ -44,7 +44,7 @@ import org.pathvisio.model.LineElement;
  * Also contains the getGroupGraphics method to quickly access all Graphics'
  * that are in this group.
  */
-public class VGroup extends Graphics implements LinkProvider, VElementMouseListener {
+public class VGroup extends GraphicsShapedElement implements LinkProvider, VElementMouseListener {
 	public static final int FLAG_SELECTED = 1 << 0;
 	public static final int FLAG_MOUSEOVER = 1 << 1;
 	public static final int FLAG_ANCHORSVISIBLE = 1 << 2;

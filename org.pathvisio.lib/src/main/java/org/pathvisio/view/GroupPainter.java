@@ -18,7 +18,7 @@ package org.pathvisio.view;
 
 import java.awt.Graphics2D;
 
-import org.pathvisio.core.view.model.VGroup;
+import org.pathvisio.view.model.VGroup;
 
 /**
  * Interface to implement group style specific

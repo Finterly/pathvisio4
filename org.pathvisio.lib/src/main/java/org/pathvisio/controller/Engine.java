@@ -248,7 +248,7 @@ public class Engine {
 
 				disposeVPathway();
 			}
-			vPathwayModel = wrapper.createVPathway();
+			vPathwayModel = wrapper.createVPathwayModel();
 			vPathwayModel.registerKeyboardActions(this);
 			vPathwayModel.activateUndoManager(this);
 			vPathwayModel.fromModel(p);

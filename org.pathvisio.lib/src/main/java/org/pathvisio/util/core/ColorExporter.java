@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.core.util;
+package org.pathvisio.util.core;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

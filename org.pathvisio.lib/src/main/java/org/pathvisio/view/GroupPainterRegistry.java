@@ -25,7 +25,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.pathvisio.core.view.model.VGroup;
+import org.pathvisio.view.model.VGroup;
 import org.pathvisio.model.type.GroupType;
 
 

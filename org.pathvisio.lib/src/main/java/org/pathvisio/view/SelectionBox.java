@@ -26,12 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.Handle;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VGroup;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.Handle;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VGroup;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * This class implements a selectionbox

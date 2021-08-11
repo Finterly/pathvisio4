@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.view;
 
-import org.pathvisio.core.model.Pathway;
+import org.pathvisio.model.PathwayModel;
 
 /**
  * a single item on the undo stack.
@@ -28,14 +28,14 @@ import org.pathvisio.core.model.Pathway;
 public class UndoAction
 {
 	public UndoAction(String aMessage,
-					  Pathway current)
+					  PathwayModel current)
 	{
 		message = aMessage;
 		originalState = current;
 	}
 
 	private String message;
-	private Pathway originalState;
+	private PathwayModel originalState;
 	private UndoManager undoMgr;
 
 	/**

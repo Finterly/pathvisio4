@@ -26,11 +26,11 @@ import java.util.List;
 
 
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * Draws a citation number on top of a pathway object.

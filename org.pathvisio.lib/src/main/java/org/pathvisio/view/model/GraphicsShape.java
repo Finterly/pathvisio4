@@ -37,15 +37,15 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.ShapedElement;
 import org.pathvisio.model.State;
 import org.pathvisio.model.type.ShapeType;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.core.view.Adjustable;
-import org.pathvisio.core.view.DefaultLinkAnchorDelegate;
-import org.pathvisio.core.view.LinAlg;
-import org.pathvisio.core.view.LinkProvider;
-import org.pathvisio.core.view.ShapeRegistry;
-import org.pathvisio.core.view.LinAlg.Point;
-import org.pathvisio.core.view.model.Handle.Freedom;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.view.Adjustable;
+import org.pathvisio.view.DefaultLinkAnchorDelegate;
+import org.pathvisio.view.LinAlg;
+import org.pathvisio.view.LinkProvider;
+import org.pathvisio.view.ShapeRegistry;
+import org.pathvisio.view.LinAlg.Point;
+import org.pathvisio.view.model.Handle.Freedom;
 
 /**
  * This {@link Graphics} class represents the view of a {@link Shape},
