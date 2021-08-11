@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.visualization;
+package org.pathvisio.application.visualization;
 
 public interface VisualizationMethodProvider {
 	public VisualizationMethod create();

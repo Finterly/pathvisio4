@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.visualization;
+package org.pathvisio.application.visualization;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -22,11 +22,11 @@ import java.awt.Rectangle;
 import java.util.List;
 
 import org.jdom2.Element;
-import org.pathvisio.core.debug.Logger;
+import org.pathvisio.debug.Logger;
 import org.pathvisio.core.util.ColorConverter;
 import org.pathvisio.data.IRow;
 import org.pathvisio.data.ISample;
-import org.pathvisio.desktop.visualization.Criterion.CriterionException;
+import org.pathvisio.application.visualization.Criterion.CriterionException;
 
 /**
  * A rule, or boolean expression, that determines how an

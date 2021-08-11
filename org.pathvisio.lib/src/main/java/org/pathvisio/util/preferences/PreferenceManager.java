@@ -1,6 +1,6 @@
 /*******************************************************************************
  * PathVisio, a tool for data visualization and analysis using biological pathways
- * Copyright 2006-2019 BiGCaT Bioinformatics
+ * Copyright 2006-2021 BiGCaT Bioinformatics, WikiPathways
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License.  You may obtain a copy
@@ -28,11 +28,11 @@ import java.util.Set;
 
 import javax.swing.JOptionPane;
 
+import org.pathvisio.core.util.ColorConverter;
+import org.pathvisio.core.util.CommonsFileUtils;
+import org.pathvisio.core.util.Utils;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.util.ColorUtils;
-import org.pathvisio.util.core.ColorConverter;
-import org.pathvisio.util.core.CommonsFileUtils;
-import org.pathvisio.util.core.Utils;
 
 /**
  * Loads & saves application preferences

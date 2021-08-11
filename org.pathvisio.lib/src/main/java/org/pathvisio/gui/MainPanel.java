@@ -50,19 +50,19 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import org.pathvisio.core.ApplicationEvent;
-import org.pathvisio.core.Engine.ApplicationEventListener;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.core.util.Utils;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.core.util.Utils;
-import org.pathvisio.core.view.SelectionBox;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.Handle;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VLabel;
-import org.pathvisio.core.view.model.VPathwayModel;
-import org.pathvisio.core.view.VPathwayEvent;
-import org.pathvisio.core.view.VPathwayListener;
+import org.pathvisio.view.model.SelectionBox;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.Handle;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VLabel;
+import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.VPathwayEvent;
+import org.pathvisio.view.VPathwayListener;
 import org.pathvisio.gui.BackpageTextProvider.BackpageAttributes;
 import org.pathvisio.gui.BackpageTextProvider.BackpageXrefs;
 import org.pathvisio.gui.CommonActions.ZoomAction;
@@ -276,7 +276,7 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 	/** update the value in the zoom combo to the actual zoom percentage of the active pathway */
 	public void updateZoomCombo()
 	{
-		VPathway vpwy = swingEngine.getEngine().getActiveVPathway();
+		VPathwayModel vpwy = swingEngine.getEngine().getActiveVPathway();
 		if (vpwy != null)
 		{
 			DecimalFormat df = new DecimalFormat("###.#");
