@@ -25,6 +25,7 @@ import java.util.List;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.graphics.LineStyleProperty;
+import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.view.connector.ConnectorRestrictions;
 import org.pathvisio.view.connector.ConnectorShape;
@@ -106,25 +107,25 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 		getMEnd().setY(v);
 	}
 
-	protected LineType endLineType = LineType.LINE;
-	protected LineType startLineType = LineType.LINE;
+	protected ArrowHeadType endLineType = ArrowHeadType.UNDIRECTED;
+	protected ArrowHeadType startLineType = ArrowHeadType.UNDIRECTED;
 
-	public LineType getStartLineType() {
-		return startLineType == null ? LineType.LINE : startLineType;
+	public ArrowHeadType getStartLineType() {
+		return startLineType == null ? ArrowHeadType.UNDIRECTED : startLineType;
 	}
 
-	public LineType getEndLineType() {
-		return endLineType == null ? LineType.LINE : endLineType;
+	public ArrowHeadType getEndLineType() {
+		return endLineType == null ? ArrowHeadType.UNDIRECTED : endLineType;
 	}
 
-	public void setStartLineType(LineType value) {
+	public void setStartLineType(ArrowHeadType value) {
 		if (startLineType != value) {
 			startLineType = value;
 			fireObjectModifiedEvent(PathwayElementEvent.createSinglePropertyEvent(this, StaticProperty.STARTLINETYPE));
 		}
 	}
 
-	public void setEndLineType(LineType value) {
+	public void setEndLineType(ArrowHeadType value) {
 		if (endLineType != value) {
 			endLineType = value;
 			fireObjectModifiedEvent(PathwayElementEvent.createSinglePropertyEvent(this, StaticProperty.ENDLINETYPE));

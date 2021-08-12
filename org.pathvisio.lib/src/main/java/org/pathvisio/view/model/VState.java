@@ -21,6 +21,7 @@ import java.awt.geom.Point2D;
 
 import org.pathvisio.model.State;
 import org.pathvisio.view.model.GraphLink.GraphIdContainer;
+import org.pathvisio.io.listener.PathwayElementListener;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.ShapedElement;
 
@@ -29,7 +30,7 @@ import org.pathvisio.model.ShapedElement;
  * 
  * @author unknown, finterly
  */
-public class VState extends GraphicsRotatable implements GraphIdContainer {
+public class VState extends GraphicsRotatable implements GraphIdContainer, PathwayElementListener  {
 
 	protected State gdata = null;
 
@@ -37,6 +38,9 @@ public class VState extends GraphicsRotatable implements GraphIdContainer {
 
 	public VState(VPathwayModel canvas, State o) {
 		super(canvas);
+		o.addListener(this);
+		gdata = o;
+		// checkCitation(); TODO 
 	}
 
 	public void doDraw(Graphics2D g) {

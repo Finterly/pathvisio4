@@ -16,12 +16,12 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import org.pathvisio.model.element.LinePoint;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.core.view.Adjustable;
-import org.pathvisio.core.view.LinAlg;
-import org.pathvisio.core.view.LinAlg.Point;
+import org.pathvisio.model.LinePoint;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.view.Adjustable;
+import org.pathvisio.view.LinAlg;
+import org.pathvisio.view.LinAlg.Point;
 
 /**
  * One of the two endpoints of a line. Carries a single handle.

@@ -28,33 +28,31 @@ import org.pathvisio.util.preferences.PreferenceManager;
 
 /**
  * A single graphical element in the view of a pathway. Handles bounds checking
- * and dirty rectangles. NB: this does not necessarily correspond directly with
- * a org.pathvisio.model.PathwayElement.
- *
- * VElement includes purely visual helpers that do not have direct
- * correspondence in the model, such as handles and a selection box.
+ * and dirty rectangles. VElement includes purely visual helpers that do not
+ * have direct correspondence in the model, such as handles and a selection box.
  * 
+ * NB: VElement does not necessarily correspond directly with a
+ * org.pathvisio.model.PathwayElement.
+ *
  * @author unknown
  */
 public abstract class VElement implements Comparable<VElement> {
-	protected static final BasicStroke DEFAULT_STROKE = new BasicStroke();
 
-	protected VPathwayModel canvas;
+	protected VPathwayModel canvas; // the pathway model drawing this object belongs to
 
 	protected VElement(VPathwayModel canvas) {
 		this.canvas = canvas;
 		canvas.addObject(this);
 	}
 
+	protected static final BasicStroke DEFAULT_STROKE = new BasicStroke();
 	public static Color selectColor = PreferenceManager.getCurrent().getColor(GlobalPreference.COLOR_SELECTED);
 	public static final float HIGHLIGHT_STROKE_WIDTH = 5.0f;
-
 	private Rectangle2D oldrect = null;
-
 	private boolean isSelected;
 
 	/**
-	 * Will be called by VPathway whenever the zoom factor is changed. Default
+	 * Will be called by VPathwayModel whenever the zoom factor is changed. Default
 	 * implementation refreshes the cache of VBounds and VOutline.
 	 */
 	void zoomChanged() {
@@ -74,6 +72,7 @@ public abstract class VElement implements Comparable<VElement> {
 	}
 
 	/**
+	 * Draws graphical element within bounds.
 	 * 
 	 * @param g2d
 	 */
@@ -81,14 +80,11 @@ public abstract class VElement implements Comparable<VElement> {
 		// Creates a copy to ensure that the state of this Graphics2D will be intact
 		// see: http://java.sun.com/docs/books/tutorial/uiswing/painting/concepts2.html
 		Graphics2D g = (Graphics2D) g2d.create();
-
 		// Prevents element from drawing outside its bounds
 		g.clip(getVBounds());
 		g.setStroke(DEFAULT_STROKE);
-
 		// Performs the drawing
 		doDraw(g);
-
 		// Free resources from the copied Graphics2D
 		g.dispose();
 	}
@@ -111,33 +107,41 @@ public abstract class VElement implements Comparable<VElement> {
 	}
 
 	/**
-	 * Returns the drawing this object belongs to.
+	 * Returns the pathway model drawing this object belongs to.
 	 *
-	 * @return canvas
+	 * @return canvas the pathway model drawing.
 	 */
 	public VPathwayModel getDrawing() {
 		return canvas;
 	}
 
-	/**
-	 * Besides resetting isHighlighted, this accomplishes this: - marking the area
-	 * dirty, so the object has a chance to redraw itself in unhighlighted state
-	 */
-	public void unhighlight() {
-		if (isHighlighted) {
-			isHighlighted = false;
-			highlightColor = null;
-			markDirty();
-		}
-	}
-
 	private Color highlightColor;
+	private boolean isHighlighted;
 
+	/**
+	 * Returns the highlight color.
+	 * 
+	 * @return highlightColor the highlight color.
+	 */
 	public Color getHighlightColor() {
 		return highlightColor;
 	}
 
-	private boolean isHighlighted;
+	/**
+	 * Returns true if this object is highlighted, false otherwise.
+	 * 
+	 * @return isHighlighted true if is highlighted, false otherwise.
+	 */
+	public boolean isHighlighted() {
+		return isHighlighted;
+	}
+
+	/**
+	 * Highlights this element with the default highlight color.
+	 */
+	public void highlight() {
+		highlight(PreferenceManager.getCurrent().getColor(GlobalPreference.COLOR_HIGHLIGHTED));
+	}
 
 	/**
 	 * Besides setting isHighlighted, this accomplishes this: - marking the area
@@ -155,25 +159,21 @@ public abstract class VElement implements Comparable<VElement> {
 	}
 
 	/**
-	 * Highlights this element with the default highlight color.
+	 * Besides resetting isHighlighted, this accomplishes this: - marking the area
+	 * dirty, so the object has a chance to redraw itself in unhighlighted state
 	 */
-	public void highlight() {
-		highlight(PreferenceManager.getCurrent().getColor(GlobalPreference.COLOR_HIGHLIGHTED));
-	}
-
-	/**
-	 * Returns true if this object is highlighted, false otherwise.
-	 * 
-	 * @return isHighlighted
-	 */
-	public boolean isHighlighted() {
-		return isHighlighted;
+	public void unhighlight() {
+		if (isHighlighted) {
+			isHighlighted = false;
+			highlightColor = null;
+			markDirty();
+		}
 	}
 
 	/**
 	 * Determines whether a Graphics object intersects the rectangle specified.
 	 * 
-	 * @param r - the rectangle to check
+	 * @param r the rectangle to check
 	 * @return true if the object intersects the rectangle, false otherwise
 	 */
 	protected boolean vIntersects(Rectangle2D r) {
@@ -189,7 +189,7 @@ public abstract class VElement implements Comparable<VElement> {
 	/**
 	 * Determines whether a Graphics object contains the point specified
 	 * 
-	 * @param point - the point to check
+	 * @param point the point to check
 	 * @return true if the object contains the point, false otherwise
 	 */
 	protected boolean vContains(Point2D point) {
@@ -202,6 +202,11 @@ public abstract class VElement implements Comparable<VElement> {
 		}
 	}
 
+	/**
+	 * Returns true if object is selected, false otherwise.
+	 * 
+	 * @return isSelected true if object is selected, false otherwise.
+	 */
 	public boolean isSelected() {
 		return isSelected;
 	}

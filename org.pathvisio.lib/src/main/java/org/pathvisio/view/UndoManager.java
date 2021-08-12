@@ -19,8 +19,8 @@ package org.pathvisio.view;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.pathvisio.core.Engine;
-import org.pathvisio.core.model.Pathway;
+import org.pathvisio.controller.Engine;
+import org.pathvisio.model.PathwayModel;
 
 /** Manages a stack of undo actions */
 public class UndoManager
@@ -29,10 +29,10 @@ public class UndoManager
 
 	private List<UndoAction> undoList = new ArrayList<UndoAction>();
 
-	private Pathway pathway;
+	private PathwayModel pathwayModel;
 
-	public void setPathway (Pathway pathway) {
-		this.pathway = pathway;
+	public void setPathwayModel (PathwayModel pathwayModel) {
+		this.pathwayModel = pathwayModel;
 	}
 
 	private Engine engine;
@@ -103,8 +103,8 @@ public class UndoManager
 	{
 		if(!isActive()) return; //Don' record event if inactive
 
-		if(pathway != null) {
-			UndoAction x = new UndoAction (desc, (Pathway)pathway.clone());
+		if(pathwayModel != null) {
+			UndoAction x = new UndoAction (desc, (PathwayModel)pathwayModel.clone());
 			x.setUndoManager(this);
 			newAction (x);
 		}
@@ -179,7 +179,7 @@ public class UndoManager
 			System.out.println ();
 		}
 		System.out.println ("Current pathway");
-		System.out.print (pathway.summary());
+		System.out.print (pathwayModel.summary());
 		System.out.println();
 	}
 }

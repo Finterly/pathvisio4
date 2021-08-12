@@ -47,6 +47,8 @@ import org.pathvisio.debug.Logger;
 import org.pathvisio.model.type.*;
 //import org.pathvisio.model.Pathway.StatusFlagEvent;
 import org.pathvisio.model.*;
+import org.pathvisio.model.PathwayModel.StatusFlagEvent;
+import org.pathvisio.model.PathwayModel.StatusFlagListener;
 import org.pathvisio.io.listener.PathwayEvent;
 import org.pathvisio.io.listener.PathwayListener;
 import org.pathvisio.util.preferences.GlobalPreference;
@@ -216,37 +218,38 @@ public class VPathwayModel implements PathwayListener {
 		return parent;
 	}
 
-	/**
-	 * Map the contents of a single data object to this VPathway.
-	 */
-	private Graphics fromModelElement(PathwayElement o) {
-		Graphics result = null;
-		if (o.getClass() == DataNode.class) {
-			result = new VDataNode(this, o);
-		} else if (o.getClass() == State.class) {
-			result = new VState(this, o);
-		} else if (o.getClass() == LineElement.class) {
-			result = new VLine(this, o);
-		} else if (o.getClass() == Label.class) {
-			result = new VLabel(this, o);
-		} else if (o.getClass() == Shape.class) {
-			result = new VShape(this, o);
-		} else if (o.getClass() == Group.class) {
-			result = new VGroup(this, o);
-		}
-//		case MAPPINFO:
-//			VInfoBox mi = new VInfoBox(this, o);
-//			result = mi;
-//			mi.markDirty();
-//			break;
-		else {
-			// TODO
-		}
-		return result;
-	}
+//	/**
+//	 * Map the contents of a single data object to this VPathway.
+//	 * TODO replace with individual methods for different Pathway elements...
+//	 */
+//	private Graphics fromModelElement(PathwayElement o) {
+//		Graphics result = null;
+//		if (o.getClass() == DataNode.class) {
+//			result = new VDataNode(this, o);
+//		} else if (o.getClass() == State.class) {
+//			result = new VState(this, o);
+//		} else if (o.getClass() == LineElement.class) {
+//			result = new VLine(this, o);
+//		} else if (o.getClass() == Label.class) {
+//			result = new VLabel(this, o);
+//		} else if (o.getClass() == Shape.class) {
+//			result = new VShape(this, o);
+//		} else if (o.getClass() == Group.class) {
+//			result = new VGroup(this, o);
+//		}
+////		case MAPPINFO:
+////			VInfoBox mi = new VInfoBox(this, o);
+////			result = mi;
+////			mi.markDirty();
+////			break;
+//		else {
+//			// TODO
+//		}
+//		return result;
+//	}
 
 	/**
-	 * used by undo manager.
+	 * Used by undo manager.
 	 */
 	public void replacePathway(PathwayModel originalState) {
 		boolean changed = data.hasChanged();
@@ -273,16 +276,77 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+
 	/**
-	 * Maps the contents of a pathway to this VPathway
+	 * Map the contents of a single {@link DataNode} to this VPathwayModel.
+	 */
+	private Graphics fromModelDataNode(DataNode o) {
+		return new VDataNode(this, o);
+	}
+	
+	/**
+	 * Map the contents of a single {@link Interaction} to this VPathwayModel.
+	 */
+	private Graphics fromModelInteraction(Interaction o) {
+		return new VLine(this, o);
+	}
+	
+	/**
+	 * Map the contents of a single {@link GraphicalLine} to this VPathwayModel.
+	 */
+	private Graphics fromModelGraphicalLine(GraphicalLine o) {
+		return new VLine(this, o);
+	}
+	
+	/**
+	 * Map the contents of a single {@link Label} to this VPathwayModel.
+	 */
+	private Graphics fromModelLabel(Label o) {
+		return new VLabel(this, o);
+	}
+	
+	/**
+	 * Map the contents of a single {@link Shape} to this VPathwayModel.
+	 */
+	private Graphics fromModelShape(Shape o) {
+		return new VShape(this, o);
+	}
+	
+	/**
+	 * Map the contents of a single {@link Group} to this VPathwayModel.
+	 */
+	private Graphics fromModelGroup(Group o) {
+		return new VGroup(this, o);
+	}
+	
+	
+	/**
+	 * Maps the contents of a {@link PathwayModel} to this VPathwayModel
 	 */
 	public void fromModel(PathwayModel aData) {
 		Logger.log.trace("Create view structure");
 
 		data = aData;
-		for (PathwayElement o : data.getDataObjects()) {
-			fromModelElement(o);
+		for (DataNode o : data.getDataNodes()) {
+			fromModelDataNode(o);
 		}
+		for (Interaction o : data.getInteractions()) {
+			fromModelInteraction(o);
+		}
+		for (GraphicalLine o : data.getGraphicalLines()) {
+			fromModelGraphicalLine(o);
+		}
+		for (Label o : data.getLabels()) {
+			fromModelLabel(o);
+		}
+		for (Shape o : data.getShapes()) {
+			fromModelShape(o);
+		}
+		for (Group o : data.getGroups()) {
+			fromModelGroup(o);
+		}
+		// Annotations, Citations,Evidences
+		// TODO HERE we separate them!!!!
 
 		// data.fireObjectModifiedEvent(new PathwayEvent(null,
 		// PathwayEvent.MODIFIED_GENERAL));
@@ -374,7 +438,7 @@ public class VPathwayModel implements PathwayListener {
 		return pointsMtoV.get(linePoint);
 	}
 
-	public VPoint newPoint(LinePoint linePoint, Line line) {
+	public VPoint newPoint(LinePoint linePoint, VLine line) {
 		VPoint p = pointsMtoV.get(linePoint);
 		if (p == null) {
 			p = new VPoint(this, linePoint, line);

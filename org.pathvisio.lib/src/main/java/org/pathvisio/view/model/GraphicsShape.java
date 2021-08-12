@@ -56,6 +56,18 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
+/**
+ * @author p70073399
+ *
+ */
+/**
+ * @author p70073399
+ *
+ */
+/**
+ * @author p70073399
+ *
+ */
 public abstract class GraphicsShape extends GraphicsShapedElement implements LinkProvider, Adjustable {
 
 	protected Rotatable gdata = null;
@@ -86,8 +98,10 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 		super(canvas);
 	}
 
+	/**
+	 * Creates handles 
+	 */
 	protected void createHandles() {
-
 		if (gdata.getShapeStyleProp().getShapeType() != null && !gdata.getShapeStyleProp().getShapeType().isResizeable()
 				&& !gdata.getShapeStyleProp().getShapeType().isRotatable()) {
 			return; // no resizing, no handles
@@ -97,7 +111,7 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
 			handleR.setAngle(1);
 			handles = new Handle[] { handleR };
-		} else if (this instanceof VState) {
+		} else if (this.getClass() == VState.class) {
 			handleNE = new Handle(Handle.Freedom.NEGFREE, this, this);
 			handleSE = new Handle(Handle.Freedom.FREE, this, this);
 			handleSW = new Handle(Handle.Freedom.NEGFREE, this, this);
@@ -191,18 +205,18 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 	}
 
 	/**
-	 * Get the coordinates of the given point relative to this object's center
+	 * Returns the coordinates of the given point relative to this object's center.
 	 * 
-	 * @param p
+	 * @param p the given point.
 	 */
 	private Point mRelativeToCenter(Point p) {
 		return p.subtract(new Point(gdata.getMCenterX(), gdata.getMCenterY()));
 	}
 
 	/**
-	 * Set the rotation of this object
+	 * Sets the rotation of this object. 
 	 * 
-	 * @param angle angle of rotation in radians
+	 * @param angle angle of rotation in radians.
 	 */
 	public void setRotation(double angle) {
 		if (angle < 0)
@@ -213,6 +227,9 @@ public abstract class GraphicsShape extends GraphicsShapedElement implements Lin
 			gdata.setRotation(angle);
 	}
 
+	/**
+	 *
+	 */
 	public void adjustToHandle(Handle h, double vnewx, double vnewy) {
 		// Rotation
 		if (h == handleR) {
