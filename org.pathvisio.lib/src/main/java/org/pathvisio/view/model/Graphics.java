@@ -29,11 +29,11 @@ import java.util.List;
 
 import org.pathvisio.io.listener.PathwayElementEvent;
 import org.pathvisio.io.listener.PathwayElementListener;
-import org.pathvisio.view.VCitation;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.debug.DebugList;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.*;
+import org.pathvisio.model.ref.CitationRef;
 
 /**
  * This class is a parent class for all graphics that can be added to a
@@ -49,46 +49,23 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 	 */
 	private List<VElement> children = new DebugList<VElement>();
 
-	private VCitation citation;
-
-	
 	public Graphics(VPathwayModel canvas) {
 		super(canvas);
 //		o.addListener(this);
 //		gdata = o;
-//		checkCitation();
 	}
 
-	protected VCitation createCitation() {
-		return new VCitation(canvas, this, new Point2D.Double(1, -1));
-	}
-
-//	public final void checkCitation() {
-//		List<PublicationXref> xrefs = gdata.getBiopaxReferenceManager().getPublicationXRefs();
-//		if (xrefs.size() > 0 && citation == null) {
-//			citation = createCitation();
-//			children.add(citation);
-//		} else if (xrefs.size() == 0 && citation != null) {
-//			citation.destroy();
-//			children.remove(citation);
-//			citation = null;
-//		}
-//
-//		if (citation != null) {
-//			// already exists, no need to create / destroy
-//			// just redraw...
-//			citation.markDirty();
-//		}
-//	}
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return
+	 */
+	public abstract PathwayElement getPathwayElement();
 
 	public void markDirty() {
 		super.markDirty();
 		for (VElement child : children)
 			child.markDirty();
-	}
-
-	protected VCitation getCitation() {
-		return citation;
 	}
 
 //	/**
@@ -105,7 +82,7 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 	public void gmmlObjectModified(PathwayElementEvent e) {
 		if (listen) {
 			markDirty(); // mark everything dirty
-			checkCitation();
+//			checkCitation(); TODO
 		}
 	}
 
@@ -216,20 +193,9 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 		return getVShape(true);
 	}
 
-	protected void destroy() {
-		super.destroy();
-		gdata.removeListener(this);
-		for (VElement child : children) {
-			child.destroy();
-		}
-		children.clear();
-		citation = null;
-
-		// View should not remove its model
-//		Pathway parent = gdata.getParent();
-//		if(parent != null) parent.remove(gdata);
+	public List<VElement> getChildren() {
+		return children;
 	}
-
 
 	public void addChild(VElement elt) {
 		children.add(elt);

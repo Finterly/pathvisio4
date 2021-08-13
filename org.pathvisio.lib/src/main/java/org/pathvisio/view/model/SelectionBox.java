@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.view.Adjustable;
 
 /**
  * This class implements a selectionbox

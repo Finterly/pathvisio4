@@ -40,7 +40,6 @@ import org.pathvisio.model.State;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.Adjustable;
 import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.LinAlg;
 import org.pathvisio.view.LinkProvider;
@@ -56,9 +55,7 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
-public abstract class GraphicsRotatable implements LinkProvider, Adjustable {
-
-	protected Rotatable gdata = null;
+public abstract class GraphicsRotatable extends GraphicsShapedElement implements LinkProvider, Adjustable {
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0;
 
@@ -86,7 +83,7 @@ public abstract class GraphicsRotatable implements LinkProvider, Adjustable {
 		super(canvas);
 	}
 
-	protected void createHandles() {
+	protected void createHandles(Rotatable gdata) {
 
 		if (gdata.getShapeStyleProp().getShapeType() != null && !gdata.getShapeStyleProp().getShapeType().isResizeable()
 				&& !gdata.getShapeStyleProp().getShapeType().isRotatable()) {
@@ -97,7 +94,7 @@ public abstract class GraphicsRotatable implements LinkProvider, Adjustable {
 			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
 			handleR.setAngle(1);
 			handles = new Handle[] { handleR };
-		} else if (this instanceof VState) {
+		} else if (this.getClass() ==  VState.class) {
 			handleNE = new Handle(Handle.Freedom.NEGFREE, this, this);
 			handleSE = new Handle(Handle.Freedom.FREE, this, this);
 			handleSW = new Handle(Handle.Freedom.NEGFREE, this, this);
@@ -127,10 +124,8 @@ public abstract class GraphicsRotatable implements LinkProvider, Adjustable {
 			handleNE.setAngle(315);
 			handleSE.setAngle(45);
 			handleSW.setAngle(135);
-			handleNW.setAngle(225);
-
-			if (this instanceof VDataNode || this instanceof VLabel
-					|| !gdata.getShapeStyleProp().getShapeType().isRotatable()) {
+			handleNW.setAngle(225);	
+			if (!gdata.getShapeStyleProp().getShapeType().isRotatable()) {
 				// No rotation handle for these objects
 				handles = new Handle[] { handleN, handleNE, handleE, handleSE, handleS, handleSW, handleW, handleNW, };
 			} else {

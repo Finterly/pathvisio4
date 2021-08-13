@@ -19,7 +19,6 @@ package org.pathvisio.view.model;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.Adjustable;
 import org.pathvisio.view.LinAlg;
 import org.pathvisio.view.LinAlg.Point;
 
@@ -83,6 +82,9 @@ public class VPoint implements Adjustable
 		linePoint.moveBy(canvas.mFromV(dx), canvas.mFromV(dy));
 	}
 
+	
+	
+	
 	public LinePoint getLinePoint() {
 		return linePoint;
 	}
@@ -141,7 +143,7 @@ public class VPoint implements Adjustable
 	public double getVHeight() { return 0;  }
 	
 	
-	protected void moveBy(double[] delta)
+	protected void moveBy(double[] delta) //TODO added
 	{
 		for(int i = 0; i < coordinates.length; i++) {
 			coordinates[i] += delta[i];
@@ -149,15 +151,16 @@ public class VPoint implements Adjustable
 		fireObjectModifiedEvent(PathwayElementEvent.createCoordinatePropertyEvent(PathwayElement.this));
 	}
 
-	protected void moveTo(double[] coordinates)
+	protected void moveTo(double[] coordinates) //TODO added
 	{
 		this.coordinates = coordinates;
 		fireObjectModifiedEvent(PathwayElementEvent.createCoordinatePropertyEvent(PathwayElement.this));
 	}
 
-	protected void moveTo(GenericPoint p)
+	protected void moveTo(GenericPoint p) //TODO added
 	{
 		coordinates = p.coordinates;
 		fireObjectModifiedEvent(PathwayElementEvent.createCoordinatePropertyEvent(PathwayElement.this));;
 	}
+	
 }

@@ -235,6 +235,9 @@ public abstract class VElement implements Comparable<VElement> {
 		}
 	}
 
+	/**
+	 * Creates handles ??TODO
+	 */
 	protected void createHandles() {
 	}
 
@@ -311,7 +314,7 @@ public abstract class VElement implements Comparable<VElement> {
 	}
 
 	/**
-	 * returns the z-order that defines in what order to draw the element.
+	 * Returns the z-order that defines in what order to draw the element.
 	 */
 	protected abstract int getZOrder();
 
@@ -376,7 +379,7 @@ public abstract class VElement implements Comparable<VElement> {
 	private boolean removeMe = false;
 
 	/**
-	 * Returns
+	 * Returns true if to remove, false otherwise.
 	 * 
 	 * @return removeMe
 	 */

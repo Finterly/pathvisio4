@@ -22,11 +22,11 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.DataNode;
 
 /**
- * This class implements a geneproduct and provides methods to resize and draw
- * it. //TODO: rename this class to DataNode
+ * This class implements a {@link DataNode} and provides methods to resize and
+ * draw it.
  */
 public class VDataNode extends GraphicsShape {
-	
+
 	protected DataNode gdata = null;
 
 	public static final Color INITIAL_FILL_COLOR = Color.WHITE;
@@ -36,7 +36,7 @@ public class VDataNode extends GraphicsShape {
 
 	public VDataNode(VPathwayModel canvas, DataNode o) {
 		super(canvas);
-		
+
 	}
 
 	/**
@@ -50,7 +50,4 @@ public class VDataNode extends GraphicsShape {
 		return gdata;
 	}
 
-
-
 }
- 

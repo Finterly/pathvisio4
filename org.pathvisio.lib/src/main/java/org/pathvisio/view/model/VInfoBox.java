@@ -23,13 +23,16 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
+import org.pathvisio.model.ref.CitationRef;
 import org.pathvisio.model.ref.Pathway;
-import org.pathvisio.core.view.VCitation;
 import org.pathvisio.model.PathwayElement;
 
 /**
- * //TODO: view.InfoBox corresponds in some ways to
+ * 
+ * //TODO As code was before, Infobox could not be moved or resized.... //TODO:
+ * view.InfoBox corresponds in some ways to
  * model.PathwayElement(ObjectType.MAPPINFO) and in some ways to
  * model.PathwayElement(ObjectType.INFOBOX). This confusion is rooted in
  * inconsistencies in GPML. This should be cleaned up one day.
@@ -42,17 +45,26 @@ public class VInfoBox extends Graphics {
 	static final int H_SPACING = 10;
 	static final int INITIAL_SIZE = 200;
 
-	
-	// startx for shapes TODO 
-	public double getMLeft(Pathway gdata) {
-		return gdata.getInfoBox().getX() - mWidth / 2;
+	// TODO
+	public double getMLeft() {
+		return gdata.getInfoBox().getX() - 0 / 2;
 	}
 
-	// starty for shapes TODO 
-	public double getMTop(Pathway gdata) {
-		return gdata.getInfoBox().getY() - mHeight / 2;
+	// TODO
+	public double getMTop() {
+		return gdata.getInfoBox().getY() - 0 / 2;
 	}
-	
+
+	// TODO
+	public void setMLeft(double v) {
+		gdata.getInfoBox().setX(v + 0 / 2); // v + mWidth / 2;
+	}
+
+	// TODO
+	public void setMTop(double v) {
+		gdata.getInfoBox().setY(v + 0 / 2); // v + mHeight / 2;
+	}
+
 	// Elements not stored in gpml
 	String fontName = "Times New Roman";
 	String fontWeight = "regular";
@@ -69,9 +81,29 @@ public class VInfoBox extends Graphics {
 		checkCitation();
 	}
 
+	@Override 
 	protected VCitation createCitation() {
-		return new VCitation(canvas, this, new Point2D.Double(1, 0));
+		return new VCitation(canvas, this, new Point2D.Double(1, 0)); //TODO  coordinates? 
 	}
+	
+	public final void checkCitation() {
+	List<CitationRef> citationRefs = gdata.getCitationRefs();
+	if (citationRefs.size() > 0 && getCitation() == null) {
+		citation = createCitation();
+		children.add(citation);
+	} else if (xrefs.size() == 0 && citation != null) {
+		citation.destroy();
+		children.remove(citation);
+		citation = null;
+	}
+
+	if (citation != null) {
+		// already exists, no need to create / destroy
+		// just redraw...
+		citation.markDirty();
+	}
+}
+	
 
 	// public Point getBoardSize() { return new Point((int)gdata.getMBoardWidth(),
 	// (int)gdata.getMBoardHeight()); }
@@ -82,8 +114,8 @@ public class VInfoBox extends Graphics {
 
 	protected void vMoveBy(double vdx, double vdy) {
 //		markDirty();
-		gdata.setMTop(gdata.getMTop() + mFromV(vdy));
-		gdata.setMLeft(gdata.getMLeft() + mFromV(vdx));
+		setMTop(getMTop() + mFromV(vdy));
+		setMLeft(getMLeft() + mFromV(vdx));
 //		markDirty();
 	}
 
@@ -106,8 +138,8 @@ public class VInfoBox extends Graphics {
 		};
 
 		int shift = 0;
-		int vLeft = (int) vFromM(gdata.getMLeft());
-		int vTop = (int) vFromM(gdata.getMTop());
+		int vLeft = (int) vFromM(gdata.getInfoBox().getX() / 2); // gdata.getMLeft
+		int vTop = (int) vFromM(gdata.getInfoBox().getY() / 2); // gdata.getMTop, mHeight is always 0?
 
 		int newSizeX = sizeX;
 		int newSizeY = sizeY;
@@ -142,10 +174,12 @@ public class VInfoBox extends Graphics {
 		}
 	}
 
-
+	/**
+	 * Previous implementaiton doesn't actually allow infobox to move...
+	 */
 	protected Shape getVShape(boolean rotate) {
-		double vLeft = vFromM(gdata.getMLeft());
-		double vTop = vFromM(gdata.getMTop());
+		double vLeft = vFromM(getMLeft()); // gdata.getMLeft
+		double vTop = vFromM(getMTop()); // gdata.getMTop, mHeight is always 0?
 		double vW = sizeX;
 		double vH = sizeY;
 		if (vW == 1 && vH == 1) {
@@ -155,7 +189,13 @@ public class VInfoBox extends Graphics {
 		return new Rectangle2D.Double(vLeft, vTop, vW, vH);
 	}
 
+	@Override
 	protected void setVScaleRectangle(Rectangle2D r) {
 		// Do nothing, can't resize infobox
+	}
+
+	@Override
+	protected int getZOrder() {
+		return 0x0000; // default z-order for Infobox TODO
 	}
 }

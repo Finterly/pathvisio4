@@ -32,6 +32,7 @@ import java.awt.geom.Rectangle2D;
 import java.text.AttributedString;
 
 import org.pathvisio.model.type.LineStyleType;
+import org.pathvisio.model.Group;
 import org.pathvisio.model.PathwayElement;
 //import org.pathvisio.model.PathwayElementEvent; TODO 
 import org.pathvisio.model.ShapedElement;
@@ -48,28 +49,18 @@ import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.view.model.Handle.Freedom;
 
 /**
- * This {@link Graphics} class represents the view of a {@link Rotatable}
+ * This class holds the rotation information for view of a {@link Rotatable}
  * pathway elements: {@link DataNode}, {@link State}, {@link Label}, and
  * {@link Shape}. Rotation is implemented with 8 handles placed in a (rotated)
  * rectangle around the shape and a rotation handle.
  * 
  * @author unknown, finterly
  */
-/**
- * @author p70073399
- *
- */
-/**
- * @author p70073399
- *
- */
-/**
- * @author p70073399
- *
- */
-public abstract class GraphicsShape extends GraphicsElementInfo implements LinkProvider, Adjustable {
+public class GraphicsRotation implements LinkProvider {
 
-	protected Rotatable gdata = null;
+	protected Graphics graphics;
+	protected Rotatable rotatable;
+	protected Adjustable adjustable;
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0;
 
@@ -91,30 +82,32 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	/**
 	 * Constructor for this class
 	 * 
-	 * @param canvas - the VPathway this Shape will be part of
+	 * @param vElement
+	 * @param adjustable
 	 */
-	public GraphicsShape(VPathwayModel canvas) {
-		super(canvas);
+	public GraphicsRotation(Graphics graphics, Rotatable rotatable, Adjustable adjustable) {
+		this.graphics = graphics;
+		this.rotatable = rotatable;
+		this.adjustable = adjustable;
 	}
 
-	/**
-	 * Creates handles 
-	 */
 	protected void createHandles() {
-		if (gdata.getShapeStyleProp().getShapeType() != null && !gdata.getShapeStyleProp().getShapeType().isResizeable()
-				&& !gdata.getShapeStyleProp().getShapeType().isRotatable()) {
+
+		if (rotatable.getShapeStyleProp().getShapeType() != null
+				&& !rotatable.getShapeStyleProp().getShapeType().isResizeable()
+				&& !rotatable.getShapeStyleProp().getShapeType().isRotatable()) {
 			return; // no resizing, no handles
-		} else if (gdata.getShapeStyleProp().getShapeType() != null
-				&& !gdata.getShapeStyleProp().getShapeType().isResizeable()
-				&& gdata.getShapeStyleProp().getShapeType().isRotatable()) {
-			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
+		} else if (rotatable.getShapeStyleProp().getShapeType() != null
+				&& !rotatable.getShapeStyleProp().getShapeType().isResizeable()
+				&& rotatable.getShapeStyleProp().getShapeType().isRotatable()) {
+			handleR = new Handle(Handle.Freedom.ROTATION, graphics, adjustable);
 			handleR.setAngle(1);
 			handles = new Handle[] { handleR };
-		} else if (this.getClass() == VState.class) {
-			handleNE = new Handle(Handle.Freedom.NEGFREE, this, this);
-			handleSE = new Handle(Handle.Freedom.FREE, this, this);
-			handleSW = new Handle(Handle.Freedom.NEGFREE, this, this);
-			handleNW = new Handle(Handle.Freedom.FREE, this, this);
+		} else if (graphics.getClass() == VState.class) {
+			handleNE = new Handle(Handle.Freedom.NEGFREE, graphics, adjustable);
+			handleSE = new Handle(Handle.Freedom.FREE, graphics, adjustable);
+			handleSW = new Handle(Handle.Freedom.NEGFREE, graphics, adjustable);
+			handleNW = new Handle(Handle.Freedom.FREE, graphics, adjustable);
 
 			handleNE.setAngle(315);
 			handleSE.setAngle(45);
@@ -123,15 +116,15 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 
 			handles = new Handle[] { handleNE, handleSE, handleSW, handleNW, };
 		} else {
-			handleN = new Handle(Handle.Freedom.Y, this, this);
-			handleE = new Handle(Handle.Freedom.X, this, this);
-			handleS = new Handle(Handle.Freedom.Y, this, this);
-			handleW = new Handle(Handle.Freedom.X, this, this);
+			handleN = new Handle(Handle.Freedom.Y, graphics, adjustable);
+			handleE = new Handle(Handle.Freedom.X, graphics, adjustable);
+			handleS = new Handle(Handle.Freedom.Y, graphics, adjustable);
+			handleW = new Handle(Handle.Freedom.X, graphics, adjustable);
 
-			handleNE = new Handle(Handle.Freedom.NEGFREE, this, this);
-			handleSE = new Handle(Handle.Freedom.FREE, this, this);
-			handleSW = new Handle(Handle.Freedom.NEGFREE, this, this);
-			handleNW = new Handle(Handle.Freedom.FREE, this, this);
+			handleNE = new Handle(Handle.Freedom.NEGFREE, graphics, adjustable);
+			handleSE = new Handle(Handle.Freedom.FREE, graphics, adjustable);
+			handleSW = new Handle(Handle.Freedom.NEGFREE, graphics, adjustable);
+			handleNW = new Handle(Handle.Freedom.FREE, graphics, adjustable);
 
 			handleN.setAngle(270);
 			handleE.setAngle(0);
@@ -141,13 +134,11 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 			handleSE.setAngle(45);
 			handleSW.setAngle(135);
 			handleNW.setAngle(225);
-
-			if (this instanceof VDataNode || this instanceof VLabel
-					|| !gdata.getShapeStyleProp().getShapeType().isRotatable()) {
+			if (!rotatable.getShapeStyleProp().getShapeType().isRotatable()) {
 				// No rotation handle for these objects
 				handles = new Handle[] { handleN, handleNE, handleE, handleSE, handleS, handleSW, handleW, handleNW, };
 			} else {
-				handleR = new Handle(Handle.Freedom.ROTATION, this, this);
+				handleR = new Handle(Handle.Freedom.ROTATION, graphics, adjustable);
 				handleR.setAngle(1);
 
 				handles = new Handle[] { handleN, handleNE, handleE, handleSE, handleS, handleSW, handleW, handleNW,
@@ -158,7 +149,7 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	}
 
 	protected void setVScaleRectangle(Rectangle2D r) {
-		gdata.getRectProperty().setWidth(mFromV(r.getWidth()));
+		rotatable.getRectProperty().setWidth(mFromV(r.getWidth()));
 		gdata.getRectProperty().setHeight(mFromV(r.getHeight()));
 		gdata.setMLeft(mFromV(r.getX()));
 		gdata.setMTop(mFromV(r.getY()));
@@ -204,18 +195,18 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	}
 
 	/**
-	 * Returns the coordinates of the given point relative to this object's center.
+	 * Get the coordinates of the given point relative to this object's center
 	 * 
-	 * @param p the given point.
+	 * @param p
 	 */
 	private Point mRelativeToCenter(Point p) {
 		return p.subtract(new Point(gdata.getMCenterX(), gdata.getMCenterY()));
 	}
 
 	/**
-	 * Sets the rotation of this object. 
+	 * Set the rotation of this object
 	 * 
-	 * @param angle angle of rotation in radians.
+	 * @param angle angle of rotation in radians
 	 */
 	public void setRotation(double angle) {
 		if (angle < 0)
@@ -226,9 +217,6 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 			gdata.setRotation(angle);
 	}
 
-	/**
-	 *
-	 */
 	public void adjustToHandle(Handle h, double vnewx, double vnewy) {
 		// Rotation
 		if (h == handleR) {
@@ -368,7 +356,7 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	 */
 	protected void setHandleLocation() {
 		Point p;
-		if (gdata.getShapeStyleProperty().getShapeType() == null || gdata.getShapeType().isResizeable()) {
+		if (gdata.getShapeStyleProp().getShapeType() == null || gdata.getShapeType().isResizeable()) {
 
 			if (handleN != null) {
 				p = mToExternal(0, -gdata.getRectProperty().getHeight() / 2);
@@ -397,7 +385,7 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 		}
 
 		for (Handle h : getHandles())
-			h.rotation = gdata.getRotation();
+			h.rotation = rotatable.getRotation();
 	}
 
 	protected Shape calculateVOutline() {
@@ -419,7 +407,7 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	 */
 	protected Shape getShape(boolean rotate, boolean stroke) {
 		if (stroke) {
-			return getShape(rotate, (float) gdata.getShapeStyleProperty().getBorderWidth());
+			return getShape(rotate, (float) rotatable.getShapeStyleProp().getBorderWidth());
 		} else {
 			return getShape(rotate, 0);
 		}
@@ -446,10 +434,11 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 
 		java.awt.Shape s = null;
 
-		if (gdata.getShapeStyleProperty().getShapeType() == null || gdata.getShapeType() == ShapeType.NONE) {
+		if (gdata.getShapeStyleProp().getShapeType() == null
+				|| gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
-			s = gdata.getShapeType().getShape(mw, mh);
+			s = gdata.getShapeStyleProp().getShapeType().getShape(mw, mh);
 		}
 
 		AffineTransform t = new AffineTransform();
@@ -464,9 +453,9 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 		if (sw > 0)
 			if (mw * mh > 0) // Workaround, batik balks if the shape is zero sized.
 			{
-				if (gdata.getShapeStyleProperty().getBorderStyle() == LineStyleType.DOUBLE) {
+				if (gdata.getShapeStyleProp().getBorderStyle() == LineStyleType.DOUBLE) {
 					// correction factor for composite stroke
-					sw = (float) (gdata.getShapeStyleProperty().getBorderWidth() * 4);
+					sw = (float) (gdata.getShapeStyleProp().getBorderWidth() * 4);
 				}
 				Stroke stroke = new BasicStroke(sw);
 				s = stroke.createStrokedShape(s);
@@ -537,7 +526,7 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 			FontMetrics fm = g.getFontMetrics();
 			int lh = fm.getHeight();
 			int yoffset = area.y + fm.getAscent();
-			switch (gdata.getValign()) {
+			switch (gdata.getFontProp().getVAlign()) {
 			case MIDDLE:
 				yoffset += (area.height - (lines.length * lh)) / 2;
 				break;
@@ -558,7 +547,7 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 				Rectangle2D tb = fm.getStringBounds(ats.getIterator(), 0, lines[i].length(), g);
 
 				int xoffset = area.x;
-				switch (gdata.getAlign()) {
+				switch (gdata.getFontProp().getHAlign()) {
 				case CENTER:
 					xoffset += (int) (area.width / 2) - (int) (tb.getWidth() / 2);
 					break;
@@ -578,10 +567,10 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 
 	private AttributedString getVAttributedString(String text) {
 		AttributedString ats = new AttributedString(text);
-		if (gdata.getFontProp().getFontStrikethru()) {
+		if (rotatable.getFontProp().getFontStrikethru()) {
 			ats.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
 		}
-		if (gdata.getFontProp().getFontDecoration()) {
+		if (rotatable.getFontProp().getFontDecoration()) {
 			ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		}
 
@@ -590,20 +579,21 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	}
 
 	protected Font getVFont() {
-		String name = gdata.getFontProp().getFontName();
+		String name = rotatable.getFontProp().getFontName();
 		int style = getVFontStyle();
 		return new Font(name, style, 12).deriveFont((float) vFromM(gdata.getFontProp().getFontSize()));
 	}
 
 	protected void drawShape(Graphics2D g) {
-		Color fillcolor = gdata.getShapeStyleProp().getFillColor();
+		Color fillcolor = rotatable.getShapeStyleProp().getFillColor();
 
 		if (!hasOutline())
 			return; // nothing to draw.
 
 		java.awt.Shape shape = getShape(true, false);
 
-		if (gdata.getShapeStyleProp().getShapeType() == ShapeType.BRACE || gdata.getShapeStyleProp().getShapeType() == ShapeType.ARC) {
+		if (rotatable.getShapeStyleProp().getShapeType() == ShapeType.BRACE
+				|| rotatable.getShapeStyleProp().getShapeType() == ShapeType.ARC) {
 			// don't fill arcs or braces
 			// TODO: this exception should disappear in the future,
 			// when we've made sure all pathways on wikipathways have
@@ -620,7 +610,8 @@ public abstract class GraphicsShape extends GraphicsElementInfo implements LinkP
 	}
 
 	private boolean hasOutline() {
-		return (!(gdata.getShapeStyleProp().getShapeType() == null || gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE));
+		return (!(rotatable.getShapeStyleProp().getShapeType() == null
+				|| rotatable.getShapeStyleProp().getShapeType() == ShapeType.NONE));
 	}
 
 	/**

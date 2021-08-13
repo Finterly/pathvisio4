@@ -52,10 +52,10 @@ public class VGroup extends GraphicsShapedElement implements LinkProvider, VElem
 	protected Group gdata = null;
 
 
-	public VGroup(VPathwayModel canvas, Group pe) {
+	public VGroup(VPathwayModel canvas, Group o) {
 		super(canvas);
 		// pe.addListener(this); 
-		gdata = pe;
+		gdata = o;
 		canvas.addVElementMouseListener(this);
 	}
 	
@@ -81,7 +81,7 @@ public class VGroup extends GraphicsShapedElement implements LinkProvider, VElem
 		// Populate hash map of id-ref pairs for all groups
 		for (VElement vpe : canvas.getDrawingObjects()) {
 			if (vpe instanceof Graphics && vpe instanceof VGroup) {
-				Group pe = ((Graphics) vpe).getPathwayElement();
+				Group o = ((Graphics) vpe).getPathwayElement();
 				if (pe.getGroupRef() != null) {
 					idRefPairs.put(pe.getGroupId(), pe.getGroupRef());
 				}

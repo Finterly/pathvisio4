@@ -14,9 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
-
-import org.pathvisio.view.model.Handle;
+package org.pathvisio.view.model;
 
 /**
  * Any object that has handles and can be adjusted by them

@@ -276,50 +276,48 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
-
 	/**
 	 * Map the contents of a single {@link DataNode} to this VPathwayModel.
 	 */
 	private Graphics fromModelDataNode(DataNode o) {
 		return new VDataNode(this, o);
 	}
-	
+
 	/**
 	 * Map the contents of a single {@link Interaction} to this VPathwayModel.
 	 */
 	private Graphics fromModelInteraction(Interaction o) {
 		return new VLine(this, o);
 	}
-	
+
 	/**
 	 * Map the contents of a single {@link GraphicalLine} to this VPathwayModel.
 	 */
 	private Graphics fromModelGraphicalLine(GraphicalLine o) {
 		return new VLine(this, o);
 	}
-	
+
 	/**
 	 * Map the contents of a single {@link Label} to this VPathwayModel.
 	 */
 	private Graphics fromModelLabel(Label o) {
 		return new VLabel(this, o);
 	}
-	
+
 	/**
 	 * Map the contents of a single {@link Shape} to this VPathwayModel.
 	 */
 	private Graphics fromModelShape(Shape o) {
 		return new VShape(this, o);
 	}
-	
+
 	/**
 	 * Map the contents of a single {@link Group} to this VPathwayModel.
 	 */
 	private Graphics fromModelGroup(Group o) {
 		return new VGroup(this, o);
 	}
-	
-	
+
 	/**
 	 * Maps the contents of a {@link PathwayModel} to this VPathwayModel
 	 */
@@ -2258,17 +2256,23 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * helper method to convert view coordinates to model coordinates
+	 * helper method to convert view {@link VCoordinate} to model {@link Coordinate} accounting for
+	 * canvas zoomFactor.
+	 * 
+	 * @param vCoordinate the view coordinate.
 	 */
-	public double mFromV(double v) {
-		return v / zoomFactor;
+	public double mFromV(double vCoordinate) {
+		return vCoordinate / zoomFactor;
 	}
 
 	/**
-	 * helper method to convert model coordinates to view coordinates
+	 * Helper method to convert model {@link Coordinate} to view {@link VCoordinate} accounting for
+	 * canvas zoomFactor.
+	 * 
+	 * @param mCoordinate the model coordinate. 
 	 */
-	public double vFromM(double m) {
-		return m * zoomFactor;
+	public double vFromM(double mCoordinate) {
+		return mCoordinate * zoomFactor;
 	}
 
 	private AffineTransform vFromM = new AffineTransform();

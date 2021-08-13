@@ -26,7 +26,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 
 import org.pathvisio.model.type.AnchorShapeType;
-import org.pathvisio.view.Adjustable;
 import org.pathvisio.view.AnchorShape;
 import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.ShapeRegistry;
