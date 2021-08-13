@@ -318,29 +318,6 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 		return pts;
 	}
 
-	/**
-	 * Returns the element that the start of this line is connected to. Returns null
-	 * if there isn't any.
-	 */
-	private GraphIdContainer getStartElement() {
-		Pathway parent = getParent();
-		if (parent != null) {
-			return parent.getGraphIdContainer(getStartGraphRef());
-		}
-		return null;
-	}
-
-	/**
-	 * Returns the element that the end of this line is connected to. Returns null
-	 * if there isn't any.
-	 */
-	private GraphIdContainer getEndElement() {
-		Pathway parent = getParent();
-		if (parent != null) {
-			return parent.getGraphIdContainer(getEndGraphRef());
-		}
-		return null;
-	}
 
 	
 

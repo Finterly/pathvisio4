@@ -62,18 +62,7 @@ public abstract class GraphicsLineElement extends GraphicsCitable {
 			child.markDirty();
 	}
 
-	protected VCitation getCitation() {
-		return citation;
-	}
 
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return
-	 */
-	public LineElement getPathwayElement() {
-		return gdata;
-	}
 
 	boolean listen = true;
 
