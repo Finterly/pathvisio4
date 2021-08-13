@@ -41,48 +41,21 @@ import org.pathvisio.model.*;
  * This class is a parent class for all graphics that can be added to a
  * VPathway.
  */
-public abstract class GraphicsLineElement extends Graphics {
+public abstract class GraphicsLineElement extends GraphicsCitable {
 
-	
-	protected LineElement gdata = null;
-	/**
+		/**
 	 * List of children, everything that moves when this element is dragged.
 	 * Includes Citation and State.
 	 */
 	private List<VElement> children = new DebugList<VElement>();
 
-	private VCitation citation;
 
-	public GraphicsLineElement(VPathwayModel canvas, LineElement o) {
+	public GraphicsLineElement(VPathwayModel canvas) {
 		super(canvas);
-		o.addListener(this);
-		gdata = o;
-		checkCitation();
 	}
 	
 
-	protected VCitation createCitation() {
-		return new VCitation(canvas, this, new Point2D.Double(1, -1));
-	}
-
-	public final void checkCitation() {
-		List<PublicationXref> xrefs = gdata.getBiopaxReferenceManager().getPublicationXRefs();
-		if (xrefs.size() > 0 && citation == null) {
-			citation = createCitation();
-			children.add(citation);
-		} else if (xrefs.size() == 0 && citation != null) {
-			citation.destroy();
-			children.remove(citation);
-			citation = null;
-		}
-
-		if (citation != null) {
-			// already exists, no need to create / destroy
-			// just redraw...
-			citation.markDirty();
-		}
-	}
-
+	
 	public void markDirty() {
 		super.markDirty();
 		for (VElement child : children)

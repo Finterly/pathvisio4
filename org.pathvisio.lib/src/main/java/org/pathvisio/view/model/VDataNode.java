@@ -27,27 +27,26 @@ import org.pathvisio.model.DataNode;
  */
 public class VDataNode extends GraphicsShape {
 
-	protected DataNode gdata = null;
+	protected DataNode dataNode = null;
 
 	public static final Color INITIAL_FILL_COLOR = Color.WHITE;
 
 	// note: not the same as color!
 	Color fillColor = INITIAL_FILL_COLOR;
 
-	public VDataNode(VPathwayModel canvas, DataNode o) {
+	public VDataNode(VPathwayModel canvas, DataNode dataNode) {
 		super(canvas);
-
+		this.dataNode = dataNode;
 	}
 
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
-	 * @return gdata
+	 * @return dataNode
 	 */
 	@Override
 	public DataNode getPathwayElement() {
-		super.getPathwayElement();
-		return gdata;
+		return dataNode;
 	}
 
 }

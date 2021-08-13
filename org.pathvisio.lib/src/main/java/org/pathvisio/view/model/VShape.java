@@ -16,6 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
+import org.pathvisio.model.Label;
 import org.pathvisio.model.Shape;
 
 /**
@@ -24,13 +25,27 @@ import org.pathvisio.model.Shape;
  * @author unknown, finterly
  */
 public class VShape extends GraphicsShape {
+	
+	Shape shape = null;
+	
 	/**
 	 * Constructor for this class
 	 * 
 	 * @param canvas - the VPathway this Shape will be part of
 	 */
-	public VShape(VPathwayModel canvas, Shape o) {
+	public VShape(VPathwayModel canvas, Shape shape) {
 		super(canvas);
+		this.shape = shape;
+	}
+	
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return shape
+	 */
+	@Override
+	public Shape getPathwayElement() {
+		return shape;
 	}
 
 }

@@ -42,8 +42,9 @@ import org.pathvisio.model.LinePoint;
  * 
  * @author unknown, finterly
  */
-public class VAnchor extends VElement implements LinkProvider, Adjustable, GraphIdContainer{
-	private Anchor mAnchor;
+public class VAnchor extends VElement implements LinkProvider, Adjustable, GraphIdContainer {
+	
+	private Anchor anchor;
 	private VLine line;
 	private Handle handle;
 	private double mx = Double.NaN;
@@ -57,13 +58,19 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 	 * @param mAnchor the model Anchor.
 	 * @param parent  the parent view Line.
 	 */
-	public VAnchor(Anchor mAnchor, VLine parent) {
+	public VAnchor(Anchor anchor, VLine parent) {
 		super(parent.getDrawing());
-		this.mAnchor = mAnchor;
+		this.anchor = anchor;
 		this.line = parent;
 		updatePosition();
 	}
 
+	// MAnchor 
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		Point2D l = ((MLine) getParent()).getConnectorShape().fromLineCoordinate(getPosition());
+		return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
+	}
+	
 	/**
 	 * Returns view x coordinate.
 	 * 
@@ -97,7 +104,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 	 * @return mAnchor the model anchor.
 	 */
 	public Anchor getMAnchor() {
-		return mAnchor;
+		return anchor;
 	}
 
 	/**
@@ -124,13 +131,13 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 	 */
 	protected void createHandles() {
 		handle = new Handle(Handle.Freedom.FREE, this, this);
-		double lc = mAnchor.getPosition();
+		double lc = anchor.getPosition();
 		Point2D position = line.vFromL(lc);
 		handle.setVLocation(position.getX(), position.getY());
 	}
 
 	void updatePosition() {
-		double lc = mAnchor.getPosition();
+		double lc = anchor.getPosition();
 
 		Point2D position = line.vFromL(lc);
 		if (handle != null)
@@ -139,7 +146,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 		mx = mFromV(position.getX());
 		my = mFromV(position.getY());
 		// Redraw graphRefs // TODO will add methods to libGPML
-		for (GraphRefContainer ref : mAnchor.getReferences()) {
+		for (GraphRefContainer ref : anchor.getReferences()) {
 			if (ref instanceof LinePoint) {
 				VPoint vp = canvas.getPoint((LinePoint) ref);
 				if (vp != null && vp.getLine() != line) {
@@ -151,7 +158,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 
 	public void adjustToHandle(Handle h, double vx, double vy) {
 		double position = line.lFromV(new Point2D.Double(vx, vy));
-		mAnchor.setPosition(position);
+		anchor.setPosition(position);
 	}
 
 	/**
@@ -160,7 +167,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 	 * @return shape the shape of the anchor.
 	 */
 	private AnchorShape getAnchorShape() {
-		AnchorShape shape = ShapeRegistry.getAnchor(mAnchor.getShapeType().getName());
+		AnchorShape shape = ShapeRegistry.getAnchor(anchor.getShapeType().getName());
 
 		if (shape != null) {
 			AffineTransform f = new AffineTransform();
@@ -231,11 +238,11 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, Graph
 	}
 
 	public void showLinkAnchors() {
-		linkAnchor = new LinkAnchor(canvas, this, mAnchor, 0, 0);
+		linkAnchor = new LinkAnchor(canvas, this, anchor, 0, 0);
 	}
 
 	/**
-	 * Returns the zorder of the parent line
+	 * Returns the z-order of the parent line + 1. 
 	 */
 	protected int getZOrder() {
 		return line.getPathwayElement().getLineStyleProp().getZOrder() + 1;

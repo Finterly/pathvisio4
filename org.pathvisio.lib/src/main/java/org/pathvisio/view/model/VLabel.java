@@ -16,14 +16,16 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
+import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Label;
+import org.pathvisio.model.PathwayElement;
 
 /**
  * This class represents the view of a {@link Label} pathway element.
  */
 public class VLabel extends GraphicsShape {
 	
-	Label gdata = null;
+	Label label = null;
 	/**
 	 * Constructor for this class
 	 * 
@@ -47,6 +49,17 @@ public class VLabel extends GraphicsShape {
 		// View should not remove its model
 //		Pathway parent = gdata.getParent();
 //		if(parent != null) parent.remove(gdata);
+	}
+
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return label
+	 */
+	@Override
+	public Label getPathwayElement() {
+		return label;
 	}
 	
 	

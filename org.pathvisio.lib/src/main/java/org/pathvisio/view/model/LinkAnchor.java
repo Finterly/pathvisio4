@@ -42,6 +42,8 @@ public class LinkAnchor extends VElement {
 	GraphIdContainer idContainer;
 	VElement parent;
 
+	
+	// new LinkAnchor(VPathwayModel, VAnchor, mAnchor, 0, 0);
 	public LinkAnchor(VPathwayModel canvas, VElement parent, GraphIdContainer idContainer, double relX, double relY) {
 		super(canvas);
 		this.relX = relX;
@@ -55,6 +57,19 @@ public class LinkAnchor extends VElement {
 		return canvas.vFromM(new Ellipse2D.Double(abs.getX() - MATCH_RADIUS, abs.getY() - MATCH_RADIUS,
 				MATCH_RADIUS * 2, MATCH_RADIUS * 2));
 	}
+	
+	//MPoint
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		return new Point2D.Double(p.getX() + getX(), p.getY() + getY());
+	}
+
+	// MAnchor 
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		Point2D l = ((MLine) getParent()).getConnectorShape().fromLineCoordinate(getPosition());
+		return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
+	}
+	
+	
 
 	public Point2D getPosition() {
 		return new Point2D.Double(relX, relY);

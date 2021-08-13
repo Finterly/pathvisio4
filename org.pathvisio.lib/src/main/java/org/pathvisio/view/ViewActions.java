@@ -556,7 +556,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 				for(Graphics g : selection) {
 					if(g instanceof VLine) {
 						VLine l = (VLine)g;
-						l.gdata.addMAnchor(0.4);
+						l.lineElement.addMAnchor(0.4);
 					}
 				}
 			}
