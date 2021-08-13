@@ -90,6 +90,8 @@ public interface ConnectorShape {
 		public WayPoint(double x, double y) {
 			super(x, y);
 		}
+		
+		
 	}
 
 	/**

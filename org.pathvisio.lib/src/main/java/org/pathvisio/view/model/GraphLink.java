@@ -29,7 +29,7 @@ import org.pathvisio.model.PathwayModel;
 public abstract class GraphLink {
 
 	/**
-	 * Classes which have a elementId and can be referred to must implement this
+	 * PathwayElements which can be referred to must implement this
 	 * interface. {@link VDataNode}, {@link VState}, {@link VAnchor},
 	 * {@link VLabel}, {@link VShape}, and {@link VGroup} can all be referred to be
 	 * {@link VPoint}.

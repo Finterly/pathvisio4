@@ -40,6 +40,7 @@ import org.pathvisio.view.connector.ConnectorShape.WayPoint;
 import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.LinePoint;
@@ -47,10 +48,13 @@ import org.pathvisio.io.listener.PathwayElementEvent;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.model.Adjustable;
+import org.pathvisio.view.model.GraphLink.GraphIdContainer;
 import org.pathvisio.view.ArrowShape;
 import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.model.Handle.Freedom;
 import org.pathvisio.view.model.Handle.Style;
+
+import com.sun.xml.ws.org.objectweb.asm.Label;
 
 /**
  * This class represents a Line on the pathway, or rather a series of line
@@ -66,7 +70,8 @@ import org.pathvisio.view.model.Handle.Style;
  * @see ConnectorShape
  * @see org.pathvisio.view.connector.ConnectorShapeFactory
  */
-public class VLine extends GraphicsLineElement implements Adjustable {
+public class VLine extends GraphicsLineElement implements Adjustable, ConnectorRestrictions { // TODO
+																								// ConnectorRestrictions
 
 	protected LineElement lineElement = null;
 
@@ -84,15 +89,15 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	 * @param canvas - the VPathway this line will be part of
 	 */
 	public VLine(VPathwayModel canvas, LineElement lineElement) {
-		super(canvas, o);
-		o.addListener(this);
+		super(canvas);
+		lineElement.addListener(this);
 		this.lineElement = lineElement;
-		checkCitation(lineElement.getCitationRefs()); //TODO 
+		checkCitation(lineElement.getCitationRefs()); // TODO
 		points = new ArrayList<VPoint>();
-		addPoint(o.getStartPoint());
-		addPoint(o.getEndPoint());
+		addPoint(lineElement.getStartLinePoint()); // TODO
+		addPoint(lineElement.getEndLinePoint()); // TODO
 		setAnchors();
-		getConnectorShape().recalculateShape(getMLine());
+		getConnectorShape().recalculateShape(lineElement);
 //		updateSegmentHandles();
 		updateCitationPosition();
 	}
@@ -103,9 +108,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		setHandleLocation(vp);
 	}
 
-	private LineElement getMLine() {
-		return lineElement;
-	}
+}
 
 	public void createHandles() {
 		createSegmentHandles();
@@ -118,20 +121,18 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		}
 	}
 
-	
-	public Point2D getStartPoint() {
+	public Point2D getStartLinePoint() {
 		return new Point2D.Double(getVStartX(), getVStartY());
 	}
 
-	public Point2D getEndPoint() {
+	public Point2D getEndLinePoint() {
 		return new Point2D.Double(getVEndX(), getVEndY());
 	}
 
 	public Shape calculateVOutline() {
 		return getVShape(true);
 	}
-	
-	
+
 	/**
 	 * Create new segment handles
 	 */
@@ -188,18 +189,18 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		WayPoint[] waypoints = getConnectorShape().getWayPoints();
 		int index = segmentHandles.indexOf(h);
 		if (index > -1) {
-			List<LinePoint> points = lineElement.getPoints();
+			List<LinePoint> points = lineElement.getLinePoints();
 			if (points.size() - 2 != (waypoints.length)) {
 				// Recreate points from segments
 				points = new ArrayList<LinePoint>();
-				points.add(lineElement.getStartPoint());
+				points.add(lineElement.getStartLinePoint());
 				for (int i = 0; i < waypoints.length; i++) {
 					LinePoint p = lineElement.new LinePoint(waypoints[i].getX(), waypoints[i].getY());
 					points.add(p);
 				}
-				points.add(lineElement.getEndPoint());
+				points.add(lineElement.getEndLinePoint());
 				lineElement.dontFireEvents(1);
-				lineElement.setPoints(points);
+				lineElement.setLinePoints(points); // TODO
 			}
 			points.get(index + 1).moveTo(mFromV(vx), mFromV(vy));
 		}
@@ -219,8 +220,10 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 
 		// Recreate the ConnectorShape when it's null or when the type
 		// doesn't match the implementing class
-		if (connectorShape == null || !connectorShape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
-			connectorShape = ConnectorShapeFactory.createConnectorShape(lineElement.getLineStyleProp().getConnectorType().getName());
+		if (connectorShape == null
+				|| !connectorShape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
+			connectorShape = ConnectorShapeFactory
+					.createConnectorShape(lineElement.getLineStyleProp().getConnectorType().getName());
 			connectorShape.recalculateShape(this);
 		}
 		return connectorShape;
@@ -234,8 +237,8 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	public Shape getVConnectorAdjusted() {
 
 		// call to getLineEndingWidth
-		double startGap = getGap(lineElement.getStartPoint().getArrowHead());
-		double endGap = getGap(lineElement.getEndPoint().getArrowHead());
+		double startGap = getGap(lineElement.getStartLinePoint().getArrowHead());
+		double endGap = getGap(lineElement.getEndLinePoint().getArrowHead());
 
 		// From the segments
 		Shape s = getConnectorShape().calculateAdjustedShape(startGap, endGap);
@@ -325,8 +328,6 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		return shape;
 	}
 
-
-
 	/**
 	 * Returns the properly sized and rotated arrowheads
 	 * 
@@ -336,8 +337,9 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		Segment[] segments = getConnectorShape().getSegments();
 
 		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), segments[segments.length - 1].getMEnd(),
-				lineElement.getEndPoint().getArrowHead());
-		ArrowShape hs = getVHead(segments[0].getMEnd(), segments[0].getMStart(), lineElement.getStartPoint().getArrowHead());
+				lineElement.getEndLinePoint().getArrowHead());
+		ArrowShape hs = getVHead(segments[0].getMEnd(), segments[0].getMStart(),
+				lineElement.getStartLinePoint().getArrowHead());
 		return new ArrowShape[] { hs, he };
 	}
 
@@ -351,15 +353,16 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		Segment[] segments = getConnectorShape().getSegments();
 
 		// last segment in the Connector Shape
-		double lineEndingWidth = getGap(lineElement.getEndPoint().getArrowHead());
+		double lineEndingWidth = getGap(lineElement.getEndLinePoint().getArrowHead());
 		Point2D adjustedSegmentEnd = segments[segments.length - 1].calculateNewEndPoint(lineEndingWidth);
 		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), adjustedSegmentEnd,
-				lineElement.getEndPoint().getArrowHead());
+				lineElement.getEndLinePoint().getArrowHead());
 
 		// first segment in the connector shape
-		double lineStartingWidth = getGap(lineElement.getStartPoint().getArrowHead());
+		double lineStartingWidth = getGap(lineElement.getStartLinePoint().getArrowHead());
 		Point2D adjustedSegmentStart = segments[0].calculateNewStartPoint(lineStartingWidth);
-		ArrowShape hs = getVHead(segments[0].getMEnd(), adjustedSegmentStart, lineElement.getStartPoint().getArrowHead());
+		ArrowShape hs = getVHead(segments[0].getMEnd(), adjustedSegmentStart,
+				lineElement.getStartLinePoint().getArrowHead());
 		return new ArrowShape[] { hs, he };
 	}
 
@@ -370,8 +373,8 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		ArrowShape hs = heads[0];
 		ArrowShape he = heads[1];
 
-		float thickness = (float) vFromM(lineElement.getLineStyleProperty().getLineWidth());
-		if (lineElement.getLineStyleProperty().getLineStyle() == LineStyleType.DOUBLE)
+		float thickness = (float) vFromM(lineElement.getLineStyleProp().getLineWidth());
+		if (lineElement.getLineStyleProp().getLineStyle() == LineStyleType.DOUBLE)
 			thickness *= 4;
 		BasicStroke bs = new BasicStroke(thickness);
 
@@ -442,7 +445,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	protected void drawHead(Graphics2D g, ArrowShape head, Color c) {
 		if (head != null) {
 			// reset stroked line to solid, but use given thickness
-			g.setStroke(new BasicStroke((float) vFromM(lineElement.getLineStyleProperty().getLineWidth())));
+			g.setStroke(new BasicStroke((float) vFromM(lineElement.getLineStyleProp().getLineWidth())));
 			switch (head.getFillType()) {
 			case OPEN:
 				g.setPaint(Color.WHITE);
@@ -489,7 +492,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 
 		if (h != null) {
 			AffineTransform f = new AffineTransform();
-			double scaleFactor = vFromM(1.0 + 0.3 * lineElement.getLineStyleProperty().getLineWidth());
+			double scaleFactor = vFromM(1.0 + 0.3 * lineElement.getLineStyleProp().getLineWidth());
 			f.rotate(Math.atan2(ye - ys, xe - xs), xe, ye);
 			f.translate(xe, ye);
 			f.scale(scaleFactor, scaleFactor);
@@ -591,7 +594,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	}
 
 	public void recalculateConnector() {
-		getConnectorShape().recalculateShape(getMLine());
+		getConnectorShape().recalculateShape(lineElement);
 		updateAnchorPositions();
 		updateCitationPosition();
 		for (VPoint vp : points)
@@ -600,14 +603,14 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	}
 
 	public void gmmlObjectModified(PathwayElementEvent e) {
-		getConnectorShape().recalculateShape(getMLine());
+		getConnectorShape().recalculateShape(lineElement);
 
 		WayPoint[] wps = getConnectorShape().getWayPoints();
-		List<LinePoint> mps = lineElement.getPoints();
-		if (wps.length == mps.size() - 2 && getConnectorShape().hasValidWaypoints(getMLine())) {
-			getMLine().adjustWayPointPreferences(wps);
+		List<LinePoint> mps = lineElement.getLinePoints();
+		if (wps.length == mps.size() - 2 && getConnectorShape().hasValidWaypoints(lineElement)) {
+			adjustWayPointPreferences(wps);
 		} else {
-			getMLine().resetWayPointPreferences();
+			resetWayPointPreferences();
 		}
 
 		updateSegmentHandles();
@@ -621,6 +624,25 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		checkCitation();
 		updateAnchorPositions();
 		updateCitationPosition();
+	}
+
+	public void adjustWayPointPreferences(WayPoint[] waypoints) {
+		List<LinePoint> linePoints = lineElement.getLinePoints();
+		for (int i = 0; i < waypoints.length; i++) {
+			WayPoint wp = waypoints[i];
+			LinePoint mp = linePoints.get(i + 1);
+			if (mp.getXY().getX() != wp.getX() || mp.getXY().getY() != wp.getY()) {
+				lineElement.dontFireEvents(1); // TODO????
+				mp.moveTo(wp.getX(), wp.getY());
+			}
+		}
+	}
+
+	public void resetWayPointPreferences() {
+		List<LinePoint> mps = lineElement.getLinePoints();
+		while (mps.size() > 2) {
+			mps.remove(mps.size() - 2);
+		}
 	}
 
 	protected void destroyHandles() {
@@ -638,7 +660,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	protected void destroy() {
 		super.destroy();
 
-		for (LinePoint p : lineElement.getPoints()) {
+		for (LinePoint p : lineElement.getLinePoints()) {
 			canvas.pointsMtoV.remove(p);
 		}
 		List<VAnchor> remove = new ArrayList<VAnchor>(anchors.values());
@@ -654,7 +676,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	 * @return
 	 */
 	protected double getVStartX() {
-		return (int) (vFromM(lineElement.getStartPoint().getXY().getX()));
+		return (int) (vFromM(lineElement.getStartLinePoint().getXY().getX()));
 	}
 
 	/**
@@ -664,7 +686,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	 * @return
 	 */
 	protected double getVStartY() {
-		return (int) (vFromM(lineElement.getStartPoint().getXY().getY()));
+		return (int) (vFromM(lineElement.getStartLinePoint().getXY().getY()));
 	}
 
 	/**
@@ -674,7 +696,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	 * @return
 	 */
 	protected double getVEndX() {
-		return (int) (vFromM(lineElement.getEndPoint().getXY().getX()));
+		return (int) (vFromM(lineElement.getEndLinePoint().getXY().getX()));
 	}
 
 	/**
@@ -684,7 +706,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	 * @return
 	 */
 	protected double getVEndY() {
-		return (int) (vFromM(lineElement.getEndPoint().getXY().getY()));
+		return (int) (vFromM(lineElement.getEndLinePoint().getXY().getY()));
 	}
 
 	/**
@@ -724,7 +746,7 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 		}
 		return segments[segments.length];
 	}
-	
+
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
@@ -733,4 +755,141 @@ public class VLine extends GraphicsLineElement implements Adjustable {
 	public LineElement getPathwayElement() {
 		return lineElement;
 	}
+
+	/*---------------------------ConnectorRestriction---------------------------------*/
+
+	/**
+	 * Check if the connector may cross this point Optionally, returns a shape that
+	 * defines the boundaries of the area around this point that the connector may
+	 * not cross. This method can be used for advanced connectors that route along
+	 * other objects on the drawing
+	 * 
+	 * @return A shape that defines the boundaries of the area around this point
+	 *         that the connector may not cross. Returning null is allowed for
+	 *         implementing classes.
+	 */
+	public Shape mayCross(Point2D point) {
+		PathwayModel parent = lineElement.getPathwayModel();
+		Rectangle2D rect = null;
+		if (parent != null) {
+			for (PathwayElement e : parent.getPathwayElements()) {
+				if (e.getClass() == Shape.class || e.getClass() == DataNode.class || e.getClass() == Label.class) {
+					Rectangle2D b = e.getMBounds();
+					if (b.contains(point)) {
+						if (rect == null)
+							rect = b;
+						else
+							rect.add(b);
+					}
+				}
+			}
+		}
+		return rect;
+	}
+
+	/**
+	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
+	 * SIDE_SOUTH or SIDE_WEST) the start of this line is connected to.
+	 *
+	 * If the start is not connected to anything, returns SIDE_WEST
+	 */
+	public int getStartSide() {
+		int side = SIDE_WEST;
+
+		GraphIdContainer e = getStartElement();
+		if (e != null) {
+			if (e instanceof PathwayElement) {
+				side = getSide(getMStart().getRelX(), getMStart().getRelY());
+			} else if (e instanceof MAnchor) {
+				side = getAttachedLineDirection((MAnchor) e);
+			}
+		}
+		return side;
+	}
+
+	/**
+	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
+	 * SIDE_SOUTH or SIDE_WEST) the end of this line is connected to.
+	 *
+	 * If the end is not connected to anything, returns SIDE_EAST
+	 */
+	public int getEndSide() {
+		int side = SIDE_EAST;
+		GraphIdContainer e = getEndElement();
+		if (e != null) {
+			if (e instanceof PathwayElement) {
+				side = getSide(getMEnd().getRelX(), getMEnd().getRelY());
+			} else if (e instanceof MAnchor) {
+				side = getAttachedLineDirection((MAnchor) e);
+			}
+		}
+		return side;
+	}
+
+	/**
+	 * Returns the element that the start of this line is connected to. Returns null
+	 * if there isn't any.
+	 */
+	private GraphIdContainer getStartElement() {
+		PathwayModel parent = lineElement.getPathwayModel();
+		if (parent != null) {
+			return parent.getGraphIdContainer(getStartGraphRef());
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the element that the end of this line is connected to. Returns null
+	 * if there isn't any.
+	 */
+	private GraphIdContainer getEndElement() {
+		Pathway parent = getParent();
+		if (parent != null) {
+			return parent.getGraphIdContainer(getEndGraphRef());
+		}
+		return null;
+	}
+
+	/**
+	 * Converts LineElement start point from MPoint to Point2D.
+	 * 
+	 * @return the lineElement start point as Point2D.
+	 */
+	public Point2D getStartPoint() {
+		return toPoint2D(lineElement.getStartLinePoint());
+	}
+
+	/**
+	 * converts LineElement end point from MPoint to Point2D
+	 * 
+	 * @return the lineElement end point as Point2D.
+	 */
+	public Point2D getEndPoint() {
+		return toPoint2D(lineElement.getEndLinePoint());
+	}
+
+	/**
+	 * Converts a linePoint to Point2D;
+	 * 
+	 * @param linePoint the LinePoint.
+	 * @return the linePoint as Point2D.
+	 */
+	public Point2D toPoint2D(LinePoint linePoint) {
+		return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
+	}
+
+	/**
+	 * Get the preferred waypoints, to which the connector must draw it's path. The
+	 * waypoints returned by this method are preferences and the connector shape may
+	 * decide not to use them if they are invalid.
+	 */
+	public WayPoint[] getWayPointPreferences() {
+		List<LinePoint> pts = lineElement.getLinePoints();
+		WayPoint[] wps = new WayPoint[pts.size() - 2];
+		for (int i = 0; i < wps.length; i++) {
+			wps[i] = new WayPoint(pts.get(i + 1).toPoint2D()); // TODO
+		}
+		return wps;
+	}
+
 }

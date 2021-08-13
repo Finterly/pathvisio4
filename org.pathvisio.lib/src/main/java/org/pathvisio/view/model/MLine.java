@@ -42,6 +42,9 @@ import org.pathvisio.core.util.Utils;
  */
 public class MLine extends LineElement implements ConnectorRestrictions {
 	
+	
+	
+	
 	public MLine(LineStyleProperty lineStyleProperty) {
 		super(lineStyleProperty);
 	}
@@ -184,29 +187,8 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 
 	
 	
-	
-	
-	ConnectorShape shape;
 
-	public Point2D toPoint2D(LinePoint linePoint) {
-		return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
-	}
-	/**
-	 * the Connector Shape for this line - the connector shape can calculate a Shape
-	 * based on the connector type (straight, elbow or curved) and possibly way
-	 * points
-	 */
-	public ConnectorShape getConnectorShape() {
-		String type = getLineStyleProp().getConnectorType().getName();
 
-		// Recreate the ConnectorShape when it's null or when the type
-		// doesn't match the implementing class
-		if (shape == null || !shape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
-			shape = ConnectorShapeFactory.createConnectorShape(getLineStyleProp().getConnectorType().getName());
-			shape.recalculateShape(this);
-		}
-		return shape;
-	}
 
 	/**
 	 * returns the center x coordinate of the bounding box around (start, end)
@@ -325,15 +307,7 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 		return (int) Math.signum(getEndLinePoint().getXY().getY() - getStartLinePoint().getXY().getY());
 	}
 
-	/** converts end point from MPoint to Point2D */
-	public Point2D getEndPoint() {
-		return toPoint2D(getEndLinePoint());
-	}
 
-	/** converts start point from MPoint to Point2D */
-	public Point2D getStartPoint() {
-		return toPoint2D(getStartLinePoint());
-	}
 
 	/** converts all points from MPoint to Point2D */
 	public List<Point2D> getPoints() {
@@ -368,45 +342,7 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 		return null;
 	}
 
-	/**
-	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
-	 * SIDE_SOUTH or SIDE_WEST) the start of this line is connected to.
-	 *
-	 * If the start is not connected to anything, returns SIDE_WEST
-	 */
-	public int getStartSide() {
-		int side = SIDE_WEST;
-
-		GraphIdContainer e = getStartElement();
-		if (e != null) {
-			if (e instanceof PathwayElement) {
-				side = getSide(getMStart().getRelX(), getMStart().getRelY());
-			} else if (e instanceof MAnchor) {
-				side = getAttachedLineDirection((MAnchor) e);
-			}
-		}
-		return side;
-	}
-
-	/**
-	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
-	 * SIDE_SOUTH or SIDE_WEST) the end of this line is connected to.
-	 *
-	 * If the end is not connected to anything, returns SIDE_EAST
-	 */
-	public int getEndSide() {
-		int side = SIDE_EAST;
-
-		GraphIdContainer e = getEndElement();
-		if (e != null) {
-			if (e instanceof PathwayElement) {
-				side = getSide(getMEnd().getRelX(), getMEnd().getRelY());
-			} else if (e instanceof MAnchor) {
-				side = getAttachedLineDirection((MAnchor) e);
-			}
-		}
-		return side;
-	}
+	
 
 	private int getAttachedLineDirection(MAnchor anchor) {
 		int side;
@@ -492,38 +428,8 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 		return -1;
 	}
 
-	public void adjustWayPointPreferences(WayPoint[] waypoints) {
-		List<MPoint> mpoints = getMPoints();
-		for (int i = 0; i < waypoints.length; i++) {
-			WayPoint wp = waypoints[i];
-			MPoint mp = mpoints.get(i + 1);
-			if (mp.getX() != wp.getX() || mp.getY() != wp.getY()) {
-				dontFireEvents(1);
-				mp.moveTo(wp.getX(), wp.getY());
-			}
-		}
-	}
 
-	public void resetWayPointPreferences() {
-		List<MPoint> mps = getMPoints();
-		while (mps.size() > 2) {
-			mps.remove(mps.size() - 2);
-		}
-	}
 
-	/**
-	 * Get the preferred waypoints, to which the connector must draw it's path. The
-	 * waypoints returned by this method are preferences and the connector shape may
-	 * decide not to use them if they are invalid.
-	 */
-	public WayPoint[] getWayPointPreferences() {
-		List<MPoint> pts = getMPoints();
-		WayPoint[] wps = new WayPoint[pts.size() - 2];
-		for (int i = 0; i < wps.length; i++) {
-			wps[i] = new WayPoint(pts.get(i + 1).toPoint2D());
-		}
-		return wps;
-	}
 
 	/**
 	 * Get the side of the given pathway element to which the x and y coordinates
@@ -573,33 +479,5 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 		return -1;
 	}
 
-	/**
-	 * Check if the connector may cross this point Optionally, returns a shape that
-	 * defines the boundaries of the area around this point that the connector may
-	 * not cross. This method can be used for advanced connectors that route along
-	 * other objects on the drawing
-	 * 
-	 * @return A shape that defines the boundaries of the area around this point
-	 *         that the connector may not cross. Returning null is allowed for
-	 *         implementing classes.
-	 */
-	public Shape mayCross(Point2D point) {
-		Pathway parent = getParent();
-		Rectangle2D rect = null;
-		if (parent != null) {
-			for (PathwayElement e : parent.getDataObjects()) {
-				ObjectType ot = e.getObjectType();
-				if (ot == ObjectType.SHAPE || ot == ObjectType.DATANODE || ot == ObjectType.LABEL) {
-					Rectangle2D b = e.getMBounds();
-					if (b.contains(point)) {
-						if (rect == null)
-							rect = b;
-						else
-							rect.add(b);
-					}
-				}
-			}
-		}
-		return rect;
-	}
+
 }
