@@ -29,7 +29,6 @@ import org.pathvisio.model.type.AnchorShapeType;
 import org.pathvisio.view.AnchorShape;
 import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.ShapeRegistry;
-import org.pathvisio.view.model.GraphLink.GraphIdContainer;
 import org.pathvisio.view.model.Handle.Freedom;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.LinePoint;
@@ -42,7 +41,7 @@ import org.pathvisio.model.LinePoint;
  * 
  * @author unknown, finterly
  */
-public class VAnchor extends VElement implements LinkProvider, Adjustable, GraphIdContainer {
+public class VAnchor extends VElement implements LinkProvider, Adjustable {
 	
 	private Anchor anchor;
 	private VLine line;

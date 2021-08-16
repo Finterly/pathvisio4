@@ -20,18 +20,23 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-
+import org.apache.batik.gvt.TextNode.Anchor;
+import org.pathvisio.model.GraphLink.LinkableFrom;
+import org.pathvisio.model.GraphLink.LinkableTo;
+import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.PathwayElement;
 
 /**
  * A LinkAnchor is a small round target on a Shape or Line that appears only
  * when you drag a line end around. If the line end is near a LinkAnchor, the
- * line end "connects" to the Shape or Line.
+ * line end {@link LinkableFrom} "connects" to the Shape or Line
+ * {@link LinkableTo}.
  */
 public class LinkAnchor extends VElement {
 	static final double DRAW_RADIUS = 5;
@@ -39,44 +44,55 @@ public class LinkAnchor extends VElement {
 	static final int HINT_STROKE_SIZE = 10;
 
 	double relX, relY;
-	GraphIdContainer idContainer;
+	LinkableTo pathwayElement;
 	VElement parent;
 
-	
 	// new LinkAnchor(VPathwayModel, VAnchor, mAnchor, 0, 0);
-	public LinkAnchor(VPathwayModel canvas, VElement parent, GraphIdContainer idContainer, double relX, double relY) {
+	public LinkAnchor(VPathwayModel canvas, VElement parent, LinkableTo pathwayElement, double relX, double relY) {
 		super(canvas);
 		this.relX = relX;
 		this.relY = relY;
-		this.idContainer = idContainer;
+		this.pathwayElement = pathwayElement;
 		this.parent = parent;
 	}
 
 	public Shape getMatchArea() {
-		Point2D abs = idContainer.toAbsoluteCoordinate(new Point2D.Double(relX, relY));
+		Point2D abs = toAbsoluteCoordinate(new Point2D.Double(relX, relY));
 		return canvas.vFromM(new Ellipse2D.Double(abs.getX() - MATCH_RADIUS, abs.getY() - MATCH_RADIUS,
 				MATCH_RADIUS * 2, MATCH_RADIUS * 2));
 	}
-	
-	//MPoint
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() + getX(), p.getY() + getY());
-	}
 
-	// MAnchor 
+	// PathwayElement
 	public Point2D toAbsoluteCoordinate(Point2D p) {
-		Point2D l = ((MLine) getParent()).getConnectorShape().fromLineCoordinate(getPosition());
-		return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
+		// if anchor
+		if (pathwayElement.getClass() == org.pathvisio.model.Anchor.class) {
+			LineElement lineElement = ((org.pathvisio.model.Anchor) pathwayElement).getLineElement();
+			Point2D l = lineElement.getConnectorShape().fromLineCoordinate(getPosition());
+			return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
+		} else { // otherwise
+			double x = p.getX();
+			double y = p.getY();
+			Rectangle2D bounds = getRBounds();
+			// Scale
+			if (bounds.getWidth() != 0)
+				x *= bounds.getWidth() / 2;
+			if (bounds.getHeight() != 0)
+				y *= bounds.getHeight() / 2;
+			// Translate
+			x += bounds.getCenterX();
+			y += bounds.getCenterY();
+			return new Point2D.Double(x, y);
+		}
 	}
 	
-	
+
 
 	public Point2D getPosition() {
 		return new Point2D.Double(relX, relY);
 	}
 
 	private Shape getShape(boolean includeHighlight) {
-		Point2D abs = idContainer.toAbsoluteCoordinate(getPosition());
+		Point2D abs = toAbsoluteCoordinate(getPosition());
 		Shape s = canvas.vFromM(new Ellipse2D.Double(abs.getX() - DRAW_RADIUS, abs.getY() - DRAW_RADIUS,
 				DRAW_RADIUS * 2, DRAW_RADIUS * 2));
 		if (drawHighlight && includeHighlight) {
@@ -121,12 +137,12 @@ public class LinkAnchor extends VElement {
 		g2d.draw(shape);
 	}
 
-	public GraphIdContainer getGraphIdContainer() {
-		return idContainer;
+	public LinkableTo getGraphIdContainer() {
+		return pathwayElement;
 	}
 
-	public void link(GraphRefContainer ref) {
-		ref.linkTo(idContainer, relX, relY);
+	public void link(LinkableFrom ref) {
+		ref.linkTo(pathwayElement, relX, relY);
 	}
 
 	private boolean drawHighlight;

@@ -48,10 +48,10 @@ import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.view.model.Handle.Freedom;
 
 /**
- * This {@link Graphics} class represents the view of a {@link Rotatable}
- * pathway elements: {@link DataNode}, {@link State}, {@link Label}, and
- * {@link Shape}. Rotation is implemented with 8 handles placed in a (rotated)
- * rectangle around the shape and a rotation handle.
+ * This {@link Graphics} class represents the view of {@link Rotatable} pathway
+ * elements: {@link DataNode}, {@link State}, {@link Label}, and {@link Shape}.
+ * Rotation is implemented with 8 handles placed in a (rotated) rectangle around
+ * the shape and a rotation handle.
  * 
  * @author unknown, finterly
  */
@@ -74,6 +74,28 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 
 	Handle[] handles = new Handle[] {};
 
+	
+	/**
+	 * Get the rectangular bounds of the object without rotation taken into accound
+	 */
+	@Override
+	public Rectangle2D getBounds(ShapedElement gdata) {
+		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
+				gdata.getRectProp().getHeight());
+
+	}
+	/**
+	 * Get the rectangular bounds of the object after rotation is applied
+	 */
+	public Rectangle2D getRotationBounds(Rotatable gdata) {
+		Rectangle2D bounds = getBounds(gdata);
+		AffineTransform t = new AffineTransform();
+		t.rotate(gdata.getRotation(), gdata.getRectProp().getCenterXY().getX(),
+				gdata.getRectProp().getCenterXY().getY());
+		bounds = t.createTransformedShape(bounds).getBounds2D();
+		return bounds;
+	}
+
 	/**
 	 * Constructor for this class
 	 * 
@@ -94,7 +116,7 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
 			handleR.setAngle(1);
 			handles = new Handle[] { handleR };
-		} else if (this.getClass() ==  VState.class) {
+		} else if (this.getClass() == VState.class) {
 			handleNE = new Handle(Handle.Freedom.NEGFREE, this, this);
 			handleSE = new Handle(Handle.Freedom.FREE, this, this);
 			handleSW = new Handle(Handle.Freedom.NEGFREE, this, this);
@@ -124,7 +146,7 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 			handleNE.setAngle(315);
 			handleSE.setAngle(45);
 			handleSW.setAngle(135);
-			handleNW.setAngle(225);	
+			handleNW.setAngle(225);
 			if (!gdata.getShapeStyleProp().getShapeType().isRotatable()) {
 				// No rotation handle for these objects
 				handles = new Handle[] { handleN, handleNE, handleE, handleSE, handleS, handleSW, handleW, handleNW, };
@@ -425,7 +447,8 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 
 		java.awt.Shape s = null;
 
-		if (gdata.getShapeStyleProp().getShapeType() == null || gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE) {
+		if (gdata.getShapeStyleProp().getShapeType() == null
+				|| gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
 			s = gdata.getShapeStyleProp().getShapeType().getShape(mw, mh);
@@ -582,7 +605,8 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 
 		java.awt.Shape shape = getShape(true, false);
 
-		if (gdata.getShapeStyleProp().getShapeType() == ShapeType.BRACE || gdata.getShapeStyleProp().getShapeType() == ShapeType.ARC) {
+		if (gdata.getShapeStyleProp().getShapeType() == ShapeType.BRACE
+				|| gdata.getShapeStyleProp().getShapeType() == ShapeType.ARC) {
 			// don't fill arcs or braces
 			// TODO: this exception should disappear in the future,
 			// when we've made sure all pathways on wikipathways have
@@ -599,7 +623,8 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 	}
 
 	private boolean hasOutline() {
-		return (!(gdata.getShapeStyleProp().getShapeType() == null || gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE));
+		return (!(gdata.getShapeStyleProp().getShapeType() == null
+				|| gdata.getShapeStyleProp().getShapeType() == ShapeType.NONE));
 	}
 
 	/**

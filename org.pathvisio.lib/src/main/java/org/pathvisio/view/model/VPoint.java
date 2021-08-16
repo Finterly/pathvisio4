@@ -84,11 +84,11 @@ public class VPoint implements Adjustable {
 	}
 
 	protected double getVX() {
-		return canvas.vFromM(getLinePoint().getXY().getX());
+		return canvas.vFromM(linePoint.getXY().getX());
 	}
 
 	protected double getVY() {
-		return canvas.vFromM(getLinePoint().getXY().getY());
+		return canvas.vFromM(linePoint.getXY().getY());
 	}
 
 	protected void setVLocation(double vx, double vy) {

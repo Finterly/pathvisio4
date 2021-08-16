@@ -22,37 +22,33 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import org.pathvisio.core.model.PathwayElementEvent;
-import org.pathvisio.core.model.PathwayElementListener;
-import org.pathvisio.core.view.VCitation;
-import org.pathvisio.core.view.VElement;
-import org.pathvisio.core.view.VPathwayModel;
+import org.pathvisio.io.listener.PathwayElementEvent;
+import org.pathvisio.io.listener.PathwayElementListener;
+import org.pathvisio.view.model.VCitation;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.debug.DebugList;
 import org.pathvisio.model.type.LineStyleType;
-import org.pathvisio.view.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.*;
 
 /**
- * This class is a parent class for all graphics that can be added to a
- * VPathway.
+ * This {@link Graphics} class represents the view of {@link ShapedElement}
+ * pathway elements: {@link DataNode}, {@link Label}, {@link Shape}, and
+ * {@link Group}.
+ * 
+ * @author unknown, finterly
  */
-public abstract class GraphicsShapedElement extends Graphics implements GraphIdContainer{
+public abstract class GraphicsShapedElement extends GraphicsCitable {
 
 //	protected ShapedElement gdata = null; //TODO 
 
-	/**
-	 * List of children, everything that moves when this element is dragged.
-	 * Includes Citation and State.
-	 */
-	private List<VElement> children = new DebugList<VElement>();
-
-	private VCitation citation;
 
 //	public GraphicsShapedElement(VPathwayModel canvas, PathwayElement o) { //TODO 
 //		super(canvas);
@@ -63,76 +59,18 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 
 	public GraphicsShapedElement(VPathwayModel canvas) {
 		super(canvas);
-		o.addListener(this);
-		gdata = o;
-		checkCitation();
+//		o.addListener(this);
+//		gdata = o;
 	}
 
-	protected VCitation createCitation() {
-		return new VCitation(canvas, this, new Point2D.Double(1, -1));
-	}
-
-	public final void checkCitation() {
-		List<PublicationXref> xrefs = gdata.getBiopaxReferenceManager().getPublicationXRefs();
-		if (xrefs.size() > 0 && citation == null) {
-			citation = createCitation();
-			children.add(citation);
-		} else if (xrefs.size() == 0 && citation != null) {
-			citation.destroy();
-			children.remove(citation);
-			citation = null;
-		}
-
-		if (citation != null) {
-			// already exists, no need to create / destroy
-			// just redraw...
-			citation.markDirty();
-		}
-	}
-
-	public void markDirty() {
-		super.markDirty();
-		for (VElement child : children)
-			child.markDirty();
-	}
-
-	protected VCitation getCitation() {
-		return citation;
-	}
-
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return
-	 */
-	public PathwayElement getPathwayElement() {
-		return gdata;
-	}
-
-	boolean listen = true;
-
-	public void gmmlObjectModified(PathwayElementEvent e) {
-		if (listen) {
-			markDirty(); // mark everything dirty
-			checkCitation();
-		}
-	}
-
-	public Area createVisualizationRegion() {
-		return new Area(getVBounds());
-	}
-
-	
-
-	
 	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
 	 * current zoom factor
 	 * 
 	 * @return the center x-coordinate
 	 */
-	public double getVCenterX() {
-		return vFromM(gdata.getRectProperty().getCenterXY().getX());
+	public double getVCenterX(ShapedElement gdata) {
+		return vFromM(gdata.getRectProp().getCenterXY().getX());
 	}
 
 	/**
@@ -141,21 +79,10 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 	 *
 	 * @return the center y-coordinate
 	 */
-	public double getVCenterY() {
-		return vFromM(gdata.getRectProperty().getCenterXY().getY());
+	public double getVCenterY(ShapedElement gdata) {
+		return vFromM(gdata.getRectProp().getCenterXY().getY());
 	}
 
-	
-	// startx for shapes TODO 
-	public double getMLeft() {
-		return gdata.getRectProperty().getCenterXY().getX() - gdata.getRectProperty().getWidth() / 2;
-	}
-
-	// starty for shapes TODO 
-	public double getMTop() {
-		return gdata.getRectProperty().getCenterXY().getY() - gdata.getRectProperty().getHeight() / 2;
-	}
-	
 	/**
 	 * Get the x-coordinate of the left side of this object adjusted to the current
 	 * zoom factor, but not taking into account rotation
@@ -164,8 +91,30 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 	 *       {@link #getVShape(true)}.getX();
 	 * @return
 	 */
-	public double getVLeft() {
-		return vFromM(getMLeft());
+	public double getVLeft(ShapedElement gdata) {
+		return vFromM(getMLeft(gdata));
+	}
+
+	// startx for shapes TODO
+	public double getMLeft(ShapedElement gdata) {
+		return gdata.getRectProp().getCenterXY().getX() - gdata.getRectProp().getWidth() / 2;
+	}
+
+	/**
+	 * Get the y-coordinate of the top side of this object adjusted to the current
+	 * zoom factor, but not taking into account rotation
+	 * 
+	 * @note if you want the top side of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getY();
+	 * @return
+	 */
+	public double getVTop(ShapedElement gdata) {
+		return vFromM(getMTop(gdata));
+	}
+
+	// starty for shapes TODO
+	public double getMTop(ShapedElement gdata) {
+		return gdata.getRectProp().getCenterXY().getY() - gdata.getRectProp().getHeight() / 2;
 	}
 
 	/**
@@ -176,22 +125,8 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 	 *       {@link #getVShape(true)}.getWidth();
 	 * @return
 	 */
-	public double getVWidth() {
-		return vFromM(gdata.getRectProperty().getWidth());
-	}
-
-
-
-	/**
-	 * Get the y-coordinate of the top side of this object adjusted to the current
-	 * zoom factor, but not taking into account rotation
-	 * 
-	 * @note if you want the top side of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getY();
-	 * @return
-	 */
-	public double getVTop() {
-		return vFromM(getMTop());
+	public double getVWidth(ShapedElement gdata) {
+		return vFromM(gdata.getRectProp().getWidth());
 	}
 
 	/**
@@ -202,8 +137,19 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 	 *       {@link #getVShape(true)}.getY();
 	 * @return
 	 */
-	public double getVHeight() {
-		return vFromM(gdata.getRectProperty().getHeight());
+	public double getVHeight(ShapedElement gdata) {
+		return vFromM(gdata.getRectProp().getHeight());
+	}
+
+
+
+	/**
+	 * Get the rectangular bounds of the object without rotation taken into accound
+	 */
+	public Rectangle2D getBounds(ShapedElement gdata) {
+		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
+				gdata.getRectProp().getHeight());
+
 	}
 
 	/**
@@ -246,20 +192,20 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 	 * 
 	 * @return the fontstyle, or Font.PLAIN if no font is available
 	 */
-	public int getVFontStyle() {
+	public int getVFontStyle(ShapedElement gdata) {
 		int style = Font.PLAIN;
-		if (gdata.getFontProperty().getFontName() != null) {
-			if (gdata.getFontProperty().getFontWeight()) {
+		if (gdata.getFontProp().getFontName() != null) {
+			if (gdata.getFontProp().getFontWeight()) {
 				style |= Font.BOLD;
 			}
-			if (gdata.getFontProperty().getFontStyle()) {
+			if (gdata.getFontProp().getFontStyle()) {
 				style |= Font.ITALIC;
 			}
 		}
 		return style;
 	}
 
-	protected void destroy() {
+	protected void destroy(ShapedElement gdata) {
 		super.destroy();
 		gdata.removeListener(this);
 		for (VElement child : children) {
@@ -276,12 +222,12 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 	/**
 	 * Returns the z-order from the model
 	 */
-	protected int getZOrder() {
-		return gdata.getShapeStyleProperty().getZOrder();
+	protected int getZOrder(ShapedElement gdata) {
+		return gdata.getShapeStyleProp().getZOrder();
 	}
 
-	protected Color getLineColor() {
-		Color linecolor = gdata.getShapeStyleProperty().getBorderColor();
+	protected Color getLineColor(ShapedElement gdata) {
+		Color linecolor = gdata.getShapeStyleProp().getBorderColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
@@ -292,9 +238,9 @@ public abstract class GraphicsShapedElement extends Graphics implements GraphIdC
 		return linecolor;
 	}
 
-	protected void setLineStyle(Graphics2D g) {
-		LineStyleType ls = gdata.getShapeStyleProperty().getBorderStyle();
-		float lt = (float) vFromM(gdata.getShapeStyleProperty().getBorderWidth());
+	protected void setLineStyle(Graphics2D g, ShapedElement gdata) {
+		LineStyleType ls = gdata.getShapeStyleProp().getBorderStyle();
+		float lt = (float) vFromM(gdata.getShapeStyleProp().getBorderWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {

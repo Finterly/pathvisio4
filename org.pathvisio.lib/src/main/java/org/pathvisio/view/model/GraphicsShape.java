@@ -55,18 +55,6 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
-/**
- * @author p70073399
- *
- */
-/**
- * @author p70073399
- *
- */
-/**
- * @author p70073399
- *
- */
 public abstract class GraphicsShape extends GraphicsElementInfo implements LinkProvider, Adjustable {
 
 	protected Rotatable gdata = null;
