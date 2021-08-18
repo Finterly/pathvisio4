@@ -24,7 +24,7 @@ import org.pathvisio.model.Shape;
  *
  * @author unknown, finterly
  */
-public class VShape extends GraphicsShape {
+public class VShape extends GraphicsRotatable {
 	
 	Shape shape = null;
 	

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.pathvisio.core.view.model.LinkAnchor;
+import org.pathvisio.view.model.LinkProvider;
 
 public abstract class AbstractLinkAnchorDelegate implements LinkProvider
 {

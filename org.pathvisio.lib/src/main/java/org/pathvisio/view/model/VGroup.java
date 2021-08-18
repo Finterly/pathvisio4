@@ -31,7 +31,6 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.GroupPainter;
 import org.pathvisio.view.GroupPainterRegistry;
-import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.VElementMouseEvent;
 import org.pathvisio.view.VElementMouseListener;
 import org.pathvisio.model.Group;

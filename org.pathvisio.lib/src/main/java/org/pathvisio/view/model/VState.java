@@ -31,6 +31,8 @@ import org.pathvisio.model.ShapedElement;
  */
 public class VState extends GraphicsRotatable implements PathwayElementListener  {
 
+	//TODO Override ShapedElement methods...
+
 	protected State gdata = null;
 
 	public static final String ROTATION_KEY = "org.pathvisio.core.StateRotation";
@@ -53,6 +55,28 @@ public class VState extends GraphicsRotatable implements PathwayElementListener 
 		drawHighlight(g);
 	}
 
+	/**
+	 * @param mp a point in absolute model coordinates
+	 * @returns the same point relative to the bounding box of this pathway element:
+	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
+	 *          corner, and 0,0 meaning the center.
+	 */
+	public Point2D toRelativeCoordinate(Point2D mp) {
+		double relX = mp.getX();
+		double relY = mp.getY();
+		Rectangle2D bounds = getRBounds();
+		// Translate
+		relX -= bounds.getCenterX();
+		relY -= bounds.getCenterY();
+		// Scalebounds.getCenterX();
+		if (relX != 0 && bounds.getWidth() != 0)
+			relX /= bounds.getWidth() / 2;
+		if (relY != 0 && bounds.getHeight() != 0)
+			relY /= bounds.getHeight() / 2;
+		return new Point2D.Double(relX, relY);
+	}
+
+	
 	protected void vMoveBy(double vdx, double vdy) {
 		Point2D mNewPos = new Point2D.Double(mFromV(getVCenterX() + vdx), mFromV(getVCenterY() + vdy));
 		Point2D newRel = ((State) gdata).getDataNode().toRelativeCoordinate(mNewPos);

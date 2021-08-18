@@ -47,6 +47,7 @@ import org.pathvisio.debug.Logger;
 import org.pathvisio.model.type.*;
 //import org.pathvisio.model.Pathway.StatusFlagEvent;
 import org.pathvisio.model.*;
+import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.PathwayModel.StatusFlagEvent;
 import org.pathvisio.model.PathwayModel.StatusFlagListener;
 import org.pathvisio.io.listener.PathwayEvent;
@@ -56,7 +57,6 @@ import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.KeyEvent;
 import org.pathvisio.view.LayoutType;
-import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.MouseEvent;
 import org.pathvisio.view.Template;
 import org.pathvisio.view.UndoAction;
@@ -561,7 +561,10 @@ public class VPathwayModel implements PathwayListener {
 	private LinkAnchor currentLinkAnchor;
 
 	/**
-	 * @arg p2d point where mouse is at
+	 * Links a given point to an {@link VLinkableTo} object.
+	 * 
+	 * @param p2d point where mouse is at.
+	 * @param g   the handle.
 	 */
 	private void linkPointToObject(Point2D p2d, Handle g) {
 		if (dragUndoState == DRAG_UNDO_CHANGE_START) {
@@ -569,26 +572,27 @@ public class VPathwayModel implements PathwayListener {
 		}
 		hideLinkAnchors();
 		VPoint p = (VPoint) g.getAdjustable();
-		Line l = p.getLine();
-		PathwayElement pe = l.getPathwayElement();
-		List<LinkProvider> objects = getLinkProvidersAt(p2d);
-		// Fix for preventing grouped line to link to its own group
-		// Remove the group from the list of linkproviders
-		// Also remove the line anchors to prevent linking a line
-		// to it's own anchors
+		VLine l = p.getLine();
+		LineElement lineElement = l.getPathwayElement();
+		List<LinkProvider> linkproviders = getLinkProvidersAt(p2d);
+		/*
+		 * prevents grouped line from linking to its own group by removing the group
+		 * from the list of linkproviders.
+		 */
 		if (g.getAdjustable() instanceof VPoint) {
-			if (pe.getGroupRef() != null) {
-				PathwayElement group = getPathwayModel().getGroupById(pe.getGroupRef());
-				objects.remove(getPathwayElementView(group));
+			Group group = lineElement.getGroupRef();
+			if (group != null) {
+				linkproviders.remove(getPathwayElementView(group));
 			}
+			// removes the line anchors to prevent linking a line to it's own anchors
 			for (VAnchor va : l.getVAnchors()) {
-				objects.remove(va);
+				linkproviders.remove(va);
 			}
 		}
-
-		GraphIdContainer idc = null;
-		for (LinkProvider lp : objects) {
-			if (lp instanceof VAnchor && ((VAnchor) lp).getAnchor().getShape().isDisallowLinks()) {
+		LinkableTo idc = null;
+		for (LinkProvider lp : linkproviders) {
+			// do nothing if linkprovider is an anchor with disallowlinks true 
+			if (lp instanceof VAnchor && ((VAnchor) lp).getAnchor().getShapeType().isDisallowLinks()) {
 				break;
 			}
 			lp.showLinkAnchors();
@@ -607,14 +611,14 @@ public class VPathwayModel implements PathwayListener {
 		}
 
 		if (idc == null && p.getLinePoint().isLinked()) {
-			String graphRef = p.getLinePoint().getGraphRef();
+			String graphRef = p.getLinePoint().getElementRef().getElementId();
 			p.getLinePoint().unlink();
 			if (currentLinkAnchor != null) {
 				if (pe instanceof MLine && isAnotherLineLinked(graphRef, (MLine) pe)) {
 
 				} else if (currentLinkAnchor.getGraphIdContainer() instanceof MAnchor
-						&& currentLinkAnchor.getGraphIdContainer().getGraphId().equals(graphRef)) {
-					currentLinkAnchor.getGraphIdContainer().setGraphId(null);
+						&& currentLinkAnchor.getGraphIdContainer().getElementId().equals(graphRef)) {
+					currentLinkAnchor.getGraphIdContainer().setElementId(null);
 				}
 				currentLinkAnchor.unhighlight();
 			}
@@ -2256,8 +2260,8 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * helper method to convert view {@link VCoordinate} to model {@link Coordinate} accounting for
-	 * canvas zoomFactor.
+	 * helper method to convert view {@link VCoordinate} to model {@link Coordinate}
+	 * accounting for canvas zoomFactor.
 	 * 
 	 * @param vCoordinate the view coordinate.
 	 */
@@ -2266,10 +2270,10 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Helper method to convert model {@link Coordinate} to view {@link VCoordinate} accounting for
-	 * canvas zoomFactor.
+	 * Helper method to convert model {@link Coordinate} to view {@link VCoordinate}
+	 * accounting for canvas zoomFactor.
 	 * 
-	 * @param mCoordinate the model coordinate. 
+	 * @param mCoordinate the model coordinate.
 	 */
 	public double vFromM(double mCoordinate) {
 		return mCoordinate * zoomFactor;

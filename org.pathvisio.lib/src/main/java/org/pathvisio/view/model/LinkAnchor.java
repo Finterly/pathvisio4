@@ -45,10 +45,10 @@ public class LinkAnchor extends VElement {
 
 	double relX, relY;
 	LinkableTo pathwayElement;
-	VElement parent;
+	VLinkableTo parent;
 
 	// new LinkAnchor(VPathwayModel, VAnchor, mAnchor, 0, 0);
-	public LinkAnchor(VPathwayModel canvas, VElement parent, LinkableTo pathwayElement, double relX, double relY) {
+	public LinkAnchor(VPathwayModel canvas, VLinkableTo parent, LinkableTo pathwayElement, double relX, double relY) {
 		super(canvas);
 		this.relX = relX;
 		this.relY = relY;
@@ -57,35 +57,10 @@ public class LinkAnchor extends VElement {
 	}
 
 	public Shape getMatchArea() {
-		Point2D abs = toAbsoluteCoordinate(new Point2D.Double(relX, relY));
+		Point2D abs = parent.toAbsoluteCoordinate(new Point2D.Double(relX, relY));
 		return canvas.vFromM(new Ellipse2D.Double(abs.getX() - MATCH_RADIUS, abs.getY() - MATCH_RADIUS,
 				MATCH_RADIUS * 2, MATCH_RADIUS * 2));
 	}
-
-	// PathwayElement
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		// if anchor
-		if (pathwayElement.getClass() == org.pathvisio.model.Anchor.class) {
-			LineElement lineElement = ((org.pathvisio.model.Anchor) pathwayElement).getLineElement();
-			Point2D l = lineElement.getConnectorShape().fromLineCoordinate(getPosition());
-			return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
-		} else { // otherwise
-			double x = p.getX();
-			double y = p.getY();
-			Rectangle2D bounds = getRBounds();
-			// Scale
-			if (bounds.getWidth() != 0)
-				x *= bounds.getWidth() / 2;
-			if (bounds.getHeight() != 0)
-				y *= bounds.getHeight() / 2;
-			// Translate
-			x += bounds.getCenterX();
-			y += bounds.getCenterY();
-			return new Point2D.Double(x, y);
-		}
-	}
-	
-
 
 	public Point2D getPosition() {
 		return new Point2D.Double(relX, relY);
@@ -141,21 +116,30 @@ public class LinkAnchor extends VElement {
 		return pathwayElement;
 	}
 
+	/**
+	 * Links the 
+	 * @param ref
+	 */
 	public void link(LinkableFrom ref) {
 		ref.linkTo(pathwayElement, relX, relY);
 	}
 
+	/**
+	 * If true, link anchor is visually highlighted.
+	 */
 	private boolean drawHighlight;
 
 	/**
-	 * Display a visual hint to show that this is the anchor that is being linked
-	 * to.
+	 * Highlights the link anchor to show that it is being linked to.
 	 */
 	public void highlight() {
 		drawHighlight = true;
 		markDirty();
 	}
 
+	/**
+	 * Removes highlight of the link anchor to show that is is not being linked to.
+	 */
 	public void unhighlight() {
 		drawHighlight = false;
 		markDirty();

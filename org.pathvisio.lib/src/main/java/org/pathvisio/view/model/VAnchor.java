@@ -24,13 +24,14 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.type.AnchorShapeType;
 import org.pathvisio.view.AnchorShape;
-import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.model.Handle.Freedom;
 import org.pathvisio.model.Anchor;
+import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LinePoint;
 
 /**
@@ -41,8 +42,8 @@ import org.pathvisio.model.LinePoint;
  * 
  * @author unknown, finterly
  */
-public class VAnchor extends VElement implements LinkProvider, Adjustable {
-	
+public class VAnchor extends VElement implements LinkProvider, Adjustable, VLinkableTo {
+
 	private Anchor anchor;
 	private VLine line;
 	private Handle handle;
@@ -64,12 +65,35 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable {
 		updatePosition();
 	}
 
-	// MAnchor 
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		// if anchor of a line element
+		if (pathwayElement.getClass() == org.pathvisio.model.Anchor.class) {
+			LineElement lineElement = ((org.pathvisio.model.Anchor) pathwayElement).getLineElement();
+			Point2D l = parent.getConnectorShape().fromLineCoordinate(getPosition());
+			return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
+		} else { 
+		// shaped or state pathway element
+			double x = p.getX();
+			double y = p.getY();
+			Rectangle2D bounds = getRBounds();
+			// Scale
+			if (bounds.getWidth() != 0)
+				x *= bounds.getWidth() / 2;
+			if (bounds.getHeight() != 0)
+				y *= bounds.getHeight() / 2;
+			// Translate
+			x += bounds.getCenterX();
+			y += bounds.getCenterY();
+			return new Point2D.Double(x, y);
+		}
+	}
+	
+	// MAnchor
 	public Point2D toAbsoluteCoordinate(Point2D p) {
 		Point2D l = ((MLine) getParent()).getConnectorShape().fromLineCoordinate(getPosition());
 		return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
 	}
-	
+
 	/**
 	 * Returns view x coordinate.
 	 * 
@@ -100,9 +124,9 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable {
 	/**
 	 * Returns the model {@link Anchor} for the VAnchor.
 	 * 
-	 * @return mAnchor the model anchor.
+	 * @return anchor the model anchor.
 	 */
-	public Anchor getMAnchor() {
+	public Anchor getAnchor() {
 		return anchor;
 	}
 
@@ -241,7 +265,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable {
 	}
 
 	/**
-	 * Returns the z-order of the parent line + 1. 
+	 * Returns the z-order of the parent line + 1.
 	 */
 	protected int getZOrder() {
 		return line.getPathwayElement().getLineStyleProp().getZOrder() + 1;

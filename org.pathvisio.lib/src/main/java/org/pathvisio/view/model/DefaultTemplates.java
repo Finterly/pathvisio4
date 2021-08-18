@@ -19,6 +19,9 @@ package org.pathvisio.view.model;
 import java.awt.Color;
 import java.awt.Shape;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.pathvisio.model.type.ConnectorType;
 import org.pathvisio.model.type.DataNodeType;
@@ -70,6 +73,7 @@ public abstract class DefaultTemplates {
 	private static final double LINEWIDTH = 1;
 	private static final double ROTATION = 0;
 
+	/* Initial sizes */
 	private static final double DATANODE_WIDTH = 90; // NB: "DATANODE" used to be named "GENEPRODUCT"
 	private static final double DATANODE_HEIGHT = 25;
 	private static final double LABEL_WIDTH = 90;
@@ -77,21 +81,19 @@ public abstract class DefaultTemplates {
 	private static final double LINE_LENGTH = 30;
 	private static final double STATE_SIZE = 15;
 	private static final double SHAPE_SIZE = 30;
-	private static final double CELLCOMP_HEIGHT = 100;
-	private static final double CELLCOMP_WIDTH = 200;
+	private static final double CELLCOMP_LENGTH_1 = 100;
+	private static final double CELLCOMP_LENGTH_2 = 200;
 	private static final double BRACE_HEIGHT = 15;
 	private static final double BRACE_WIDTH = 60;
 
-	// groups should be behind other graphics
+	/* Default Z-order values */
 	private static final int Z_ORDER_GROUP = 0x1000;
-	// default order of pathway elements determined by GenMAPP legacy
 	private static final int Z_ORDER_DATANODE = 0x8000;
 	private static final int Z_ORDER_STATE = 0x8000 + 10;
 	private static final int Z_ORDER_LABEL = 0x7000;
 	private static final int Z_ORDER_SHAPE = 0x4000;
 	private static final int Z_ORDER_LINE = 0x3000;
-	// default order of uninteresting elements.
-	private static final int Z_ORDER_DEFAULT = 0x0000; // BIOPAX
+	private static final int Z_ORDER_DEFAULT = 0x0000; // default order of uninteresting elements.
 
 //	/**
 //	 * This sets the object to a suitable default size.
@@ -262,29 +264,26 @@ public abstract class DefaultTemplates {
 	public static class ShapeTemplate extends SingleElementTemplate {
 		ShapeType type;
 
+		Set<ShapeType> CELL_COMPONENT_SET = new HashSet<>(Arrays.asList(ShapeType.CELL, ShapeType.NUCLEUS,
+				ShapeType.ENDOPLASMIC_RETICULUM, ShapeType.GOLGI_APPARATUS, ShapeType.MITOCHONDRIA,
+				ShapeType.SARCOPLASMIC_RETICULUM, ShapeType.ORGANELLE, ShapeType.VESICLE));
+
 		public ShapeTemplate(ShapeType type) {
 			this.type = type;
 		}
 
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
-			double width = SHAPE_SIZE;
-			double height = SHAPE_SIZE;
-			Color color = COLOR_DEFAULT; // TODO
-			LineStyleType borderStyleType = LINESTYLETYPE;
-			double borderWidth = LINEWIDTH;
-			// if cellular component...
-			if (type.equals(ShapeType.CELL)) {
-				width = 1;
-				height = 1;
-				color = Color.LIGHT_GRAY;
+			double width = getInitialSize(type)[0];
+			double height = getInitialSize(type)[1];
+			LineStyleType borderStyleType = getInitialBorderStyle(type);
+			Color color;
+			double borderWidth;
+			if (CELL_COMPONENT_SET.contains(type)) {
+				color = Color.lightGray;
 				borderWidth = 3;
-			}
-			if (type.equals(ShapeType.CELL) || type.equals(ShapeType.NUCLEUS) || type.equals(ShapeType.ORGANELLE)) {
-				borderStyleType = LineStyleType.DOUBLE;
-			} else if (type.equals(ShapeType.CYTOSOL) || type.equals(ShapeType.EXTRACELLULAR)
-					|| type.equals(ShapeType.MEMBRANE)) {
-				borderStyleType = LineStyleType.DASHED;
-				borderWidth = 1;
+			} else {
+				color = COLOR_DEFAULT;
+				borderWidth = LINEWIDTH;
 			}
 //			e.setDynamicProperty(CellularComponentType.CELL_COMPONENT_KEY, ccType.toString());
 			RectProperty rectProp = new RectProperty(new Coordinate(mx, my), width, height);
@@ -311,6 +310,32 @@ public abstract class DefaultTemplates {
 
 		public String getName() {
 			return type.toString();
+		}
+
+		public double[] getInitialSize(ShapeType type) {
+			if (type.equals(ShapeType.BRACE)) {
+				return new double[] { BRACE_WIDTH, BRACE_HEIGHT };
+			} else if (type.equals(ShapeType.MITOCHONDRIA) || type.equals(ShapeType.CELL)
+					|| type.equals(ShapeType.NUCLEUS) || type.equals(ShapeType.ORGANELLE)) {
+				return new double[] { CELLCOMP_LENGTH_2, CELLCOMP_LENGTH_1 };
+			} else if (type.equals(ShapeType.SARCOPLASMIC_RETICULUM) || type.equals(ShapeType.ENDOPLASMIC_RETICULUM)
+					|| type.equals(ShapeType.GOLGI_APPARATUS)) {
+				return new double[] { CELLCOMP_LENGTH_1, CELLCOMP_LENGTH_2 };
+			} else {
+				return new double[] { SHAPE_SIZE, SHAPE_SIZE };
+			}
+		}
+
+		public LineStyleType getInitialBorderStyle(ShapeType type) {
+			// set borderStyle depending on shape type
+			if (type.equals(ShapeType.CELL) || type.equals(ShapeType.NUCLEUS) || type.equals(ShapeType.ORGANELLE)) {
+				return LineStyleType.DOUBLE;
+			} else if (type.equals(ShapeType.CYTOSOL) || type.equals(ShapeType.EXTRACELLULAR)
+					|| type.equals(ShapeType.MEMBRANE)) {
+				return LineStyleType.DASHED; // TODO membrane/cytosol never implemented?
+			} else {
+				return LINESTYLETYPE; // solid
+			}
 		}
 	}
 
@@ -339,6 +364,8 @@ public abstract class DefaultTemplates {
 			// lineColor, lineStyle, lineWidth, connectorType
 			LineStyleProperty lineStyleProp = new LineStyleProperty(Color.BLACK, style, LINEWIDTH, connectorType);
 			Interaction e = new Interaction(lineStyleProp);
+			e.addLinePoint(startLinePoint);
+			e.addLinePoint(endLinePoint);
 			p.addInteraction(e);
 			lastAdded = e;
 			return new PathwayElement[] { e };

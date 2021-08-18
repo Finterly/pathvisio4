@@ -16,37 +16,19 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import java.awt.Color;
-
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.DataNode;
+import java.awt.geom.Point2D;
 
 /**
- * This class implements a {@link DataNode} and provides methods to resize and
- * draw it.
+ * Classes that implement this interface can provide anchor points to which a
+ * point can link.
+ * 
+ * @author thomas
  */
-public class VDataNode extends GraphicsRotatable {
+public interface LinkProvider {
+	
+	public void showLinkAnchors();
 
-	protected DataNode dataNode = null;
+	public void hideLinkAnchors();
 
-	public static final Color INITIAL_FILL_COLOR = Color.WHITE;
-
-	// note: not the same as color!
-	Color fillColor = INITIAL_FILL_COLOR;
-
-	public VDataNode(VPathwayModel canvas, DataNode dataNode) {
-		super(canvas);
-		this.dataNode = dataNode;
-	}
-
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return dataNode
-	 */
-	@Override
-	public DataNode getPathwayElement() {
-		return dataNode;
-	}
-
+	public LinkAnchor getLinkAnchorAt(Point2D p);
 }

@@ -45,10 +45,9 @@ import org.pathvisio.model.*;
  * 
  * @author unknown, finterly
  */
-public abstract class GraphicsShapedElement extends GraphicsCitable {
+public abstract class GraphicsShapedElement extends GraphicsCitable implements VLinkableTo, LinkProvider {
 
 //	protected ShapedElement gdata = null; //TODO 
-
 
 //	public GraphicsShapedElement(VPathwayModel canvas, PathwayElement o) { //TODO 
 //		super(canvas);
@@ -61,6 +60,29 @@ public abstract class GraphicsShapedElement extends GraphicsCitable {
 		super(canvas);
 //		o.addListener(this);
 //		gdata = o;
+	}
+
+	/**
+	 * Get the rectangular bounds of the object without rotation taken into accound
+	 */
+	public Rectangle2D getMBounds(ShapedElement gdata) {
+		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
+				gdata.getRectProp().getHeight());
+	}
+	
+	public Point2D toAbsoluteCoordinate(Point2D p, ShapedElement gdata) {
+			double x = p.getX();
+			double y = p.getY();
+			Rectangle2D bounds = getMBounds(gdata);
+			// Scale
+			if (bounds.getWidth() != 0)
+				x *= bounds.getWidth() / 2;
+			if (bounds.getHeight() != 0)
+				y *= bounds.getHeight() / 2;
+			// Translate
+			x += bounds.getCenterX();
+			y += bounds.getCenterY();
+			return new Point2D.Double(x, y);
 	}
 
 	/**
@@ -140,8 +162,6 @@ public abstract class GraphicsShapedElement extends GraphicsCitable {
 	public double getVHeight(ShapedElement gdata) {
 		return vFromM(gdata.getRectProp().getHeight());
 	}
-
-
 
 	/**
 	 * Get the rectangular bounds of the object without rotation taken into accound

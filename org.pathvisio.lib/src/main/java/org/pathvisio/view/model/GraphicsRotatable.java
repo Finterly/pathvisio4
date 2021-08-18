@@ -42,7 +42,6 @@ import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.LinAlg;
-import org.pathvisio.view.LinkProvider;
 import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.view.model.Handle.Freedom;
@@ -55,7 +54,7 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
-public abstract class GraphicsRotatable extends GraphicsShapedElement implements LinkProvider, Adjustable {
+public abstract class GraphicsRotatable extends GraphicsShapedElement implements Adjustable {
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0;
 
@@ -74,26 +73,40 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 
 	Handle[] handles = new Handle[] {};
 
-	
-	/**
-	 * Get the rectangular bounds of the object without rotation taken into accound
-	 */
-	@Override
-	public Rectangle2D getBounds(ShapedElement gdata) {
-		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
-				gdata.getRectProp().getHeight());
-
-	}
 	/**
 	 * Get the rectangular bounds of the object after rotation is applied
 	 */
-	public Rectangle2D getRotationBounds(Rotatable gdata) {
-		Rectangle2D bounds = getBounds(gdata);
-		AffineTransform t = new AffineTransform();
-		t.rotate(gdata.getRotation(), gdata.getRectProp().getCenterXY().getX(),
-				gdata.getRectProp().getCenterXY().getY());
-		bounds = t.createTransformedShape(bounds).getBounds2D();
-		return bounds;
+	public Rectangle2D getRBounds(Rotatable gdata) {
+		Double rotation = gdata.getRotation();
+		if (gdata.getClass() == ShapedElement.class) {
+			Rectangle2D bounds = getMBounds((ShapedElement) gdata);
+			AffineTransform t = new AffineTransform();
+			t.rotate(rotation, ((ShapedElement) gdata).getRectProp().getCenterXY().getX(),
+					((ShapedElement) gdata).getRectProp().getCenterXY().getY());
+			bounds = t.createTransformedShape(bounds).getBounds2D();
+			return bounds;
+		}
+	}
+
+	@Override 
+	public Point2D toAbsoluteCoordinate(Point2D p, ShapedElement gdata) {
+		double x = p.getX();
+		double y = p.getY();
+		Rectangle2D bounds;
+		if (gdata.getClass() == Rotatable.class) {
+			bounds = getRBounds((Rotatable) gdata);
+		} else {
+			bounds = getMBounds(gdata);
+		}
+		// Scale
+		if (bounds.getWidth() != 0)
+			x *= bounds.getWidth() / 2;
+		if (bounds.getHeight() != 0)
+			y *= bounds.getHeight() / 2;
+		// Translate
+		x += bounds.getCenterX();
+		y += bounds.getCenterY();
+		return new Point2D.Double(x, y);
 	}
 
 	/**

@@ -14,21 +14,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import java.awt.geom.Point2D;
 
-import org.pathvisio.view.model.LinkAnchor;
-
 /**
- * Classes that implement this interface can provide anchor points to
- * which a point can link
- * @author thomas
+ * This class represents the view of a {@link LinkableTo} PathwayElement.
+ * Pathway elements {@link DataNode}, {@link State}, {@link Anchor},
+ * {@link Label}, {@link Shape}, and {@link Group} can all be referred to by a
+ * end {@link LinePoint}.
+ * 
+ * @author finterly
  */
-public interface LinkProvider {
-	public void showLinkAnchors();
+public interface VLinkableTo {
 
-	public void hideLinkAnchors();
+	public abstract Point2D toAbsoluteCoordinate(Point2D p);
 
-	public LinkAnchor getLinkAnchorAt(Point2D p);
+	public abstract int getZOrder();
+
 }
