@@ -50,7 +50,7 @@ public class VCitation extends VElement implements VElementMouseListener {
 	 * @param refPosition The position to place the references, relative to the parent
 	 *                  Graphics
 	 */
-	public VCitation(VPathwayModel canvas, GraphicsCitable parent, Point2D refPosition) {
+	public VCitation(VPathwayModel canvas, VCitable parent, Point2D refPosition) {
 		super(canvas);
 		this.parent = parent;
 		this.refPosition = refPosition;

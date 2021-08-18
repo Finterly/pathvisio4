@@ -16,10 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Area;
@@ -31,9 +27,7 @@ import org.pathvisio.io.listener.PathwayElementEvent;
 import org.pathvisio.io.listener.PathwayElementListener;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.debug.DebugList;
-import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.*;
-import org.pathvisio.model.ref.CitationRef;
 
 /**
  * This class is a parent class for all graphics that can be added to a
@@ -76,6 +70,10 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 //	public PathwayElement getPathwayElement() {
 //		return gdata;
 //	}
+	
+	// PathwayElement
+	public abstract Point2D toAbsoluteCoordinate(Point2D p);
+	
 
 	boolean listen = true;
 

@@ -351,9 +351,7 @@ public abstract class VElement implements Comparable<VElement> {
 			return a < b ? -1 : 1;
 	}
 	
-	// PathwayElement
-	public abstract Point2D toAbsoluteCoordinate(Point2D p);
-	
+
 
 	/**
 	 * Converts view coordinates to model coordinates.

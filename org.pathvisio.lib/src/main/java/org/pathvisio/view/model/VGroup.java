@@ -43,7 +43,7 @@ import org.pathvisio.model.LineElement;
  * Also contains the getGroupGraphics method to quickly access all Graphics'
  * that are in this group.
  */
-public class VGroup extends GraphicsShapedElement implements LinkProvider, VElementMouseListener {
+public class VGroup extends VShapedElement implements LinkProvider, VElementMouseListener {
 	public static final int FLAG_SELECTED = 1 << 0;
 	public static final int FLAG_MOUSEOVER = 1 << 1;
 	public static final int FLAG_ANCHORSVISIBLE = 1 << 2;

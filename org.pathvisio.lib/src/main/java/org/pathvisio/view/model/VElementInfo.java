@@ -22,9 +22,9 @@ package org.pathvisio.view.model;
  * This class represents the view of a {@link ElementInfo} pathway element. 
 
  */
-public abstract class GraphicsElementInfo extends GraphicsCitable {
+public abstract class VElementInfo extends VCitable {
 
-	public GraphicsElementInfo(VPathwayModel canvas) {
+	public VElementInfo(VPathwayModel canvas) {
 		super(canvas);
 		// TODO Auto-generated constructor stub
 	}

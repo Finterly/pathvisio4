@@ -54,7 +54,7 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
-public abstract class GraphicsRotatable extends GraphicsShapedElement implements Adjustable {
+public abstract class VRotatable extends VCitable implements Adjustable {
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0;
 
@@ -73,6 +73,15 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 
 	Handle[] handles = new Handle[] {};
 
+	
+	/**
+	 * Get the rectangular bounds of the object without rotation taken into account
+	 */
+	public Rectangle2D getMBounds(Rotatable gdata) {
+		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
+				gdata.getRectProp().getHeight());
+	}
+	
 	/**
 	 * Get the rectangular bounds of the object after rotation is applied
 	 */
@@ -114,7 +123,7 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 	 * 
 	 * @param canvas - the VPathway this Shape will be part of
 	 */
-	public GraphicsRotatable(VPathwayModel canvas) {
+	public VRotatable(VPathwayModel canvas) {
 		super(canvas);
 	}
 
@@ -174,7 +183,7 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 		setHandleLocation();
 	}
 
-	protected void setVScaleRectangle(Rectangle2D r) {
+	protected void setVScaleRectangle(Rectangle2D r, Rotatable gdata) {
 		gdata.getRectProperty().setWidth(mFromV(r.getWidth()));
 		gdata.getRectProperty().setHeight(mFromV(r.getHeight()));
 		gdata.setMLeft(mFromV(r.getX()));
@@ -199,7 +208,7 @@ public abstract class GraphicsRotatable extends GraphicsShapedElement implements
 	 * 
 	 * @param MPoint p
 	 */
-	private Point mToInternal(Point p) {
+	private Point mToInternal(Point p, Rotatable gdata) {
 		Point pt = mRelativeToCenter(p);
 		Point pr = LinAlg.rotate(pt, gdata.getRotation());
 		return pr;

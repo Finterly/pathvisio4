@@ -21,7 +21,9 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.ShapedElement;
 import org.pathvisio.model.ref.CitationRef;
+import org.pathvisio.model.ref.ElementInfo;
 
 /**
  * This class is a parent class for all graphics which can have a
@@ -29,11 +31,11 @@ import org.pathvisio.model.ref.CitationRef;
  * 
  * @author finterly
  */
-public abstract class GraphicsCitable extends Graphics {
+public abstract class VCitable extends Graphics {
 
 	private VCitation vCitation;
 
-	public GraphicsCitable(VPathwayModel canvas) {
+	public VCitable(VPathwayModel canvas) {
 		super(canvas);
 		// checkCitation(); TODO
 	}
@@ -70,6 +72,20 @@ public abstract class GraphicsCitable extends Graphics {
 		if (vCitation != null) {
 			vCitation.markDirty();
 		}
+	}
+	
+	protected void destroy(ElementInfo gdata) {
+		super.destroy();
+		gdata.removeListener(this);
+		for (VElement child : getChildren()) {
+			child.destroy();
+		}
+		getChildren().clear();
+		vCitation = null;
+
+		// View should not remove its model
+//		Pathway parent = gdata.getParent();
+//		if(parent != null) parent.remove(gdata);
 	}
 
 }

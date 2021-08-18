@@ -18,8 +18,8 @@ package org.pathvisio.view;
 
 import java.util.EventObject;
 
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * An event for mouse events that apply to a single VPathwayElement

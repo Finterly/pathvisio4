@@ -16,10 +16,10 @@
  ******************************************************************************/
 package org.pathvisio.view;
 
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.LinkAnchor;
-import org.pathvisio.core.view.model.VGroup;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.view.model.Graphics;
+import org.pathvisio.view.model.LinkAnchor;
+import org.pathvisio.view.model.VGroup;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * Utility class for creating and destroying LinkAnchors around a rectangular element.

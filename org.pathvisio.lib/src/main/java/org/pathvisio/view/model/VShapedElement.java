@@ -45,7 +45,7 @@ import org.pathvisio.model.*;
  * 
  * @author unknown, finterly
  */
-public abstract class GraphicsShapedElement extends GraphicsCitable implements VLinkableTo, LinkProvider {
+public abstract class VShapedElement extends VRotatable implements VLinkableTo, LinkProvider {
 
 //	protected ShapedElement gdata = null; //TODO 
 
@@ -56,19 +56,13 @@ public abstract class GraphicsShapedElement extends GraphicsCitable implements V
 //		checkCitation();
 //	}
 
-	public GraphicsShapedElement(VPathwayModel canvas) {
+	public VShapedElement(VPathwayModel canvas) {
 		super(canvas);
 //		o.addListener(this);
 //		gdata = o;
 	}
 
-	/**
-	 * Get the rectangular bounds of the object without rotation taken into accound
-	 */
-	public Rectangle2D getMBounds(ShapedElement gdata) {
-		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
-				gdata.getRectProp().getHeight());
-	}
+
 	
 	public Point2D toAbsoluteCoordinate(Point2D p, ShapedElement gdata) {
 			double x = p.getX();
@@ -164,7 +158,7 @@ public abstract class GraphicsShapedElement extends GraphicsCitable implements V
 	}
 
 	/**
-	 * Get the rectangular bounds of the object without rotation taken into accound
+	 * Get the rectangular bounds of the object without rotation taken into account
 	 */
 	public Rectangle2D getBounds(ShapedElement gdata) {
 		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
@@ -225,19 +219,7 @@ public abstract class GraphicsShapedElement extends GraphicsCitable implements V
 		return style;
 	}
 
-	protected void destroy(ShapedElement gdata) {
-		super.destroy();
-		gdata.removeListener(this);
-		for (VElement child : children) {
-			child.destroy();
-		}
-		children.clear();
-		citation = null;
 
-		// View should not remove its model
-//		Pathway parent = gdata.getParent();
-//		if(parent != null) parent.remove(gdata);
-	}
 
 	/**
 	 * Returns the z-order from the model
@@ -271,13 +253,6 @@ public abstract class GraphicsShapedElement extends GraphicsCitable implements V
 		}
 	}
 
-	public void addChild(VElement elt) {
-		children.add(elt);
-	}
-
-	public void removeChild(VElement elt) {
-		children.remove(elt);
-	}
 
 }
 

@@ -16,6 +16,8 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
+import java.awt.geom.Point2D;
+
 import org.pathvisio.model.Label;
 import org.pathvisio.model.Shape;
 
@@ -24,7 +26,7 @@ import org.pathvisio.model.Shape;
  *
  * @author unknown, finterly
  */
-public class VShape extends GraphicsRotatable {
+public class VShape extends VRotatable {
 	
 	Shape shape = null;
 	
@@ -46,6 +48,18 @@ public class VShape extends GraphicsRotatable {
 	@Override
 	public Shape getPathwayElement() {
 		return shape;
+	}
+
+	@Override
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected int getZOrder() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

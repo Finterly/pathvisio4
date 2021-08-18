@@ -18,6 +18,7 @@ package org.pathvisio.view.model;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.State;
 import org.pathvisio.io.listener.PathwayElementListener;
@@ -29,7 +30,7 @@ import org.pathvisio.model.ShapedElement;
  * 
  * @author unknown, finterly
  */
-public class VState extends GraphicsRotatable implements PathwayElementListener  {
+public class VState extends VRotatable implements PathwayElementListener  {
 
 	//TODO Override ShapedElement methods...
 
@@ -45,7 +46,7 @@ public class VState extends GraphicsRotatable implements PathwayElementListener 
 	}
 
 	public void doDraw(Graphics2D g) {
-		g.setColor(getLineColor());
+		g.setColor(getLineColor(gdata));
 		setLineStyle(g);
 		drawShape(g);
 
@@ -56,15 +57,18 @@ public class VState extends GraphicsRotatable implements PathwayElementListener 
 	}
 
 	/**
+	 * Return relative coordinates for the state.  
+	 * 
 	 * @param mp a point in absolute model coordinates
 	 * @returns the same point relative to the bounding box of this pathway element:
 	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
 	 *          corner, and 0,0 meaning the center.
 	 */
-	public Point2D toRelativeCoordinate(Point2D mp) {
+	protected Point2D toRelativeCoordinate(Point2D mp) {
 		double relX = mp.getX();
 		double relY = mp.getY();
-		Rectangle2D bounds = getRBounds();
+		// get bounds of parent data node 
+		Rectangle2D bounds = getRBounds(gdata.getDataNode()); //TODO of dataNode 
 		// Translate
 		relX -= bounds.getCenterX();
 		relY -= bounds.getCenterY();
@@ -79,7 +83,7 @@ public class VState extends GraphicsRotatable implements PathwayElementListener 
 	
 	protected void vMoveBy(double vdx, double vdy) {
 		Point2D mNewPos = new Point2D.Double(mFromV(getVCenterX() + vdx), mFromV(getVCenterY() + vdy));
-		Point2D newRel = ((State) gdata).getDataNode().toRelativeCoordinate(mNewPos);
+		Point2D newRel = toRelativeCoordinate(mNewPos);
 		double x = newRel.getX();
 		double y = newRel.getY();
 		if (x > 1)

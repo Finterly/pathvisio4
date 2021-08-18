@@ -436,7 +436,7 @@ public class VPathwayModel implements PathwayListener {
 		return pointsMtoV.get(linePoint);
 	}
 
-	public VPoint newPoint(LinePoint linePoint, VLine line) {
+	public VPoint newPoint(LinePoint linePoint, VLineElement line) {
 		VPoint p = pointsMtoV.get(linePoint);
 		if (p == null) {
 			p = new VPoint(this, linePoint, line);
@@ -572,7 +572,7 @@ public class VPathwayModel implements PathwayListener {
 		}
 		hideLinkAnchors();
 		VPoint p = (VPoint) g.getAdjustable();
-		VLine l = p.getLine();
+		VLineElement l = p.getLine();
 		LineElement lineElement = l.getPathwayElement();
 		List<LinkProvider> linkproviders = getLinkProvidersAt(p2d);
 		/*
@@ -626,15 +626,15 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	private boolean isAnotherLineLinked(String graphRef, MLine currLine) {
-		for (PathwayElement element : getPathwayModel().getDataObjects()) {
+		for (PathwayElement element : getPathwayModel().getPathwayElements()) { //TODO maybe make line
 			if (element instanceof MLine) {
 				if (element.equals(currLine)) {
 					continue;
 				}
-				for (LinePoint point : element.getLinePoints()) {
-					if (point.getGraphRef() == null) {
+				for (LinePoint point : ((LineElement) element).getLinePoints()) {
+					if (point.getElementRef() == null) {
 						// skip point
-					} else if (graphRef != null && point.getGraphRef().equals(graphRef)) {
+					} else if (graphRef != null && point.getElementRef().equals(graphRef)) {
 						return true;
 					}
 				}

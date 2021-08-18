@@ -23,7 +23,7 @@ import org.pathvisio.model.PathwayElement;
 /**
  * This class represents the view of a {@link Label} pathway element.
  */
-public class VLabel extends GraphicsRotatable {
+public class VLabel extends VRotatable {
 	
 	Label label = null;
 	/**
