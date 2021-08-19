@@ -32,11 +32,11 @@ public class StraightConnectorShape extends AbstractConnector {
 
 	public void recalculateShape(ConnectorRestrictions restrictions) {
 		setSegments(new Segment[] {
-				new Segment(restrictions.getStartPoint(), restrictions.getEndPoint())
+				new Segment(restrictions.getStartPoint2D(), restrictions.getEndPoint2D())
 		});
 		setShape(new Line2D.Double(
-				restrictions.getStartPoint(),
-				restrictions.getEndPoint()
+				restrictions.getStartPoint2D(),
+				restrictions.getEndPoint2D()
 		));
 		setWayPoints(new WayPoint[0]);
 	}

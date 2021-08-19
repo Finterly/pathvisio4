@@ -31,17 +31,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.pathvisio.model.GraphLink.GraphRefContainer;
+//import org.pathvisio.model.GraphLink.LinkableFrom;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.view.connector.ConnectorRestrictions;
 import org.pathvisio.view.connector.ConnectorShape;
 import org.pathvisio.view.connector.ConnectorShapeFactory;
+import org.pathvisio.view.connector.ElbowConnectorShape;
 import org.pathvisio.view.connector.ConnectorShape.Segment;
 import org.pathvisio.view.connector.ConnectorShape.WayPoint;
 import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.graphics.LineStyleProperty;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Label;
@@ -74,7 +76,7 @@ import org.pathvisio.view.model.Handle.Style;
  */
 public class VLineElement extends VCitable implements Adjustable, ConnectorRestrictions { // TODO ConnectorRestrictions
 
-	protected LineElement lineElement = null;
+	protected MLine gdata = null;
 
 	private List<VPoint> points;
 
@@ -89,14 +91,14 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * 
 	 * @param canvas - the VPathway this line will be part of
 	 */
-	public VLineElement(VPathwayModel canvas, LineElement lineElement) {
+	public VLineElement(VPathwayModel canvas, MLine gdata) {
 		super(canvas);
-		lineElement.addListener(this);
-		this.lineElement = lineElement;
-		checkCitation(lineElement.getCitationRefs()); // TODO
+		gdata.addListener(this);
+		this.gdata = gdata;
+		checkCitation(gdata.getCitationRefs()); // TODO
 		points = new ArrayList<VPoint>();
-		addPoint(lineElement.getStartLinePoint()); // TODO
-		addPoint(lineElement.getEndLinePoint()); // TODO
+		addPoint(gdata.getStartLinePoint()); // TODO
+		addPoint(gdata.getEndLinePoint()); // TODO
 		setAnchors();
 		getConnectorShape().recalculateShape(this); // TODO weird???
 //		updateSegmentHandles();
@@ -109,6 +111,10 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		setHandleLocation(vp);
 	}
 
+	private MLine getMLine() {
+		return (MLine) gdata;
+	}
+
 	public void createHandles() {
 		createSegmentHandles();
 
@@ -118,14 +124,6 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 			vp.handle.setAngle(1);
 			setHandleLocation(vp);
 		}
-	}
-
-	public Point2D getStartLinePoint() {
-		return new Point2D.Double(getVStartX(), getVStartY());
-	}
-
-	public Point2D getEndLinePoint() {
-		return new Point2D.Double(getVEndX(), getVEndY());
 	}
 
 	/**
@@ -184,18 +182,18 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		WayPoint[] waypoints = getConnectorShape().getWayPoints();
 		int index = segmentHandles.indexOf(h);
 		if (index > -1) {
-			List<LinePoint> points = lineElement.getLinePoints();
+			List<LinePoint> points = gdata.getLinePoints();
 			if (points.size() - 2 != (waypoints.length)) {
 				// Recreate points from segments
 				points = new ArrayList<LinePoint>();
-				points.add(lineElement.getStartLinePoint());
+				points.add(gdata.getStartLinePoint());
 				for (int i = 0; i < waypoints.length; i++) {
-					LinePoint p = lineElement.new LinePoint(waypoints[i].getX(), waypoints[i].getY());
+					LinePoint p = gdata.new LinePoint(waypoints[i].getX(), waypoints[i].getY());
 					points.add(p);
 				}
-				points.add(lineElement.getEndLinePoint());
-				lineElement.dontFireEvents(1);
-				lineElement.setLinePoints(points); // TODO
+				points.add(gdata.getEndLinePoint());
+				gdata.dontFireEvents(1);
+				gdata.setLinePoints(points);
 			}
 			points.get(index + 1).moveTo(mFromV(vx), mFromV(vy));
 		}
@@ -205,23 +203,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		return segmentHandles;
 	}
 
-	/**
-	 * Returns the Connector Shape for this line - the connector shape can calculate
-	 * a Shape based on the connector type (straight, elbow or curved) and possibly
-	 * way points
-	 */
-	public ConnectorShape getConnectorShape() {
-		String type = lineElement.getLineStyleProp().getConnectorType().getName();
-
-		// Recreate the ConnectorShape when it's null or when the type
-		// doesn't match the implementing class
-		if (connectorShape == null
-				|| !connectorShape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
-			connectorShape = ConnectorShapeFactory
-					.createConnectorShape(lineElement.getLineStyleProp().getConnectorType().getName());
-			connectorShape.recalculateShape(this);
-		}
-		return connectorShape;
+	private ConnectorShape getConnectorShape() {
+		return getMLine().getConnectorShape();
 	}
 
 	/**
@@ -232,8 +215,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	public Shape getVConnectorAdjusted() {
 
 		// call to getLineEndingWidth
-		double startGap = getGap(lineElement.getStartLinePoint().getArrowHead());
-		double endGap = getGap(lineElement.getEndLinePoint().getArrowHead());
+		double startGap = getGap(gdata.getStartLineType());
+		double endGap = getGap(gdata.getEndLineType());
 
 		// From the segments
 		Shape s = getConnectorShape().calculateAdjustedShape(startGap, endGap);
@@ -252,7 +235,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		double gap = 0;
 		if (type == null) {
-			gap = ShapeRegistry.getArrow("Default").getGap();
+			gap = ShapeRegistry.getArrow("Default").getGap(); // TODO...
 		} else if (type.getName().equals("Line")) {
 			gap = 0;
 		} else {
@@ -306,52 +289,33 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	/**
-	 * TODO VLINE METHOD Be careful to prevent infinite recursion when
-	 * Line.getVOutline triggers recalculation of a connector.
+	 * Be careful to prevent infinite recursion when Line.getVOutline triggers
+	 * recalculation of a connector.
 	 *
 	 * For now, only check crossing of geneproducts and shapes.
 	 */
-	public Shape mayCross2(Point2D point) {
+	public Shape mayCross(Point2D point) {
 		Shape shape = null;
 		for (VElement o : canvas.getDrawingObjects()) {
-			if (o instanceof VDataNode || o instanceof Shape)
+			if (o instanceof VDataNode || o instanceof Shape) // TODO VShape?
 				if (o.vContains(point)) {
 					shape = o.getVOutline();
 				}
 		}
+
 		return shape;
 	}
 
-	/**
-	 * TODO was MLINE METHOD
-	 * 
-	 * Check if the connector may cross this point Optionally, returns a shape that
-	 * defines the boundaries of the area around this point that the connector may
-	 * not cross. This method can be used for advanced connectors that route along
-	 * other objects on the drawing
-	 * 
-	 * @return A shape that defines the boundaries of the area around this point
-	 *         that the connector may not cross. Returning null is allowed for
-	 *         implementing classes.
-	 */
-	public Shape mayCross(Point2D point) {
-		PathwayModel parent = lineElement.getPathwayModel();
-		Rectangle2D rect = null;
-		if (parent != null) {
-			for (PathwayElement e : parent.getPathwayElements()) {
-				if (e.getClass() == org.pathvisio.model.Shape.class || e.getClass() == DataNode.class
-						|| e.getClass() == Label.class) {
-					Rectangle2D b = getMBounds();
-					if (b.contains(point)) {
-						if (rect == null)
-							rect = b;
-						else
-							rect.add(b);
-					}
-				}
-			}
-		}
-		return rect;
+	public Point2D getStartPoint() {
+		return new Point2D.Double(getVStartX(), getVStartY());
+	}
+
+	public Point2D getEndPoint() {
+		return new Point2D.Double(getVEndX(), getVEndY());
+	}
+
+	public Shape calculateVOutline() {
+		return getVShape(true);
 	}
 
 	/**
@@ -363,9 +327,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		Segment[] segments = getConnectorShape().getSegments();
 
 		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), segments[segments.length - 1].getMEnd(),
-				lineElement.getEndLinePoint().getArrowHead());
-		ArrowShape hs = getVHead(segments[0].getMEnd(), segments[0].getMStart(),
-				lineElement.getStartLinePoint().getArrowHead());
+				gdata.getEndLineType());
+		ArrowShape hs = getVHead(segments[0].getMEnd(), segments[0].getMStart(), gdata.getStartLineType());
 		return new ArrowShape[] { hs, he };
 	}
 
@@ -379,16 +342,14 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		Segment[] segments = getConnectorShape().getSegments();
 
 		// last segment in the Connector Shape
-		double lineEndingWidth = getGap(lineElement.getEndLinePoint().getArrowHead());
+		double lineEndingWidth = getGap(gdata.getEndLineType());
 		Point2D adjustedSegmentEnd = segments[segments.length - 1].calculateNewEndPoint(lineEndingWidth);
-		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), adjustedSegmentEnd,
-				lineElement.getEndLinePoint().getArrowHead());
+		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), adjustedSegmentEnd, gdata.getEndLineType());
 
 		// first segment in the connector shape
-		double lineStartingWidth = getGap(lineElement.getStartLinePoint().getArrowHead());
+		double lineStartingWidth = getGap(gdata.getStartLineType());
 		Point2D adjustedSegmentStart = segments[0].calculateNewStartPoint(lineStartingWidth);
-		ArrowShape hs = getVHead(segments[0].getMEnd(), adjustedSegmentStart,
-				lineElement.getStartLinePoint().getArrowHead());
+		ArrowShape hs = getVHead(segments[0].getMEnd(), adjustedSegmentStart, gdata.getStartLineType());
 		return new ArrowShape[] { hs, he };
 	}
 
@@ -399,8 +360,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		ArrowShape hs = heads[0];
 		ArrowShape he = heads[1];
 
-		float thickness = (float) vFromM(lineElement.getLineStyleProp().getLineWidth());
-		if (lineElement.getLineStyleProp().getLineStyle() == LineStyleType.DOUBLE)
+		float thickness = (float) vFromM(gdata.getLineStyleProp().getLineWidth());
+		if (gdata.getLineStyleProp().getLineStyle() == LineStyleType.DOUBLE)
 			thickness *= 4;
 		BasicStroke bs = new BasicStroke(thickness);
 
@@ -415,7 +376,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	private void setAnchors() {
 		// Check for new anchors
-		List<Anchor> Anchors = lineElement.getAnchors();
+		List<Anchor> Anchors = gdata.getAnchors();
 		for (Anchor ma : Anchors) {
 			if (!anchors.containsKey(ma)) {
 				anchors.put(ma, new VAnchor(ma, this));
@@ -442,7 +403,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	void removeVAnchor(VAnchor va) {
 		anchors.remove(va.getAnchor());
-		lineElement.removeAnchor(va.getAnchor());
+		gdata.removeAnchor(va.getAnchor());
 	}
 
 	private void updateAnchorPositions() {
@@ -456,101 +417,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 			return;
 		Point2D p = getConnectorShape().fromLineCoordinate(0.7);
 		p.setLocation(p.getX() - 5, p.getY());
-		Point2D r = toRelativeCoordinate(p);
+		Point2D r = gdata.toRelativeCoordinate(p);
 		getVCitation().setRPosition(r);
-	}
-
-	/**
-	 * @param mp a point in absolute model coordinates
-	 * @returns the same point relative to the bounding box of this pathway element:
-	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
-	 *          corner, and 0,0 meaning the center.
-	 */
-	public Point2D toRelativeCoordinate(Point2D mp) {
-		double relX = mp.getX();
-		double relY = mp.getY();
-		Rectangle2D bounds = getRBounds();
-		// Translate
-		relX -= bounds.getCenterX();
-		relY -= bounds.getCenterY();
-		// Scalebounds.getCenterX();
-		if (relX != 0 && bounds.getWidth() != 0)
-			relX /= bounds.getWidth() / 2;
-		if (relY != 0 && bounds.getHeight() != 0)
-			relY /= bounds.getHeight() / 2;
-		return new Point2D.Double(relX, relY);
-	}
-
-	/**
-	 * Get the rectangular bounds of the object after rotation is applied
-	 */
-	public Rectangle2D getRBounds() {
-		Rectangle2D bounds = getMBounds();
-		AffineTransform t = new AffineTransform();
-		t.rotate(0, getMCenterX(), getMCenterY()); // TODO getRotation() always 0?
-		bounds = t.createTransformedShape(bounds).getBounds2D();
-		return bounds;
-	}
-
-	/**
-	 * Get the rectangular bounds of the object without rotation taken into account
-	 */
-	public Rectangle2D getMBounds() {
-		return new Rectangle2D.Double(getMLeft(), getMTop(), 0, getMHeight());
-	}
-
-	/**
-	 * returns the left x coordinate of the bounding box around (start, end)
-	 */
-	public double getMLeft() {
-		double start = getStartLinePoint().getX();
-		double end = getEndLinePoint().getX();
-		return Math.min(start, end);
-	}
-
-	/**
-	 * returns the top y coordinate of the bounding box around (start, end)
-	 */
-	public double getMTop() {
-		double start = getStartLinePoint().getY();
-		double end = getEndLinePoint().getY();
-		return Math.min(start, end);
-	}
-
-	/**
-	 * returns the width of the bounding box around (start, end)
-	 */
-	public double getMWidth() {
-		double start = getStartLinePoint().getX();
-		double end = getEndLinePoint().getX();
-		return Math.abs(start - end);
-	}
-
-	/**
-	 * returns the height of the bounding box around (start, end)
-	 */
-	public double getMHeight() {
-		double start = getStartLinePoint().getY();
-		double end = getEndLinePoint().getY();
-		return Math.abs(start - end);
-	}
-
-	/**
-	 * returns the center x coordinate of the bounding box around (start, end)
-	 */
-	public double getMCenterX() {
-		double start = getStartLinePoint().getX();
-		double end = getEndLinePoint().getX();
-		return start + (end - start) / 2;
-	}
-
-	/**
-	 * returns the center y coordinate of the bounding box around (start, end)
-	 */
-	public double getMCenterY() {
-		double start = getStartLinePoint().getY();
-		double end = getEndLinePoint().getY();
-		return start + (end - start) / 2;
 	}
 
 	protected void swapPoint(VPoint pOld, VPoint pNew) {
@@ -564,7 +432,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	protected void drawHead(Graphics2D g, ArrowShape head, Color c) {
 		if (head != null) {
 			// reset stroked line to solid, but use given thickness
-			g.setStroke(new BasicStroke((float) vFromM(lineElement.getLineStyleProp().getLineWidth())));
+			g.setStroke(new BasicStroke((float) vFromM(gdata.getLineStyleProp().getLineWidth())));
 			switch (head.getFillType()) {
 			case OPEN:
 				g.setPaint(Color.WHITE);
@@ -611,7 +479,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		if (h != null) {
 			AffineTransform f = new AffineTransform();
-			double scaleFactor = vFromM(1.0 + 0.3 * lineElement.getLineStyleProp().getLineWidth());
+			double scaleFactor = vFromM(1.0 + 0.3 * gdata.getLineStyleProp().getLineWidth());
 			f.rotate(Math.atan2(ye - ys, xe - xs), xe, ye);
 			f.translate(xe, ye);
 			f.scale(scaleFactor, scaleFactor);
@@ -635,12 +503,6 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		getEnd().setVLocation(vx2, vy2);
 	}
 
-	/**
-	 * Scales the object to the given rectangle, by taking into account the rotation
-	 * (given rectangle will be rotated back before scaling)
-	 * 
-	 * @param r
-	 */
 	protected void setVScaleRectangle(Rectangle2D r) {
 		setVLine(r.getX(), r.getY(), r.getX() + r.getWidth(), r.getY() + r.getHeight());
 	}
@@ -657,8 +519,32 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		return points.get(points.size() - 1);
 	}
 
+	public double getVCenterX() {
+		return vFromM(gdata.getMCenterX());
+	}
+
+	public double getVCenterY() {
+		return vFromM(gdata.getMCenterY());
+	}
+
+	public double getVLeft() {
+		return vFromM(gdata.getMLeft());
+	}
+
+	public double getVWidth() {
+		return vFromM(gdata.getMWidth());
+	}
+
+	public double getVHeight() {
+		return vFromM(gdata.getMHeight());
+	}
+
+	public double getVTop() {
+		return vFromM(gdata.getMTop());
+	}
+
 	protected void vMoveWayPointsBy(double vdx, double vdy) {
-		List<LinePoint> mps = lineElement.getLinePoints();
+		List<LinePoint> mps = gdata.getLinePoints();
 		for (int i = 1; i < mps.size() - 1; i++) {
 			mps.get(i).moveBy(mFromV(vdx), mFromV(vdy));
 		}
@@ -673,11 +559,11 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	protected void vMoveBy(double vdx, double vdy) {
 		// move LinePoints directly, not every LinePoint is represented
 		// by a VPoint but we want to move them all.
-		for (LinePoint p : lineElement.getLinePoints()) {
+		for (LinePoint p : gdata.getLinePoints()) {
 			p.moveBy(canvas.mFromV(vdx), canvas.mFromV(vdy));
 		}
 		// Redraw graphRefs
-		for (LinkableFrom ref : lineElement.getReferences()) { // TODO ....
+		for (LinkableFrom ref : gdata.getReferences()) { // TODO ....
 			if (ref instanceof LinePoint) {
 				VPoint vp = canvas.getPoint((LinePoint) ref);
 				if (vp != null) {
@@ -695,7 +581,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	public void recalculateConnector() {
-		getConnectorShape().recalculateShape(this);
+		getConnectorShape().recalculateShape(getMLine());
 		updateAnchorPositions();
 		updateCitationPosition();
 		for (VPoint vp : points)
@@ -704,14 +590,14 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	public void gmmlObjectModified(PathwayElementEvent e) {
-		getConnectorShape().recalculateShape(this);
+		getConnectorShape().recalculateShape(getMLine());
 
 		WayPoint[] wps = getConnectorShape().getWayPoints();
-		List<LinePoint> mps = lineElement.getLinePoints();
-		if (wps.length == mps.size() - 2 && getConnectorShape().hasValidWaypoints(this)) {
-			adjustWayPointPreferences(wps);
+		List<LinePoint> mps = gdata.getLinePoints();
+		if (wps.length == mps.size() - 2 && getConnectorShape().hasValidWaypoints(getMLine())) {
+			getMLine().adjustWayPointPreferences(wps);
 		} else {
-			resetWayPointPreferences();
+			getMLine().resetWayPointPreferences();
 		}
 
 		updateSegmentHandles();
@@ -719,31 +605,12 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		for (VPoint p : points) {
 			setHandleLocation(p);
 		}
-		if (lineElement.getAnchors().size() != anchors.size()) {
+		if (gdata.getAnchors().size() != anchors.size()) {
 			setAnchors();
 		}
-		checkCitation(lineElement.getCitationRefs()); // TODO weird?
+		checkCitation(gdata.getCitationRefs());
 		updateAnchorPositions();
 		updateCitationPosition();
-	}
-
-	public void adjustWayPointPreferences(WayPoint[] waypoints) {
-		List<LinePoint> linePoints = lineElement.getLinePoints();
-		for (int i = 0; i < waypoints.length; i++) {
-			WayPoint wp = waypoints[i];
-			LinePoint mp = linePoints.get(i + 1);
-			if (mp.getXY().getX() != wp.getX() || mp.getXY().getY() != wp.getY()) {
-				lineElement.dontFireEvents(1); // TODO????
-				mp.moveTo(wp.getX(), wp.getY());
-			}
-		}
-	}
-
-	public void resetWayPointPreferences() {
-		List<LinePoint> mps = lineElement.getLinePoints();
-		while (mps.size() > 2) {
-			mps.remove(mps.size() - 2);
-		}
 	}
 
 	protected void destroyHandles() {
@@ -758,6 +625,28 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		}
 	}
 
+	protected void destroy() {
+		super.destroy();
+		gdata.removeListener(this);
+		for (VElement child : getChildren()) {
+			child.destroy();
+		}
+
+		for (LinePoint p : gdata.getLinePoints()) {
+			canvas.pointsMtoV.remove(p);
+		}
+		List<VAnchor> remove = new ArrayList<VAnchor>(anchors.values());
+		for (VAnchor a : remove) {
+			a.destroy();
+		}
+		getChildren().clear();
+		setVCitation(null);
+
+		// View should not remove its model
+//		Pathway parent = lineElement.getParent();
+//		if(parent != null) parent.remove(lineElement);
+	}
+
 	/**
 	 * Returns the x-coordinate of the start point of this line, adjusted to the
 	 * current zoom factor
@@ -765,7 +654,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @return
 	 */
 	protected double getVStartX() {
-		return (int) (vFromM(lineElement.getStartLinePoint().getXY().getX()));
+		return (int) (vFromM(gdata.getMStartX()));
 	}
 
 	/**
@@ -775,7 +664,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @return
 	 */
 	protected double getVStartY() {
-		return (int) (vFromM(lineElement.getStartLinePoint().getXY().getY()));
+		return (int) (vFromM(gdata.getMStartY()));
 	}
 
 	/**
@@ -785,7 +674,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @return
 	 */
 	protected double getVEndX() {
-		return (int) (vFromM(lineElement.getEndLinePoint().getXY().getX()));
+		return (int) (vFromM(gdata.getMEndX()));
 	}
 
 	/**
@@ -795,7 +684,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @return
 	 */
 	protected double getVEndY() {
-		return (int) (vFromM(lineElement.getEndLinePoint().getXY().getY()));
+		return (int) (vFromM(gdata.getMEndY()));
 	}
 
 	/**
@@ -834,239 +723,10 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 			}
 		}
 		return segments[segments.length];
+
 	}
 
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return lineElement
-	 */
-	public LineElement getPathwayElement() {
-		return lineElement;
-	}
-
-	/*---------------------------ConnectorRestriction---------------------------------*/
-
-	/**
-	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
-	 * SIDE_SOUTH or SIDE_WEST) the start of this line is connected to.
-	 *
-	 * If the start is not connected to anything, returns SIDE_WEST
-	 */
-	public int getStartSide() {
-		int side = SIDE_WEST;
-
-		LinkableTo e = getStartElement();
-		if (e != null) {
-			if (e instanceof PathwayElement) {
-				side = getSide(lineElement.getStartLinePoint().getRelX(), lineElement.getStartLinePoint().getRelY());
-			} else if (e instanceof Anchor) {
-				side = getAttachedLineDirection((Anchor) e);
-			}
-		}
-		return side;
-	}
-	
-	/**
-	 * Get the side of the given pathway element to which the x and y coordinates
-	 * connect
-	 * 
-	 * @param x The x coordinate
-	 * @param y The y coordinate
-	 * @param e The element to find the side of
-	 * @return One of the SIDE_* constants
-	 */
-	private static int getSide(double x, double y, double cx, double cy) {
-		return getSide(x - cx, y - cy);
-	}
-
-	private static int getSide(double relX, double relY) {
-		int direction = 0;
-		if (Math.abs(relX) > Math.abs(relY)) {
-			if (relX > 0) {
-				direction = SIDE_EAST;
-			} else {
-				direction = SIDE_WEST;
-			}
-		} else {
-			if (relY > 0) {
-				direction = SIDE_SOUTH;
-			} else {
-				direction = SIDE_NORTH;
-			}
-		}
-		return direction;
-	}
-
-	private int getAttachedLineDirection(Anchor anchor) {
-		int side;
-		double pos = anchor.getPosition();
-		LineElement attLine = anchor.getLineElement();
-		if (getConnectorShape() instanceof ElbowConnectorShape) {
-			ConnectorShape.Segment attSeg = findAnchorSegment(attLine, pos);
-			int orientationX = Utils.getDirectionX(attSeg.getMStart(), attSeg.getMEnd());
-			int orientationY = Utils.getDirectionY(attSeg.getMStart(), attSeg.getMEnd());
-			side = getSide(orientationY, orientationX);
-		} else {
-			side = getOppositeSide(getSide(getMEndX(), getMEndY(), getMStartX(), getMStartY()));
-			if (attLine.almostPerfectAlignment(side)) {
-				side = getClockwisePerpendicularSide(side);
-			}
-		}
-		return side;
-	}
-	/**
-	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
-	 * SIDE_SOUTH or SIDE_WEST) the end of this line is connected to.
-	 *
-	 * If the end is not connected to anything, returns SIDE_EAST
-	 */
-	public int getEndSide() {
-		int side = SIDE_EAST;
-		GraphIdContainer e = getEndElement();
-		if (e != null) {
-			if (e instanceof PathwayElement) {
-				side = getSide(getMEnd().getRelX(), getMEnd().getRelY());
-			} else if (e instanceof MAnchor) {
-				side = getAttachedLineDirection((MAnchor) e);
-			}
-		}
-		return side;
-	}
-
-	/**
-	 * Returns the element that the start of this line is connected to. Returns null
-	 * if there isn't any.
-	 */
-	private LinkableTo getStartElement() {
-		PathwayModel parent = lineElement.getPathwayModel();
-		if (parent != null) {
-			return lineElement.getStartLinePoint().getElementRef();
-		}
-		return null;
-	}
-
-	/**
-	 * Returns the element that the end of this line is connected to. Returns null
-	 * if there isn't any.
-	 */
-	private LinkableTo getEndElement() {
-		PathwayModel parent = lineElement.getPathwayModel();
-		if (parent != null) {
-			return lineElement.getEndLinePoint().getElementRef();
-		}
-		return null;
-	}
-
-	/**
-	 * Converts LineElement start point from MPoint to Point2D.
-	 * 
-	 * @return the lineElement start point as Point2D.
-	 */
-	public Point2D getStartPoint() {
-		return toPoint2D(lineElement.getStartLinePoint());
-	}
-
-	/**
-	 * converts LineElement end point from MPoint to Point2D
-	 * 
-	 * @return the lineElement end point as Point2D.
-	 */
-	public Point2D getEndPoint() {
-		return toPoint2D(lineElement.getEndLinePoint());
-	}
-
-	/**
-	 * Converts a linePoint to Point2D;
-	 * 
-	 * @param linePoint the LinePoint.
-	 * @return the linePoint as Point2D.
-	 */
-	public Point2D toPoint2D(LinePoint linePoint) {
-		return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
-	}
-
-	/**
-	 * Get the preferred waypoints, to which the connector must draw it's path. The
-	 * waypoints returned by this method are preferences and the connector shape may
-	 * decide not to use them if they are invalid.
-	 */
-	public WayPoint[] getWayPointPreferences() {
-		List<LinePoint> pts = lineElement.getLinePoints();
-		WayPoint[] wps = new WayPoint[pts.size() - 2];
-		for (int i = 0; i < wps.length; i++) {
-			wps[i] = new WayPoint(pts.get(i + 1).toPoint2D()); // TODO
-		}
-		return wps;
-	}
-
-	/**
-	 * Get the x-coordinate of the center point of this object adjusted to the
-	 * current zoom factor
-	 * 
-	 * @return the center x-coordinate
-	 */
-	public double getVCenterX() {
-		return vFromM(getMCenterX());
-	}
-
-	/**
-	 * Get the y-coordinate of the center point of this object adjusted to the
-	 * current zoom factor
-	 *
-	 * @return the center y-coordinate
-	 */
-	public double getVCenterY() {
-		return vFromM(getMCenterY());
-	}
-
-	/**
-	 * Get the x-coordinate of the left side of this object adjusted to the current
-	 * zoom factor, but not taking into account rotation
-	 * 
-	 * @note if you want the left side of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getX();
-	 * @return
-	 */
-	public double getVLeft() {
-		return vFromM(getMLeft());
-	}
-
-	/**
-	 * Get the width of this object adjusted to the current zoom factor, but not
-	 * taking into account rotation
-	 * 
-	 * @note if you want the width of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getWidth();
-	 * @return
-	 */
-	public double getVWidth() {
-		return vFromM(getMWidth());
-	}
-
-	/**
-	 * Get the height of this object adjusted to the current zoom factor, but not
-	 * taking into account rotation
-	 * 
-	 * @note if you want the height of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getY();
-	 * @return
-	 */
-	public double getVHeight() {
-		return vFromM(getMHeight());
-	}
-
-	/**
-	 * Get the y-coordinate of the top side of this object adjusted to the current
-	 * zoom factor, but not taking into account rotation
-	 * 
-	 * @note if you want the top side of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getY();
-	 * @return
-	 */
-	public double getVTop() {
-		return vFromM(getMTop());
-	}
+	/*-----------------------------Graphics methods ---------------------------*/
 
 	/**
 	 * Get the rectangle that represents the bounds of the shape's direct
@@ -1078,45 +738,14 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	/**
-	 * Default implementation returns the rotated shape. Subclasses may override
-	 * (e.g. to include the stroke)
-	 * 
-	 * @see {@link VElement#calculateVOutline()}
-	 */
-	protected Shape calculateVOutline() {
-		return getVShape(true);
-	}
-
-	protected void destroy() {
-		super.destroy();
-		lineElement.removeListener(this);
-		for (VElement child : getChildren()) {
-			child.destroy();
-		}
-		for (LinePoint p : lineElement.getLinePoints()) {
-			canvas.pointsMtoV.remove(p);
-		}
-		List<VAnchor> remove = new ArrayList<VAnchor>(anchors.values());
-		for (VAnchor a : remove) {
-			a.destroy();
-		}
-		getChildren().clear();
-		setVCitation(null);
-
-		// View should not remove its model
-//		Pathway parent = lineElement.getParent();
-//		if(parent != null) parent.remove(lineElement);
-	}
-
-	/**
 	 * Returns the z-order from the model
 	 */
 	protected int getZOrder() {
-		return lineElement.getLineStyleProp().getZOrder();
+		return gdata.getLineStyleProp().getZOrder();
 	}
 
 	protected Color getLineColor() {
-		Color linecolor = lineElement.getLineStyleProp().getLineColor();
+		Color linecolor = gdata.getLineStyleProp().getLineColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
@@ -1128,8 +757,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	protected void setLineStyle(Graphics2D g) {
-		LineStyleType ls = lineElement.getLineStyleProp().getLineStyle();
-		float lt = (float) vFromM(lineElement.getLineStyleProp().getLineWidth());
+		LineStyleType ls = gdata.getLineStyleProp().getLineStyle();
+		float lt = (float) vFromM(gdata.getLineStyleProp().getLineWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {
@@ -1140,21 +769,539 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		}
 	}
 
-}
+	private class MLine extends LineElement implements ConnectorRestrictions {
+		ConnectorShape shape;
 
-/**
- * Generates double line stroke, e.g., for cellular compartment shapes.
- *
- */
-final class CompositeStroke implements Stroke {
-	private Stroke stroke1, stroke2;
+		public MLine(LineStyleProperty ot) {
+			super(ot);
+		}
 
-	public CompositeStroke(Stroke stroke1, Stroke stroke2) {
-		this.stroke1 = stroke1;
-		this.stroke2 = stroke2;
-	}
+		/**
+		 * the Connector Shape for this line - the connector shape can calculate a Shape
+		 * based on the connector type (straight, elbow or curved) and possibly way
+		 * points
+		 */
+		public ConnectorShape getConnectorShape() {
+			String type = getLineStyleProp().getConnectorType().getName();
 
-	public Shape createStrokedShape(Shape shape) {
-		return stroke2.createStrokedShape(stroke1.createStrokedShape(shape));
+			// Recreate the ConnectorShape when it's null or when the type
+			// doesn't match the implementing class
+			if (shape == null || !shape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
+				shape = ConnectorShapeFactory.createConnectorShape(getLineStyleProp().getConnectorType().getName());
+				shape.recalculateShape(this);
+			}
+			return shape;
+		}
+
+		/**
+		 * returns the center x coordinate of the bounding box around (start, end)
+		 */
+		public double getMCenterX() {
+			double start = getMStartX();
+			double end = getMEndX();
+			return start + (end - start) / 2;
+		}
+
+		/**
+		 * returns the center y coordinate of the bounding box around (start, end)
+		 */
+		public double getMCenterY() {
+			double start = getMStartY();
+			double end = getMEndY();
+			return start + (end - start) / 2;
+		}
+
+		/**
+		 * returns the left x coordinate of the bounding box around (start, end)
+		 */
+		public double getMLeft() {
+			double start = getMStartX();
+			double end = getMEndX();
+			return Math.min(start, end);
+		}
+
+		/**
+		 * returns the width of the bounding box around (start, end)
+		 */
+		public double getMWidth() {
+			double start = getMStartY();
+			double end = getMEndX();
+			return Math.abs(start - end);
+		}
+
+		/**
+		 * returns the height of the bounding box around (start, end)
+		 */
+		public double getMHeight() {
+			double start = getMStartY();
+			double end = getMEndY();
+			return Math.abs(start - end);
+		}
+
+		/**
+		 * returns the top y coordinate of the bounding box around (start, end)
+		 */
+		public double getMTop() {
+			double start = getMStartY();
+			double end = getMEndY();
+			return Math.min(start, end);
+		}
+
+		/**
+		 * Sets the position of the top side of the rectangular bounds of the line
+		 */
+		public void setMTop(double v) {
+			if (getDirectionY() > 0) {
+				setMStartY(v);
+			} else {
+				setMEndY(v);
+			}
+		}
+
+		/**
+		 * Sets the position of the left side of the rectangular bounds of the line
+		 */
+		public void setMLeft(double v) {
+			if (getDirectionX() > 0) {
+				setMStartX(v);
+			} else {
+				setMEndX(v);
+			}
+		}
+
+		/**
+		 * Sets the x position of the center of the line. This makes the line move as a
+		 * whole
+		 */
+		public void setMCenterX(double v) {
+			double dx = v - getMCenterX();
+			setMStartX(getMStartX() + dx);
+			setMEndX(getMEndX() + dx);
+		}
+
+		/**
+		 * Sets the y position of the center of the line. This makes the line move as a
+		 * whole.
+		 */
+		public void setMCenterY(double v) {
+			double dy = v - getMCenterY();
+			setMStartY(getMStartY() + dy);
+			setMEndY(getMEndY() + dy);
+		}
+
+		/** returns the sign of end.x - start.x */
+		private int getDirectionX() {
+			return (int) Math.signum(getMEndX() - getMStartX());
+		}
+
+		/** returns the sign of end.y - start.y */
+		private int getDirectionY() {
+			return (int) Math.signum(getMEndY() - getMStartY());
+		}
+
+		/** converts end point from LinePoint to Point2D */
+		public Point2D getEndPoint() {
+			return toPoint2D(getEndLinePoint());
+		}
+
+		/** converts start point from LinePoint to Point2D */
+		public Point2D getStartPoint() {
+			return toPoint2D(getStartLinePoint());
+		}
+
+		/** converts all points from LinePoint to Point2D */
+		public List<Point2D> getPoints() {
+			List<Point2D> pts = new ArrayList<Point2D>();
+			for (LinePoint p : getLinePoints()) {
+				pts.add(toPoint2D(p));
+			}
+			return pts;
+		}
+
+		/**
+		 * Returns the element that the start of this line is connected to. Returns null
+		 * if there isn't any.
+		 */
+		private LinkableTo getStartElement() {
+			PathwayModel parent = getPathwayModel();
+			if (parent != null) {
+				return getStartLinePoint().getElementRef();
+			}
+			return null;
+		}
+
+		/**
+		 * Returns the element that the end of this line is connected to. Returns null
+		 * if there isn't any.
+		 */
+		private LinkableTo getEndElement() {
+			PathwayModel parent = getPathwayModel();
+			if (parent != null) {
+				return getEndLinePoint().getElementRef();
+			}
+			return null;
+		}
+
+		/**
+		 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
+		 * SIDE_SOUTH or SIDE_WEST) the start of this line is connected to.
+		 *
+		 * If the start is not connected to anything, returns SIDE_WEST
+		 */
+		public int getStartSide() {
+			int side = SIDE_WEST;
+
+			LinkableTo e = getStartElement();
+			if (e != null) {
+				if (e instanceof PathwayElement) {
+					side = getSide(getStartLinePoint().getRelX(), getStartLinePoint().getRelY());
+				} else if (e instanceof Anchor) {
+					side = getAttachedLineDirection((Anchor) e);
+				}
+			}
+			return side;
+		}
+
+		/**
+		 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST,
+		 * SIDE_SOUTH or SIDE_WEST) the end of this line is connected to.
+		 *
+		 * If the end is not connected to anything, returns SIDE_EAST
+		 */
+		public int getEndSide() {
+			int side = SIDE_EAST;
+
+			LinkableTo e = getEndElement();
+			if (e != null) {
+				if (e instanceof PathwayElement) {
+					side = getSide(getEndLinePoint().getRelX(), getEndLinePoint().getRelY());
+				} else if (e instanceof Anchor) {
+					side = getAttachedLineDirection((Anchor) e);
+				}
+			}
+			return side;
+		}
+
+		private int getAttachedLineDirection(Anchor anchor) {
+			int side;
+			double pos = anchor.getPosition();
+			MLine attLine = ((MLine) anchor.getLineElement());
+			if (attLine.getConnectorShape() instanceof ElbowConnectorShape) {
+				ConnectorShape.Segment attSeg = findAnchorSegment(attLine, pos);
+				int orientationX = Utils.getDirectionX(attSeg.getMStart(), attSeg.getMEnd());
+				int orientationY = Utils.getDirectionY(attSeg.getMStart(), attSeg.getMEnd());
+				side = getSide(orientationY, orientationX);
+			} else {
+				side = getOppositeSide(getSide(getMEndX(), getMEndY(), getMStartX(), getMStartY()));
+				if (attLine.almostPerfectAlignment(side)) {
+					side = getClockwisePerpendicularSide(side);
+				}
+			}
+			return side;
+		}
+
+		private ConnectorShape.Segment findAnchorSegment(MLine attLine, double pos) {
+			ConnectorShape.Segment[] segments = attLine.getConnectorShape().getSegments();
+			Double totLength = 0.0;
+			ConnectorShape.Segment attSeg = null;
+			for (ConnectorShape.Segment segment : segments) {
+				totLength = totLength + segment.getMLength();
+			}
+			Double currPos;
+			Double segSum = 0.0;
+			for (ConnectorShape.Segment segment : segments) {
+				segSum = segSum + segment.getMLength();
+				currPos = segSum / totLength;
+				attSeg = segment;
+				if (currPos > pos) {
+					break;
+				}
+			}
+			return attSeg;
+		}
+
+		/**
+		 * Check if either the line segment has less than or equal to 10 degree
+		 * alignment with the side passed
+		 * 
+		 * @param startLine
+		 * @param endLine
+		 * @return true if <= 10 degree alignment else false
+		 */
+		private boolean almostPerfectAlignment(int side) {
+			int MAXOFFSET = 30; /*
+								 * cutoff point where we see a shallow angle still as either horizontal or
+								 * vertical
+								 */
+			// X axis
+			if ((side == SIDE_EAST) || (side == SIDE_WEST)) {
+				double angleDegree = (180 / Math.PI)
+						* Math.atan2(Math.abs(getStartPoint().getY() - getEndPoint().getY()),
+								Math.abs(getStartPoint().getX() - getEndPoint().getX()));
+				if (angleDegree <= MAXOFFSET)
+					return true;
+			} else {// north south or Y axis
+				double angleDegree = (180 / Math.PI)
+						* Math.atan2(Math.abs(getStartPoint().getX() - getEndPoint().getX()),
+								Math.abs(getStartPoint().getY() - getEndPoint().getY()));
+				if (angleDegree <= MAXOFFSET)
+					return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Returns the Perpendicular for a SIDE_* constant (e.g. SIDE_EAST <->
+		 * SIDE_WEST)
+		 */
+		private int getClockwisePerpendicularSide(int side) {
+			switch (side) {
+			case SIDE_EAST:
+				return SIDE_SOUTH;
+			case SIDE_WEST:
+				return SIDE_NORTH;
+			case SIDE_NORTH:
+				return SIDE_EAST;
+			case SIDE_SOUTH:
+				return SIDE_WEST;
+			}
+			return -1;
+		}
+
+		public void adjustWayPointPreferences(WayPoint[] waypoints) {
+			List<LinePoint> LinePoints = getLinePoints();
+			for (int i = 0; i < waypoints.length; i++) {
+				WayPoint wp = waypoints[i];
+				LinePoint mp = LinePoints.get(i + 1);
+				if (mp.getXY().getX() != wp.getX() || mp.getXY().getY() != wp.getY()) {
+					dontFireEvents(1);
+					mp.moveTo(wp.getX(), wp.getY());
+				}
+			}
+		}
+
+		public void resetWayPointPreferences() {
+			List<LinePoint> mps = getLinePoints();
+			while (mps.size() > 2) {
+				mps.remove(mps.size() - 2);
+			}
+		}
+
+		/**
+		 * Get the preferred waypoints, to which the connector must draw it's path. The
+		 * waypoints returned by this method are preferences and the connector shape may
+		 * decide not to use them if they are invalid.
+		 */
+		public WayPoint[] getWayPointPreferences() {
+			List<LinePoint> pts = getLinePoints();
+			WayPoint[] wps = new WayPoint[pts.size() - 2];
+			for (int i = 0; i < wps.length; i++) {
+				wps[i] = new WayPoint(toPoint2D(pts.get(i + 1)));
+			}
+			return wps;
+		}
+
+		/**
+		 * Get the side of the given pathway element to which the x and y coordinates
+		 * connect
+		 * 
+		 * @param x The x coordinate
+		 * @param y The y coordinate
+		 * @param e The element to find the side of
+		 * @return One of the SIDE_* constants
+		 */
+		private static int getSide(double x, double y, double cx, double cy) {
+			return getSide(x - cx, y - cy);
+		}
+
+		private static int getSide(double relX, double relY) {
+			int direction = 0;
+			if (Math.abs(relX) > Math.abs(relY)) {
+				if (relX > 0) {
+					direction = SIDE_EAST;
+				} else {
+					direction = SIDE_WEST;
+				}
+			} else {
+				if (relY > 0) {
+					direction = SIDE_SOUTH;
+				} else {
+					direction = SIDE_NORTH;
+				}
+			}
+			return direction;
+		}
+
+		/**
+		 * Returns the opposite for a SIDE_* constant (e.g. SIDE_EAST <-> SIDE_WEST)
+		 */
+		private int getOppositeSide(int side) {
+			switch (side) {
+			case SIDE_EAST:
+				return SIDE_WEST;
+			case SIDE_WEST:
+				return SIDE_EAST;
+			case SIDE_NORTH:
+				return SIDE_SOUTH;
+			case SIDE_SOUTH:
+				return SIDE_NORTH;
+			}
+			return -1;
+		}
+
+		/**
+		 * Check if the connector may cross this point Optionally, returns a shape that
+		 * defines the boundaries of the area around this point that the connector may
+		 * not cross. This method can be used for advanced connectors that route along
+		 * other objects on the drawing
+		 * 
+		 * @return A shape that defines the boundaries of the area around this point
+		 *         that the connector may not cross. Returning null is allowed for
+		 *         implementing classes.
+		 */
+		public Shape mayCross(Point2D point) {
+			PathwayModel parent = getPathwayModel();
+			Rectangle2D rect = null;
+			if (parent != null) {
+				for (PathwayElement e : parent.getPathwayElements()) { // TODO
+					if (e.getClass() == org.pathvisio.model.Shape.class || e.getClass() == DataNode.class
+							|| e.getClass() == Label.class) {
+						Rectangle2D b = getMBounds(); // TODO ...
+						if (b.contains(point)) {
+							if (rect == null)
+								rect = b;
+							else
+								rect.add(b);
+						}
+					}
+				}
+			}
+			return rect;
+		}
+
+		/* ------------------------------------------------ */
+
+		@Override
+		public Point2D getStartPoint2D() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Point2D getEndPoint2D() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		/* -------------------Pathway Element----------------------------- */
+		public double getMStartX() {
+			return getStartLinePoint().getXY().getX();
+		}
+
+		public void setMStartX(double v) {
+			getStartLinePoint().getXY().setX(v);
+		}
+
+		public double getMStartY() {
+			return getStartLinePoint().getXY().getY();
+		}
+
+		public void setMStartY(double v) {
+			getStartLinePoint().getXY().setY(v);
+		}
+
+		public double getMEndX() {
+			return getEndLinePoint().getXY().getX();
+		}
+
+		public void setMEndX(double v) {
+			getEndLinePoint().getXY().setX(v);
+		}
+
+		public double getMEndY() {
+			return getEndLinePoint().getXY().getY();
+		}
+
+		public void setMEndY(double v) {
+			getEndLinePoint().getXY().setY(v);
+		}
+
+		public Point2D toPoint2D(LinePoint linePoint) {
+			return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
+		}
+
+		/**
+		 * Get the rectangular bounds of the object after rotation is applied
+		 */
+		public Rectangle2D getRBounds() {
+			Rectangle2D bounds = getMBounds();
+			AffineTransform t = new AffineTransform();
+			t.rotate(0, getMCenterX(), getMCenterY()); // TODO getRotation() always 0?
+			bounds = t.createTransformedShape(bounds).getBounds2D();
+			return bounds;
+		}
+
+		/**
+		 * Get the rectangular bounds of the object without rotation taken into account
+		 */
+		public Rectangle2D getMBounds() {
+			return new Rectangle2D.Double(getMLeft(), getMTop(), 0, getMHeight());
+		}
+
+		public Point2D toAbsoluteCoordinate(Point2D p) {
+			double x = p.getX();
+			double y = p.getY();
+			Rectangle2D bounds = getRBounds();
+			// Scale
+			if (bounds.getWidth() != 0)
+				x *= bounds.getWidth() / 2;
+			if (bounds.getHeight() != 0)
+				y *= bounds.getHeight() / 2;
+			// Translate
+			x += bounds.getCenterX();
+			y += bounds.getCenterY();
+			return new Point2D.Double(x, y);
+		}
+
+		/**
+		 * @param mp a point in absolute model coordinates
+		 * @returns the same point relative to the bounding box of this pathway element:
+		 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
+		 *          corner, and 0,0 meaning the center.
+		 */
+		public Point2D toRelativeCoordinate(Point2D mp) {
+			double relX = mp.getX();
+			double relY = mp.getY();
+			Rectangle2D bounds = getRBounds();
+			// Translate
+			relX -= bounds.getCenterX();
+			relY -= bounds.getCenterY();
+			// Scalebounds.getCenterX();
+			if (relX != 0 && bounds.getWidth() != 0)
+				relX /= bounds.getWidth() / 2;
+			if (relY != 0 && bounds.getHeight() != 0)
+				relY /= bounds.getHeight() / 2;
+			return new Point2D.Double(relX, relY);
+		}
+		/* -------------------Conveniency methods?----------------------------- */
+
+		public ArrowHeadType getStartLineType() {
+			ArrowHeadType startLineType = getStartLineType();
+			return startLineType == null ? ArrowHeadType.UNDIRECTED : startLineType;
+		}
+
+		public ArrowHeadType getEndLineType() {
+			ArrowHeadType endLineType = getEndLineType();
+			return endLineType == null ? ArrowHeadType.UNDIRECTED : endLineType;
+		}
+
+		public void setStartLineType(ArrowHeadType value) {
+			getStartLinePoint().setArrowHead(value);
+		}
+
+		public void setEndLineType(ArrowHeadType value) {
+			getEndLinePoint().setArrowHead(value);
+		}
+
 	}
 }

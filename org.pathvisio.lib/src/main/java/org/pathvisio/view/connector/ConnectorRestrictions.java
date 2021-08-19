@@ -62,13 +62,13 @@ public interface ConnectorRestrictions {
 	 * Get the start point to which the connector must connect
 	 * @return
 	 */
-	Point2D getStartPoint();
+	Point2D getStartPoint2D();
 
 	/**
 	 * Get the end point to which the connector must connect
 	 * @return
 	 */
-	Point2D getEndPoint();
+	Point2D getEndPoint2D();
 
 	/**
 	 * Get the preferred waypoints, to which the connector must draw

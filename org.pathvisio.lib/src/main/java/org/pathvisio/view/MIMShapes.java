@@ -23,27 +23,27 @@ import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.core.model.AbstractShape;
 //import org.pathvisio.core.model.IShape;
-import org.pathvisio.model.type.LineStyleType;
+import org.pathvisio.model.type.ArrowHeadType;
 
 /**
  * Collection of Shapes and ArrowHeads used in the Molecular Interaction Map -
  * style of pathways
  */
 public class MIMShapes {
-	public static final LineStyleType MIM_NECESSARY_STIMULATION = LineStyleType.register("mim-necessary-stimulation");
-	public static final LineStyleType MIM_BINDING = LineStyleType.register("mim-binding");
-	public static final LineStyleType MIM_CONVERSION = LineStyleType.register("mim-conversion");
-	public static final LineStyleType MIM_TRANSLOCATION = LineStyleType.register("mim-translocation");
-	public static final LineStyleType MIM_STIMULATION = LineStyleType.register("mim-stimulation");
-	public static final LineStyleType MIM_MODIFICATION = LineStyleType.register("mim-modification");
-	public static final LineStyleType MIM_CATALYSIS = LineStyleType.register("mim-catalysis");
-	public static final LineStyleType MIM_INHIBITION = LineStyleType.register("mim-inhibition");
-	public static final LineStyleType MIM_CLEAVAGE = LineStyleType.register("mim-cleavage");
-	public static final LineStyleType MIM_COVALENT_BOND = LineStyleType.register("mim-covalent-bond");
-	public static final LineStyleType MIM_BRANCHING_LEFT = LineStyleType.register("mim-branching-left");
-	public static final LineStyleType MIM_BRANCHING_RIGHT = LineStyleType.register("mim-branching-right");
-	public static final LineStyleType MIM_TRANSLATION = LineStyleType.register("mim-transcription-translation");
-	public static final LineStyleType MIM_GAP = LineStyleType.register("mim-gap");
+	public static final ArrowHeadType MIM_NECESSARY_STIMULATION = ArrowHeadType.register("mim-necessary-stimulation");
+	public static final ArrowHeadType MIM_BINDING = ArrowHeadType.register("mim-binding");
+	public static final ArrowHeadType MIM_CONVERSION = ArrowHeadType.register("mim-conversion");
+	public static final ArrowHeadType MIM_TRANSLOCATION = ArrowHeadType.register("mim-translocation");
+	public static final ArrowHeadType MIM_STIMULATION = ArrowHeadType.register("mim-stimulation");
+	public static final ArrowHeadType MIM_MODIFICATION = ArrowHeadType.register("mim-modification");
+	public static final ArrowHeadType MIM_CATALYSIS = ArrowHeadType.register("mim-catalysis");
+	public static final ArrowHeadType MIM_INHIBITION = ArrowHeadType.register("mim-inhibition");
+	public static final ArrowHeadType MIM_CLEAVAGE = ArrowHeadType.register("mim-cleavage");
+	public static final ArrowHeadType MIM_COVALENT_BOND = ArrowHeadType.register("mim-covalent-bond");
+	public static final ArrowHeadType MIM_BRANCHING_LEFT = ArrowHeadType.register("mim-branching-left");
+	public static final ArrowHeadType MIM_BRANCHING_RIGHT = ArrowHeadType.register("mim-branching-right");
+	public static final ArrowHeadType MIM_TRANSLATION = ArrowHeadType.register("mim-transcription-translation");
+	public static final ArrowHeadType MIM_GAP = ArrowHeadType.register("mim-gap");
 
 	private static final int MIM_PHOSPHORYLATED = 0;
 	private static final int MIM_DEGRADATION = 1;

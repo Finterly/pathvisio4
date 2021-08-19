@@ -39,11 +39,14 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.core.util.Resources;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
+import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.GraphicalLine;
 import org.pathvisio.model.Interaction;
 import org.pathvisio.model.Label;
+import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.type.ShapeType;
+import org.pathvisio.model.type.StateType;
 import org.pathvisio.model.type.VAlignType;
 import org.pathvisio.util.ColorUtils;
 import org.pathvisio.util.preferences.GlobalPreference;
@@ -304,7 +307,7 @@ public abstract class DefaultTemplates {
 		}
 
 		public VElement getDragElement(VPathwayModel vp) {
-			GraphicsShape s = (GraphicsShape) super.getDragElement(vp);
+			VShape s = (VShape) super.getDragElement(vp);
 			return s.handleSE;
 		}
 
@@ -372,7 +375,7 @@ public abstract class DefaultTemplates {
 		}
 
 		public VElement getDragElement(VPathwayModel vp) {
-			VLine l = (VLine) super.getDragElement(vp);
+			VLineElement l = (VLineElement) super.getDragElement(vp);
 			return l.getEnd().getHandle();
 		}
 
@@ -414,7 +417,7 @@ public abstract class DefaultTemplates {
 		}
 
 		public VElement getDragElement(VPathwayModel vp) {
-			VLine l = (VLine) super.getDragElement(vp);
+			VLineElement l = (VLineElement) super.getDragElement(vp);
 			return l.getEnd().getHandle();
 		}
 
@@ -425,8 +428,9 @@ public abstract class DefaultTemplates {
 
 	/**
 	 * Template for an interaction, two datanodes with a connecting line.
+	 * 
 	 */
-	public static class InteractionDataNodeTemplate implements Template {
+	public static class DataNodeInteractionTemplate implements Template {
 		final static int OFFSET_LINE = 5;
 		DataNode lastStartNode;
 		DataNode lastEndNode;
@@ -437,7 +441,7 @@ public abstract class DefaultTemplates {
 
 		LineStyleType lineStyle;
 
-		public InteractionDataNodeTemplate() {
+		public DataNodeInteractionTemplate() {
 			endType = ArrowHeadType.UNDIRECTED;
 			startType = ArrowHeadType.UNDIRECTED;
 			lineStyle = LineStyleType.SOLID;
@@ -484,11 +488,11 @@ public abstract class DefaultTemplates {
 	 * Template for an inhibition interaction, two datanodes with a MIM_INHIBITION
 	 * line.
 	 */
-	public static class InhibitionInteractionTemplate extends InteractionTemplate {
+	public static class InhibitionInteractionTemplate extends DataNodeInteractionTemplate {
 		@Override
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
-			lastLine.setEndLineType(MIMShapes.MIM_INHIBITION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_INHIBITION);
 			return new PathwayElement[] { lastLine, lastStartNode, lastEndNode };
 		}
 
@@ -502,11 +506,11 @@ public abstract class DefaultTemplates {
 	 * Template for a stimulation interaction, two datanodes with a MIM_STIMULATION
 	 * line.
 	 */
-	public static class StimulationInteractionTemplate extends InteractionTemplate {
+	public static class StimulationInteractionTemplate extends DataNodeInteractionTemplate {
 		@Override
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
-			lastLine.setEndLineType(MIMShapes.MIM_STIMULATION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_STIMULATION);
 			return new PathwayElement[] { lastLine, lastStartNode, lastEndNode };
 		}
 
@@ -520,28 +524,29 @@ public abstract class DefaultTemplates {
 	 * Template for a phosphorylation interaction, two Protein Datanodes with a
 	 * MIM_MODIFICATION line.
 	 */
-
-	public static class PhosphorylationTemplate extends InteractionTemplate {
+	public static class PhosphorylationTemplate extends DataNodeInteractionTemplate {
 		// static final double OFFSET_CATALYST = 50;
 		PathwayElement lastPhosphorylation;
 		// PathwayElement lastPhosLine;
 
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
-			lastStartNode.setDataNodeType(DataNodeType.PROTEIN);
-			lastEndNode.setDataNodeType(DataNodeType.PROTEIN);
+			lastStartNode.setType(DataNodeType.PROTEIN);
+			lastEndNode.setType(DataNodeType.PROTEIN);
 			lastStartNode.setTextLabel("Protein");
 			lastEndNode.setTextLabel("P-Protein");
-			lastLine.setEndLineType(MIMShapes.MIM_MODIFICATION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_MODIFICATION);
 
-			PathwayElement elt = PathwayElement.createPathwayElement(ObjectType.STATE);
-			elt.setInitialSize();
-			elt.setTextLabel("P");
-			((MState) elt).linkTo(lastEndNode, 1.0, 1.0);
-			elt.setShapeType(ShapeType.OVAL);
-			p.add(elt);
-			elt.setGeneratedElementId();
-
+			// textColor, fontName, fontWeight, fontStyle, fontDecoration, fontStrikethru,
+			// fontSize, hAlign, vAlign TODO FontSize???
+			FontProperty fontProperty = new FontProperty(COLOR_DEFAULT, "Arial", false, false, false, false, FONTSIZE,
+					HALIGN, VALIGN);
+			// borderColor, borderStyle, borderWidth, fillColor, shapeType, zOrder TODO
+			ShapeStyleProperty shapeStyleProperty = new ShapeStyleProperty(COLOR_DEFAULT, LINESTYLETYPE, LINEWIDTH,
+					Color.WHITE, ShapeType.OVAL, Z_ORDER_STATE);
+			State elt = new State("P", StateType.PROTEIN_MODIFICATION, 1.0, 1.0, STATE_SIZE, STATE_SIZE, fontProperty,
+					shapeStyleProperty);
+			lastEndNode.addState(elt);
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine };
 		}
 
@@ -554,10 +559,10 @@ public abstract class DefaultTemplates {
 	 * Template for a reaction, two Metabolites with a connecting arrow, and a
 	 * GeneProduct (enzyme) pointing to an anchor on that arrow.
 	 */
-	public static class ReactionTemplate extends InteractionTemplate {
+	public static class ReactionTemplate extends DataNodeInteractionTemplate {
 		static final double OFFSET_CATALYST = 50;
-		PathwayElement lastCatalyst;
-		PathwayElement lastCatLine;
+		DataNode lastCatalyst;
+		LineElement lastCatLine;
 
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
@@ -583,9 +588,9 @@ public abstract class DefaultTemplates {
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
 			lastCatLine = lnt.addElements(p, mx, my)[0];
 
-			lastCatLine.getMStart().linkTo(lastCatalyst, 0, 1);
-			lastCatLine.getMEnd().linkTo(anchor, 0, 0);
-			lastCatLine.setEndLineType(MIMShapes.MIM_CATALYSIS);
+			lastCatLine.getStartLinePoint().linkTo(lastCatalyst, 0, 1);
+			lastCatLine.getEndLinePoint().linkTo(anchor, 0, 0);
+			lastCatLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CATALYSIS);
 
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine, lastCatalyst };
 		}
@@ -599,13 +604,13 @@ public abstract class DefaultTemplates {
 	 * Template for a reaction, two Metabolites with a connecting arrow, and a
 	 * GeneProduct (enzyme) pointing to an anchor on that arrow.
 	 */
-	public static class ReversibleReactionTemplate extends InteractionTemplate {
+	public static class ReversibleReactionTemplate extends DataNodeInteractionTemplate {
 		static final double OFFSET_CATALYST = 50;
-		PathwayElement lastCatalyst;
-		PathwayElement lastCatalyst2;
-		PathwayElement lastCatLine;
-		PathwayElement lastCatLine2;
-		PathwayElement lastReverseLine;
+		DataNode lastCatalyst;
+		DataNode lastCatalyst2;
+		LineElement lastCatLine;
+		LineElement lastCatLine2;
+		LineElement lastReverseLine;
 
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
@@ -618,16 +623,18 @@ public abstract class DefaultTemplates {
 			lastCatalyst2.setInitialSize();
 			lastCatalyst2.setTextLabel("Catalyst 2");
 
-			lastStartNode.setDataNodeType(DataNodeType.METABOLITE);
-			lastStartNode.setColor(COLOR_METABOLITE);
-			lastStartNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
+			lastStartNode.setType(DataNodeType.METABOLITE);
+			lastStartNode.getShapeStyleProp().setBorderColor(COLOR_METABOLITE);
+			lastStartNode.getFontProp().setTextColor(COLOR_METABOLITE);
+			lastStartNode.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastStartNode.setTextLabel("Metabolite 1");
 
-			lastEndNode.setDataNodeType(DataNodeType.METABOLITE);
-			lastEndNode.setColor(COLOR_METABOLITE);
-			lastEndNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
+			lastEndNode.setType(DataNodeType.METABOLITE);
+			lastEndNode.getShapeStyleProp().setBorderColor(COLOR_METABOLITE);
+			lastEndNode.getFontProp().setTextColor(COLOR_METABOLITE);
+			lastEndNode.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastEndNode.setTextLabel("Metabolite 2");
-			lastLine.setEndLineType(MIMShapes.MIM_CONVERSION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
 
 			Anchor anchor = lastLine.addAnchor(0.5);
 
@@ -635,17 +642,17 @@ public abstract class DefaultTemplates {
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
 			lastCatLine = lnt.addElements(p, mx, my)[0];
 
-			lastCatLine.getMStart().linkTo(lastCatalyst, 0, 1);
-			lastCatLine.getMEnd().linkTo(anchor, 0, 0);
+			lastCatLine.getStartLinePoint().linkTo(lastCatalyst, 0, 1);
+			lastCatLine.getEndLinePoint().linkTo(anchor, 0, 0);
 			lastCatLine.setEndLineType(MIMShapes.MIM_CATALYSIS);
 
 			Template rev = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
 			lastReverseLine = rev.addElements(p, mx, my)[0];
 
-			lastReverseLine.getMStart().linkTo(lastEndNode, -1, 0.5);
-			lastReverseLine.getMEnd().linkTo(lastStartNode, 1, 0.5);
-			lastReverseLine.setEndLineType(MIMShapes.MIM_CONVERSION);
+			lastReverseLine.getStartLinePoint().linkTo(lastEndNode, -1, 0.5);
+			lastReverseLine.getEndLinePoint().linkTo(lastStartNode, 1, 0.5);
+			lastReverseLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
 
 			Anchor anchor2 = lastReverseLine.addAnchor(0.5);
 
@@ -653,9 +660,9 @@ public abstract class DefaultTemplates {
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
 			lastCatLine2 = lnt2.addElements(p, mx, my)[0];
 
-			lastCatLine2.getMStart().linkTo(lastCatalyst2, 0, -1);
-			lastCatLine2.getMEnd().linkTo(anchor2, 0, 0);
-			lastCatLine2.setEndLineType(MIMShapes.MIM_CATALYSIS);
+			lastCatLine2.getStartLinePoint().linkTo(lastCatalyst2, 0, -1);
+			lastCatLine2.getEndLinePoint().linkTo(anchor2, 0, 0);
+			lastCatLine2.getEndLinePoint().setArrowHead(MIMShapes.MIM_CATALYSIS);
 
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine, lastCatalyst, lastCatalyst2 }; // These
 																												// elements

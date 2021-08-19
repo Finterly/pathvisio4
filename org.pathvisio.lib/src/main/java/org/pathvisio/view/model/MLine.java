@@ -113,27 +113,7 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 	protected ArrowHeadType endLineType = ArrowHeadType.UNDIRECTED;
 	protected ArrowHeadType startLineType = ArrowHeadType.UNDIRECTED;
 
-	public ArrowHeadType getStartLineType() {
-		return startLineType == null ? ArrowHeadType.UNDIRECTED : startLineType;
-	}
 
-	public ArrowHeadType getEndLineType() {
-		return endLineType == null ? ArrowHeadType.UNDIRECTED : endLineType;
-	}
-
-	public void setStartLineType(ArrowHeadType value) {
-		if (startLineType != value) {
-			startLineType = value;
-			fireObjectModifiedEvent(PathwayElementEvent.createSinglePropertyEvent(this, StaticProperty.STARTLINETYPE));
-		}
-	}
-
-	public void setEndLineType(ArrowHeadType value) {
-		if (endLineType != value) {
-			endLineType = value;
-			fireObjectModifiedEvent(PathwayElementEvent.createSinglePropertyEvent(this, StaticProperty.ENDLINETYPE));
-		}
-	}
 	
 	
 	
@@ -192,271 +172,24 @@ public class MLine extends LineElement implements ConnectorRestrictions {
 
 
 
-	/**
-	 * returns the center x coordinate of the bounding box around (start, end)
-	 */
-	public double getMCenterX() {
-		double start = getStartPoint().getX();
-		double end = getEndPoint().getX();
-		return start + (end - start) / 2;
-	}
-
-	/**
-	 * returns the center y coordinate of the bounding box around (start, end)
-	 */
-	public double getMCenterY() {
-		double start = getStartLinePoint().getXY().getY();
-		double end = getEndPoint().getY();
-		return start + (end - start) / 2;
-	}
-
-	/**
-	 * returns the left x coordinate of the bounding box around (start, end)
-	 */
-	public double getMLeft() {
-		double start = getStartPoint().getX();
-		double end = getEndPoint().getX();
-		return Math.min(start, end);
-	}
-
-	/**
-	 * returns the width of the bounding box around (start, end)
-	 */
-	public double getMWidth() {
-		double start = getStartPoint().getX();
-		double end = getEndPoint().getX();
-		return Math.abs(start - end);
-	}
-
-	/**
-	 * returns the height of the bounding box around (start, end)
-	 */
-	public double getMHeight() {
-		double start = getStartPoint().getY();
-		double end = getEndPoint().getY();
-		return Math.abs(start - end);
-	}
-
-	/**
-	 * returns the top y coordinate of the bounding box around (start, end)
-	 */
-	public double getMTop() {
-		double start = getStartPoint().getY();
-		double end = getEndPoint().getY();
-		return Math.min(start, end);
-	}
-
-	/**
-	 * Sets the position of the top side of the rectangular bounds of the line
-	 */
-	public void setMTop(double v) {
-		if (getDirectionY() > 0) {
-			getPoints().set(0, v);
-		} else {
-			setMEndY(v);
-		}
-	}
-
-	/**
-	 * Sets the position of the left side of the rectangular bounds of the line
-	 */
-	public void setMLeft(double v) {
-		if (getDirectionX() > 0) {
-			setMStartX(v);
-		} else {
-			setMEndX(v);
-		}
-	}
-
-	/**
-	 * Sets the x position of the center of the line. This makes the line move as a
-	 * whole
-	 */
-	public void setMCenterX(double v) {
-		double dx = v - getMCenterX();
-		setMStartX(getStartLinePoint() + dx);
-		setMEndX(getMEndX() + dx);
-	}
-
-	/**
-	 * Sets the y position of the center of the line. This makes the line move as a
-	 * whole.
-	 */
-	public void setMCenterY(double v) {
-		double dy = v - getMCenterY();
-		setMStartY(getStartLinePoint().getXY().getY() + dy);
-		setMEndY(getEndLinePoint().getXY().getY() + dy);
-	}
-	
-	
-	public void setMStartY(double v) {
-		getMStart().setY(v);
-	}
-	
-	public void setMEndY(double v) {
-		getMStart().setY(v);
-	}
-	
 	
 
-	/** returns the sign of end.x - start.x */
-	private int getDirectionX() {
-		return (int) Math.signum(getEndLinePoint().getXY().getX() - getStartLinePoint().getXY().getX());
-	}
-
-	/** returns the sign of end.y - start.y */
-	private int getDirectionY() {
-		return (int) Math.signum(getEndLinePoint().getXY().getY() - getStartLinePoint().getXY().getY());
-	}
-
-
-
-	/** converts all points from MPoint to Point2D */
-	public List<Point2D> getPoints() {
-		List<Point2D> pts = new ArrayList<Point2D>();
-		for (MPoint p : getMPoints()) {
-			pts.add(p.toPoint2D());
-		}
-		return pts;
-	}
 
 
 	
 
-	private int getAttachedLineDirection(MAnchor anchor) {
-		int side;
-		double pos = anchor.getPosition();
-		MLine attLine = ((MLine) anchor.getParent());
-		if (attLine.getConnectorShape() instanceof ElbowConnectorShape) {
-			ConnectorShape.Segment attSeg = findAnchorSegment(attLine, pos);
-			int orientationX = Utils.getDirectionX(attSeg.getMStart(), attSeg.getMEnd());
-			int orientationY = Utils.getDirectionY(attSeg.getMStart(), attSeg.getMEnd());
-			side = getSide(orientationY, orientationX);
-		} else {
-			side = getOppositeSide(getSide(getMEndX(), getMEndY(), getMStartX(), getMStartY()));
-			if (attLine.almostPerfectAlignment(side)) {
-				side = getClockwisePerpendicularSide(side);
-			}
-		}
-		return side;
-	}
 
-	private ConnectorShape.Segment findAnchorSegment(MLine attLine, double pos) {
-		ConnectorShape.Segment[] segments = attLine.getConnectorShape().getSegments();
-		Double totLength = 0.0;
-		ConnectorShape.Segment attSeg = null;
-		for (ConnectorShape.Segment segment : segments) {
-			totLength = totLength + segment.getMLength();
-		}
-		Double currPos;
-		Double segSum = 0.0;
-		for (ConnectorShape.Segment segment : segments) {
-			segSum = segSum + segment.getMLength();
-			currPos = segSum / totLength;
-			attSeg = segment;
-			if (currPos > pos) {
-				break;
-			}
-		}
-		return attSeg;
-	}
+	
 
-	/**
-	 * Check if either the line segment has less than or equal to 10 degree
-	 * alignment with the side passed
-	 * 
-	 * @param startLine
-	 * @param endLine
-	 * @return true if <= 10 degree alignment else false
-	 */
-	private boolean almostPerfectAlignment(int side) {
-		int MAXOFFSET = 30; /*
-							 * cutoff point where we see a shallow angle still as either horizontal or
-							 * vertical
-							 */
-		// X axis
-		if ((side == SIDE_EAST) || (side == SIDE_WEST)) {
-			double angleDegree = (180 / Math.PI) * Math.atan2(Math.abs(getStartPoint().getY() - getEndPoint().getY()),
-					Math.abs(getStartPoint().getX() - getEndPoint().getX()));
-			if (angleDegree <= MAXOFFSET)
-				return true;
-		} else {// north south or Y axis
-			double angleDegree = (180 / Math.PI) * Math.atan2(Math.abs(getStartPoint().getX() - getEndPoint().getX()),
-					Math.abs(getStartPoint().getY() - getEndPoint().getY()));
-			if (angleDegree <= MAXOFFSET)
-				return true;
-		}
-		return false;
-	}
+	
 
-	/**
-	 * Returns the Perpendicular for a SIDE_* constant (e.g. SIDE_EAST <->
-	 * SIDE_WEST)
-	 */
-	private int getClockwisePerpendicularSide(int side) {
-		switch (side) {
-		case SIDE_EAST:
-			return SIDE_SOUTH;
-		case SIDE_WEST:
-			return SIDE_NORTH;
-		case SIDE_NORTH:
-			return SIDE_EAST;
-		case SIDE_SOUTH:
-			return SIDE_WEST;
-		}
-		return -1;
-	}
+
+	
 
 
 
 
-	/**
-	 * Get the side of the given pathway element to which the x and y coordinates
-	 * connect
-	 * 
-	 * @param x The x coordinate
-	 * @param y The y coordinate
-	 * @param e The element to find the side of
-	 * @return One of the SIDE_* constants
-	 */
-	private static int getSide(double x, double y, double cx, double cy) {
-		return getSide(x - cx, y - cy);
-	}
 
-	private static int getSide(double relX, double relY) {
-		int direction = 0;
-		if (Math.abs(relX) > Math.abs(relY)) {
-			if (relX > 0) {
-				direction = SIDE_EAST;
-			} else {
-				direction = SIDE_WEST;
-			}
-		} else {
-			if (relY > 0) {
-				direction = SIDE_SOUTH;
-			} else {
-				direction = SIDE_NORTH;
-			}
-		}
-		return direction;
-	}
-
-	/**
-	 * Returns the opposite for a SIDE_* constant (e.g. SIDE_EAST <-> SIDE_WEST)
-	 */
-	private int getOppositeSide(int side) {
-		switch (side) {
-		case SIDE_EAST:
-			return SIDE_WEST;
-		case SIDE_WEST:
-			return SIDE_EAST;
-		case SIDE_NORTH:
-			return SIDE_SOUTH;
-		case SIDE_SOUTH:
-			return SIDE_NORTH;
-		}
-		return -1;
-	}
 
 
 }

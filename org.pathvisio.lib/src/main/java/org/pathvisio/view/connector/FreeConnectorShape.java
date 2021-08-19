@@ -65,8 +65,8 @@ public class FreeConnectorShape extends SegmentedConnector {
 	 */
 	protected Segment[] calculateSegments(ConnectorRestrictions restrictions, WayPoint[] waypoints) {
 		Segment[] segments = new Segment[waypoints.length + 1];
-		Point2D start = restrictions.getStartPoint();
-		Point2D end = restrictions.getEndPoint();
+		Point2D start = restrictions.getStartPoint2D();
+		Point2D end = restrictions.getEndPoint2D();
 
 		if (segments.length == 1) {
 			// no waypoints, behave like StraightConnectorShape

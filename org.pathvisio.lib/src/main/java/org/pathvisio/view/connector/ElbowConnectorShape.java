@@ -92,8 +92,8 @@ public class ElbowConnectorShape extends SegmentedConnector {
 		int endAxis = getSegmentAxis(endSide);
 		int endDirection = getSegmentDirection(endSide);
 
-		Point2D start = restrictions.getStartPoint();
-		Point2D end = restrictions.getEndPoint();
+		Point2D start = restrictions.getStartPoint2D();
+		Point2D end = restrictions.getEndPoint2D();
 
 		if (nrSegments - 2 == 1) {
 			/*
@@ -149,14 +149,14 @@ public class ElbowConnectorShape extends SegmentedConnector {
 		int nrSegments = getNrSegments(restrictions);
 		Segment[] segments = new Segment[nrSegments];
 
-		Point2D start = restrictions.getStartPoint();
-		Point2D end = restrictions.getEndPoint();
+		Point2D start = restrictions.getStartPoint2D();
+		Point2D end = restrictions.getEndPoint2D();
 		int startAxis = getSegmentAxis(restrictions.getStartSide());
 		if (nrSegments == 2) { // No waypoints
 			segments[0] = createStraightSegment(start, end, startAxis);
 			segments[1] = createStraightSegment(segments[0].getMEnd(), end, getOppositeAxis(startAxis));
 		} else {
-			segments[0] = createStraightSegment(restrictions.getStartPoint(), waypoints[0], startAxis);
+			segments[0] = createStraightSegment(restrictions.getStartPoint2D(), waypoints[0], startAxis);
 			int axis = getOppositeAxis(startAxis);
 			for (int i = 0; i < waypoints.length - 1; i++) {
 				segments[i + 1] = createStraightSegment(segments[i].getMEnd(), waypoints[i + 1], axis);
@@ -286,8 +286,8 @@ public class ElbowConnectorShape extends SegmentedConnector {
 	 */
 	protected int getNrSegments(ConnectorRestrictions restrictions) {
 
-		Point2D start = restrictions.getStartPoint();
-		Point2D end = restrictions.getEndPoint();
+		Point2D start = restrictions.getStartPoint2D();
+		Point2D end = restrictions.getEndPoint2D();
 
 		boolean leftToRight = getDirectionX(start, end) > 0;
 
