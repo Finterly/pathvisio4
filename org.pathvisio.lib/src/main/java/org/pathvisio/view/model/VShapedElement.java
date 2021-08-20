@@ -62,21 +62,27 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 //		gdata = o;
 	}
 
-
-	
 	public Point2D toAbsoluteCoordinate(Point2D p, ShapedElement gdata) {
-			double x = p.getX();
-			double y = p.getY();
-			Rectangle2D bounds = getMBounds(gdata);
-			// Scale
-			if (bounds.getWidth() != 0)
-				x *= bounds.getWidth() / 2;
-			if (bounds.getHeight() != 0)
-				y *= bounds.getHeight() / 2;
-			// Translate
-			x += bounds.getCenterX();
-			y += bounds.getCenterY();
-			return new Point2D.Double(x, y);
+		double x = p.getX();
+		double y = p.getY();
+		Rectangle2D bounds = getMBounds(gdata);
+		// Scale
+		if (bounds.getWidth() != 0)
+			x *= bounds.getWidth() / 2;
+		if (bounds.getHeight() != 0)
+			y *= bounds.getHeight() / 2;
+		// Translate
+		x += bounds.getCenterX();
+		y += bounds.getCenterY();
+		return new Point2D.Double(x, y);
+	}
+
+	/**
+	 * Get the rectangular bounds of the object without rotation taken into account
+	 */
+	public Rectangle2D getMBounds(ShapedElement gdata) {
+		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
+				gdata.getRectProp().getHeight());
 	}
 
 	/**
@@ -111,11 +117,6 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 		return vFromM(getMLeft(gdata));
 	}
 
-	// startx for shapes TODO
-	public double getMLeft(ShapedElement gdata) {
-		return gdata.getRectProp().getCenterXY().getX() - gdata.getRectProp().getWidth() / 2;
-	}
-
 	/**
 	 * Get the y-coordinate of the top side of this object adjusted to the current
 	 * zoom factor, but not taking into account rotation
@@ -126,11 +127,6 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 	 */
 	public double getVTop(ShapedElement gdata) {
 		return vFromM(getMTop(gdata));
-	}
-
-	// starty for shapes TODO
-	public double getMTop(ShapedElement gdata) {
-		return gdata.getRectProp().getCenterXY().getY() - gdata.getRectProp().getHeight() / 2;
 	}
 
 	/**
@@ -158,21 +154,24 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 	}
 
 	/**
-	 * Get the rectangular bounds of the object without rotation taken into account
-	 */
-	public Rectangle2D getBounds(ShapedElement gdata) {
-		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
-				gdata.getRectProp().getHeight());
-
-	}
-
-	/**
 	 * Get the direct view to model translation of this shape
 	 * 
 	 * @param rotate Whether to take into account rotation or not
 	 * @return
 	 */
 	abstract protected Shape getVShape(boolean rotate);
+
+	/*----------------- Convenience methods from Model -----------------*/
+
+	// startx for shapes TODO
+	public double getMLeft(ShapedElement gdata) {
+		return gdata.getRectProp().getCenterXY().getX() - gdata.getRectProp().getWidth() / 2;
+	}
+
+	// starty for shapes TODO
+	public double getMTop(ShapedElement gdata) {
+		return gdata.getRectProp().getCenterXY().getY() - gdata.getRectProp().getHeight() / 2;
+	}
 
 	/**
 	 * Get the rectangle that represents the bounds of the shape's direct
@@ -219,8 +218,6 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 		return style;
 	}
 
-
-
 	/**
 	 * Returns the z-order from the model
 	 */
@@ -253,22 +250,4 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 		}
 	}
 
-
-}
-
-/**
- * Generates double line stroke, e.g., for cellular compartment shapes.
- *
- */
-final class CompositeStroke implements Stroke {
-	private Stroke stroke1, stroke2;
-
-	public CompositeStroke(Stroke stroke1, Stroke stroke2) {
-		this.stroke1 = stroke1;
-		this.stroke2 = stroke2;
-	}
-
-	public Shape createStrokedShape(Shape shape) {
-		return stroke2.createStrokedShape(stroke1.createStrokedShape(shape));
-	}
 }

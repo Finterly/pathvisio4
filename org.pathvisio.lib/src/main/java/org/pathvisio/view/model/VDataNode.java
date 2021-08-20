@@ -25,7 +25,7 @@ import org.pathvisio.model.DataNode;
  * This class implements a {@link DataNode} and provides methods to resize and
  * draw it.
  */
-public class VDataNode extends VRotatable {
+public class VDataNode extends VShapedElement {
 
 	protected DataNode dataNode = null;
 

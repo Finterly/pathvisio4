@@ -18,6 +18,8 @@ package org.pathvisio.view.model;
 
 import java.awt.geom.Point2D;
 
+import org.pathvisio.model.PathwayElement;
+
 /**
  * This class represents the view of a {@link LinkableTo} PathwayElement.
  * Pathway elements {@link DataNode}, {@link State}, {@link Anchor},
@@ -30,6 +32,6 @@ public interface VLinkableTo {
 
 	public abstract Point2D toAbsoluteCoordinate(Point2D p);
 
-	public abstract int getZOrder();
+	public abstract int getZOrder(PathwayElement pathwayElement);
 
 }

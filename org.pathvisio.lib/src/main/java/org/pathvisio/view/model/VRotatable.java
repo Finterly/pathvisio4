@@ -73,7 +73,6 @@ public abstract class VRotatable extends VCitable implements Adjustable {
 
 	Handle[] handles = new Handle[] {};
 
-	
 	/**
 	 * Get the rectangular bounds of the object without rotation taken into account
 	 */
@@ -81,7 +80,7 @@ public abstract class VRotatable extends VCitable implements Adjustable {
 		return new Rectangle2D.Double(getMLeft(gdata), getMTop(gdata), gdata.getRectProp().getWidth(),
 				gdata.getRectProp().getHeight());
 	}
-	
+
 	/**
 	 * Get the rectangular bounds of the object after rotation is applied
 	 */
@@ -97,7 +96,7 @@ public abstract class VRotatable extends VCitable implements Adjustable {
 		}
 	}
 
-	@Override 
+	@Override
 	public Point2D toAbsoluteCoordinate(Point2D p, ShapedElement gdata) {
 		double x = p.getX();
 		double y = p.getY();

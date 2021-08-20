@@ -25,7 +25,7 @@ import org.pathvisio.model.PathwayElement;
  */
 public class VLabel extends VRotatable {
 	
-	Label label = null;
+	Label gdata = null;
 	/**
 	 * Constructor for this class
 	 * 
@@ -59,7 +59,7 @@ public class VLabel extends VRotatable {
 	 */
 	@Override
 	public Label getPathwayElement() {
-		return label;
+		return gdata;
 	}
 	
 	

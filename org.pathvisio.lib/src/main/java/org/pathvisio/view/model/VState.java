@@ -23,6 +23,7 @@ import java.awt.geom.Rectangle2D;
 import org.pathvisio.model.State;
 import org.pathvisio.io.listener.PathwayElementListener;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Shape;
 import org.pathvisio.model.ShapedElement;
 
 /**
@@ -30,11 +31,9 @@ import org.pathvisio.model.ShapedElement;
  * 
  * @author unknown, finterly
  */
-public class VState extends VRotatable implements PathwayElementListener  {
+public class VState extends VShapedElement implements PathwayElementListener {
 
-	//TODO Override ShapedElement methods...
-
-	protected State gdata = null;
+	State gdata = null;
 
 	public static final String ROTATION_KEY = "org.pathvisio.core.StateRotation";
 
@@ -42,7 +41,17 @@ public class VState extends VRotatable implements PathwayElementListener  {
 		super(canvas);
 		o.addListener(this);
 		gdata = o;
-		// checkCitation(); TODO 
+		checkCitation(gdata.getCitationRefs()); // TODO
+	}
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return shape
+	 */
+	@Override
+	public State getPathwayElement() {
+		return gdata;
 	}
 
 	public void doDraw(Graphics2D g) {
@@ -57,7 +66,7 @@ public class VState extends VRotatable implements PathwayElementListener  {
 	}
 
 	/**
-	 * Return relative coordinates for the state.  
+	 * Return relative coordinates for the state.
 	 * 
 	 * @param mp a point in absolute model coordinates
 	 * @returns the same point relative to the bounding box of this pathway element:
@@ -67,8 +76,8 @@ public class VState extends VRotatable implements PathwayElementListener  {
 	protected Point2D toRelativeCoordinate(Point2D mp) {
 		double relX = mp.getX();
 		double relY = mp.getY();
-		// get bounds of parent data node 
-		Rectangle2D bounds = getRBounds(gdata.getDataNode()); //TODO of dataNode 
+		// get bounds of parent data node
+		Rectangle2D bounds = getRBounds(gdata.getDataNode()); // TODO of dataNode
 		// Translate
 		relX -= bounds.getCenterX();
 		relY -= bounds.getCenterY();
@@ -80,7 +89,6 @@ public class VState extends VRotatable implements PathwayElementListener  {
 		return new Point2D.Double(relX, relY);
 	}
 
-	
 	protected void vMoveBy(double vdx, double vdy) {
 		Point2D mNewPos = new Point2D.Double(mFromV(getVCenterX() + vdx), mFromV(getVCenterY() + vdy));
 		Point2D newRel = toRelativeCoordinate(mNewPos);

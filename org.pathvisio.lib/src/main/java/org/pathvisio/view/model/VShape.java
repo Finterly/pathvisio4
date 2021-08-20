@@ -17,6 +17,7 @@
 package org.pathvisio.view.model;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.Label;
 import org.pathvisio.model.Shape;
@@ -26,18 +27,18 @@ import org.pathvisio.model.Shape;
  *
  * @author unknown, finterly
  */
-public class VShape extends VRotatable {
+public class VShape extends VShapedElement {
 	
-	Shape shape = null;
+	Shape gdata = null;
 	
 	/**
 	 * Constructor for this class
 	 * 
 	 * @param canvas - the VPathway this Shape will be part of
 	 */
-	public VShape(VPathwayModel canvas, Shape shape) {
+	public VShape(VPathwayModel canvas, Shape gdata) {
 		super(canvas);
-		this.shape = shape;
+		this.gdata = gdata;
 	}
 	
 	/**
@@ -47,7 +48,7 @@ public class VShape extends VRotatable {
 	 */
 	@Override
 	public Shape getPathwayElement() {
-		return shape;
+		return gdata;
 	}
 
 	@Override
@@ -57,9 +58,16 @@ public class VShape extends VRotatable {
 	}
 
 	@Override
-	protected int getZOrder() {
+	protected java.awt.Shape getVShape(boolean rotate) {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
+	}
+
+	@Override
+	protected void setVScaleRectangle(Rectangle2D r) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
+

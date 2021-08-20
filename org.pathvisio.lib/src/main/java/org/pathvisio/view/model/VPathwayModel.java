@@ -2435,10 +2435,10 @@ public class VPathwayModel implements PathwayListener {
 
 		for (VElement o : toMove) {
 			// skip if parent of state is also in selection.
-			if (o instanceof State && eltIds.contains(((State) o).getPathwayElement().getGraphRef()))
+			if (o instanceof VState && eltIds.contains(((VState) o).getPathwayElement().getDataNode()))
 				continue;
 
-			if (o instanceof Graphics) {
+			if (o instanceof VLineElement || o instanceof VShapedElement) {
 				// skip if parent group is also in selection
 				if (groupIds.contains(((Graphics) o).getPathwayElement().getGroupRef()))
 					continue;
