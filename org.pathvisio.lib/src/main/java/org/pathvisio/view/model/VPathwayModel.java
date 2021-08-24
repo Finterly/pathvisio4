@@ -287,14 +287,14 @@ public class VPathwayModel implements PathwayListener {
 	 * Map the contents of a single {@link Interaction} to this VPathwayModel.
 	 */
 	private Graphics fromModelInteraction(Interaction o) {
-		return new VLine(this, o);
+		return new VLineElement(this, o);
 	}
 
 	/**
 	 * Map the contents of a single {@link GraphicalLine} to this VPathwayModel.
 	 */
 	private Graphics fromModelGraphicalLine(GraphicalLine o) {
-		return new VLine(this, o);
+		return new VLineElement(this, o);
 	}
 
 	/**
@@ -375,14 +375,6 @@ public class VPathwayModel implements PathwayListener {
 	void addDirtyRect(Rectangle2D ar) {
 		if (parent != null)
 			parent.redraw(ar.getBounds());
-	}
-
-	/**
-	 * Deprecated: Does nothing, redraws are now scheduled by Swing. call
-	 * addDirtyRect() or redraw() instead, or remove calls to this altogether
-	 */
-	@Deprecated
-	public void redrawDirtyRect() {
 	}
 
 	/**
@@ -571,70 +563,72 @@ public class VPathwayModel implements PathwayListener {
 			dragUndoState = DRAG_UNDO_CHANGED;
 		}
 		hideLinkAnchors();
-		VPoint p = (VPoint) g.getAdjustable();
-		VLineElement l = p.getLine();
-		LineElement lineElement = l.getPathwayElement();
-		List<LinkProvider> linkproviders = getLinkProvidersAt(p2d);
-		/*
-		 * prevents grouped line from linking to its own group by removing the group
-		 * from the list of linkproviders.
-		 */
+		VPoint vPoint = (VPoint) g.getAdjustable();
+		VLineElement vLineElement = vPoint.getLine();
+		LineElement lineElement = vLineElement.getPathwayElement();
+		// get linkproviders for given point
+		List<LinkProvider> linkProviders = getLinkProvidersAt(p2d);
+		// remove line's own group to prevent linking to its own group
 		if (g.getAdjustable() instanceof VPoint) {
 			Group group = lineElement.getGroupRef();
 			if (group != null) {
-				linkproviders.remove(getPathwayElementView(group));
+				linkProviders.remove(getPathwayElementView(group));
 			}
 			// removes the line anchors to prevent linking a line to it's own anchors
-			for (VAnchor va : l.getVAnchors()) {
-				linkproviders.remove(va);
+			for (VAnchor va : vLineElement.getVAnchors()) {
+				linkProviders.remove(va);
 			}
 		}
 		LinkableTo idc = null;
-		for (LinkProvider lp : linkproviders) {
-			// do nothing if linkprovider is an anchor with disallowlinks true 
-			if (lp instanceof VAnchor && ((VAnchor) lp).getAnchor().getShapeType().isDisallowLinks()) {
+		for (LinkProvider linkProvider : linkProviders) {
+			// do nothing if linkprovider is an anchor with disallowlinks true
+			if (linkProvider instanceof VAnchor
+					&& ((VAnchor) linkProvider).getAnchor().getShapeType().isDisallowLinks()) {
 				break;
 			}
-			lp.showLinkAnchors();
-			LinkAnchor la = lp.getLinkAnchorAt(p2d);
-			if (la != null) {
-				// Set graphRef
-				la.link(p.getLinePoint());
-				idc = la.getGraphIdContainer();
+			linkProvider.showLinkAnchors();
+			LinkAnchor linkAnchor = linkProvider.getLinkAnchorAt(p2d); // TODO what does this do????
+			if (linkAnchor != null) {
+				linkAnchor.link(vPoint.getLinePoint()); // link linkAnchor and linkableFrom linePoint
+				idc = linkAnchor.getLinkableTo(); // get linkableTo pathway element from linkAnchor
 				if (currentLinkAnchor != null) {
 					currentLinkAnchor.unhighlight();
 				}
-				la.highlight();
-				currentLinkAnchor = la;
+				linkAnchor.highlight();
+				currentLinkAnchor = linkAnchor;
 				break;
 			}
 		}
-
-		if (idc == null && p.getLinePoint().isLinked()) {
-			String graphRef = p.getLinePoint().getElementRef().getElementId();
-			p.getLinePoint().unlink();
+		if (idc == null && vPoint.isLinked()) { // TODO make sure links update from model to view to model...
+			String elementRef = vPoint.getLinePoint().getElementRef().getElementId();
+			vPoint.getLinePoint().unlink();
 			if (currentLinkAnchor != null) {
-				if (pe instanceof MLine && isAnotherLineLinked(graphRef, (MLine) pe)) {
+				if (lineElement instanceof LineElement && isAnotherLineLinked(elementRef, (LineElement) lineElement)) {
 
-				} else if (currentLinkAnchor.getGraphIdContainer() instanceof MAnchor
-						&& currentLinkAnchor.getGraphIdContainer().getElementId().equals(graphRef)) {
-					currentLinkAnchor.getGraphIdContainer().setElementId(null);
+				} else if (currentLinkAnchor.getLinkableTo() instanceof Anchor
+						&& currentLinkAnchor.getLinkableTo().getElementId().equals(elementRef)) {
+					currentLinkAnchor.getLinkableTo().setElementId(null);
 				}
 				currentLinkAnchor.unhighlight();
 			}
 		}
 	}
 
-	private boolean isAnotherLineLinked(String graphRef, MLine currLine) {
-		for (PathwayElement element : getPathwayModel().getPathwayElements()) { //TODO maybe make line
-			if (element instanceof MLine) {
+	/**
+	 * @param graphRef
+	 * @param currLine
+	 * @return
+	 */
+	private boolean isAnotherLineLinked(String elementRef, LineElement currLine) {
+		for (PathwayElement element : getPathwayModel().getPathwayElements()) { // TODO maybe make line
+			if (element instanceof LineElement) {
 				if (element.equals(currLine)) {
 					continue;
 				}
 				for (LinePoint point : ((LineElement) element).getLinePoints()) {
 					if (point.getElementRef() == null) {
 						// skip point
-					} else if (graphRef != null && point.getElementRef().equals(graphRef)) {
+					} else if (elementRef != null && point.getElementRef().equals(elementRef)) {
 						return true;
 					}
 				}
@@ -678,7 +672,7 @@ public class VPathwayModel implements PathwayListener {
 	 */
 	public void mouseMove(MouseEvent ve) {
 		snapModifierPressed = ve.isKeyDown(MouseEvent.M_SHIFT);
-		// If draggin, drag the pressed object
+		// If dragging, drag the pressed object
 		// And only when the right button isn't clicked
 		if (pressedObject != null && isDragging && !ve.isKeyDown(java.awt.event.MouseEvent.BUTTON3_DOWN_MASK)) {
 			if (dragUndoState == DRAG_UNDO_CHANGE_START) {
@@ -838,7 +832,7 @@ public class VPathwayModel implements PathwayListener {
 		if (!openHref(e, vpe)) {
 			// setFocus();
 			vDragStart = new Point(e.getX(), e.getY());
-			temporaryCopy = (Pathway) data.clone();
+			temporaryCopy = (PathwayModel) data.clone();
 
 			if (editMode) {
 				if (newTemplate != null) {
@@ -886,7 +880,7 @@ public class VPathwayModel implements PathwayListener {
 			// if it was a click, give object the initial size.
 			else if (newObject != null && Math.abs(vDragStart.x - e.getX()) <= MIN_DRAG_LENGTH
 					&& Math.abs(vDragStart.y - e.getY()) <= MIN_DRAG_LENGTH) {
-				newObject.setInitialSize();
+				newObject.setInitialSize(); // TODO
 			}
 			newObject = null;
 			setNewTemplate(null);
@@ -1122,10 +1116,18 @@ public class VPathwayModel implements PathwayListener {
 		return result;
 	}
 
-	private List<LinkProvider> getLinkProvidersAt(Point2D p) {
+	/**
+	 * Returns a list of all possible {@link LinkProvider} for the given point.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	private List<LinkProvider> getLinkProvidersAt(Point2D p2d) {
 		List<LinkProvider> result = new ArrayList<LinkProvider>();
+		// for each object visible on this mapp
 		for (VElement o : drawingObjects) {
-			if (o instanceof LinkProvider && o.getVBounds().contains(p)) {
+			// add if linkprovider and rectangular bounds contains given point
+			if (o instanceof LinkProvider && o.getVBounds().contains(p2d)) {
 				result.add((LinkProvider) o);
 			}
 		}
@@ -1279,14 +1281,35 @@ public class VPathwayModel implements PathwayListener {
 		selection.stopSelecting();
 	}
 
-	public void selectObjectsByObjectType(ObjectType ot) {
+	public void selectObjectsByObjectType(Class subclass) {
 		clearSelection();
 		selection.startSelecting();
-		for (PathwayElement pe : getPathwayModel().getDataObjects()) {
-			if (pe.getObjectType() == ot) {
+		if (subclass == DataNode.class) {
+			for (DataNode pe : getPathwayModel().getDataNodes()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Interaction.class) {
+			for (Interaction pe : getPathwayModel().getInteractions()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == GraphicalLine.class) {
+			for (GraphicalLine pe : getPathwayModel().getGraphicalLines()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Label.class) {
+			for (Label pe : getPathwayModel().getLabels()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Shape.class) {
+			for (Shape pe : getPathwayModel().getShapes()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Group.class) {
+			for (Group pe : getPathwayModel().getGroups()) {
 				selection.addToSelection(getPathwayElementView(pe));
 			}
 		}
+		//TODO???? Citations, Annotations... other??? 
 		selection.stopSelecting();
 	}
 

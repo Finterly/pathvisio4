@@ -112,7 +112,7 @@ public class LinkAnchor extends VElement {
 		g2d.draw(shape);
 	}
 
-	public LinkableTo getGraphIdContainer() {
+	public LinkableTo getLinkableTo() {
 		return pathwayElement;
 	}
 

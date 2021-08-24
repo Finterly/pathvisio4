@@ -16,11 +16,14 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.State;
+import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.io.listener.PathwayElementListener;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.Shape;
@@ -55,14 +58,39 @@ public class VState extends VShapedElement implements PathwayElementListener {
 	}
 
 	public void doDraw(Graphics2D g) {
-		g.setColor(getLineColor(gdata));
-		setLineStyle(g);
+		g.setColor(getBorderColor(gdata));
+		setBorderStyle(g, gdata);
 		drawShape(g);
 
 		g.setFont(getVFont());
 		drawTextLabel(g);
 
 		drawHighlight(g);
+	}
+	
+	protected Color getBorderColor(State gdata) {
+		Color borderColor = gdata.getShapeStyleProp().getBorderColor();
+		/*
+		 * the selection is not colored red when in edit mode it is possible to see a
+		 * color change immediately
+		 */
+		if (isSelected() && !canvas.isEditMode()) {
+			borderColor = selectColor;
+		}
+		return borderColor;
+	}
+
+	protected void setBorderStyle(Graphics2D g, State gdata) {
+		LineStyleType ls = gdata.getShapeStyleProp().getBorderStyle();
+		float lt = (float) vFromM(gdata.getShapeStyleProp().getBorderWidth());
+		if (ls == LineStyleType.SOLID) {
+			g.setStroke(new BasicStroke(lt));
+		} else if (ls == LineStyleType.DASHED) {
+			g.setStroke(
+					new BasicStroke(lt, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10, new float[] { 4, 4 }, 0));
+		} else if (ls == LineStyleType.DOUBLE) {
+			g.setStroke(new CompositeStroke(new BasicStroke(lt * 2), new BasicStroke(lt)));
+		}
 	}
 
 	/**

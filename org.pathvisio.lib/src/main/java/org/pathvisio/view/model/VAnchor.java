@@ -43,7 +43,7 @@ import org.pathvisio.model.LinePoint;
 public class VAnchor extends VElement implements LinkProvider, Adjustable, VLinkableTo {
 
 	private Anchor anchor;
-	private VLineElement line;
+	private VLineElement vLineElement;
 	private Handle handle;
 	private double mx = Double.NaN;
 	private double my = Double.NaN;
@@ -59,13 +59,13 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 	public VAnchor(Anchor anchor, VLineElement parent) {
 		super(parent.getDrawing());
 		this.anchor = anchor;
-		this.line = parent;
+		this.vLineElement = parent;
 		updatePosition();
 	}
 
 	//TODO draft 
 	public Point2D toAbsoluteCoordinate(Point2D p) {
-		Point2D l = line.getConnectorShape().fromLineCoordinate(anchor.getPosition());
+		Point2D l = vLineElement.getConnectorShape().fromLineCoordinate(anchor.getPosition());
 		return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
 	}
 
@@ -110,7 +110,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 	 */
 	protected void destroy() {
 		super.destroy();
-		line.removeVAnchor(this);
+		vLineElement.removeVAnchor(this);
 	}
 
 	/**
@@ -130,14 +130,14 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 	protected void createHandles() {
 		handle = new Handle(Handle.Freedom.FREE, this, this);
 		double lc = anchor.getPosition();
-		Point2D position = line.vFromL(lc);
+		Point2D position = vLineElement.vFromL(lc);
 		handle.setVLocation(position.getX(), position.getY());
 	}
 
 	void updatePosition() {
 		double lc = anchor.getPosition();
 
-		Point2D position = line.vFromL(lc);
+		Point2D position = vLineElement.vFromL(lc);
 		if (handle != null)
 			handle.setVLocation(position.getX(), position.getY());
 
@@ -147,7 +147,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 		for (LinkableFrom ref : anchor.getLinkableFroms()) {
 			if (ref instanceof LinePoint) {
 				VPoint vp = canvas.getPoint((LinePoint) ref);
-				if (vp != null && vp.getLine() != line) {
+				if (vp != null && vp.getLine() != vLineElement) {
 					vp.getLine().recalculateConnector();
 				}
 			}
@@ -155,7 +155,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 	}
 
 	public void adjustToHandle(Handle h, double vx, double vy) {
-		double position = line.lFromV(new Point2D.Double(vx, vy));
+		double position = vLineElement.lFromV(new Point2D.Double(vx, vy));
 		anchor.setPosition(position);
 	}
 
@@ -192,7 +192,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 		if (isSelected()) {
 			c = selectColor;
 		} else {
-			c = line.getPathwayElement().getLineStyleProp().getLineColor();
+			c = vLineElement.getPathwayElement().getLineStyleProp().getLineColor();
 		}
 
 		AnchorShape arrowShape = getAnchorShape();
@@ -243,7 +243,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 	 * Returns the z-order of the parent line + 1.
 	 */
 	public int getZOrder() {
-		return line.getPathwayElement().getLineStyleProp().getZOrder() + 1;
+		return vLineElement.getPathwayElement().getLineStyleProp().getZOrder() + 1;
 	}
 
 }

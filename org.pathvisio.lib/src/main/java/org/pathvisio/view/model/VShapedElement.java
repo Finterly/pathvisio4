@@ -78,6 +78,27 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 	}
 
 	/**
+	 * @param mp a point in absolute model coordinates
+	 * @returns the same point relative to the bounding box of this pathway element:
+	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
+	 *          corner, and 0,0 meaning the center.
+	 */
+	public Point2D toRelativeCoordinate(Point2D mp, ShapedElement gdata) {
+		double relX = mp.getX();
+		double relY = mp.getY();
+		Rectangle2D bounds = getRBounds(gdata);
+		// Translate
+		relX -= bounds.getCenterX();
+		relY -= bounds.getCenterY();
+		// Scalebounds.getCenterX();
+		if (relX != 0 && bounds.getWidth() != 0)
+			relX /= bounds.getWidth() / 2;
+		if (relY != 0 && bounds.getHeight() != 0)
+			relY /= bounds.getHeight() / 2;
+		return new Point2D.Double(relX, relY);
+	}
+	
+	/**
 	 * Get the rectangular bounds of the object without rotation taken into account
 	 */
 	public Rectangle2D getMBounds(ShapedElement gdata) {
@@ -85,6 +106,22 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 				gdata.getRectProp().getHeight());
 	}
 
+	/**
+	 * TODO is in VRotatable...
+	 * Get the rectangular bounds of the object after rotation is applied
+	 */
+	public Rectangle2D getRBounds(ShapedElement gdata) {
+		Double rotation = gdata.getRotation();
+		if (gdata.getClass() == ShapedElement.class) {
+			Rectangle2D bounds = getMBounds((ShapedElement) gdata);
+			AffineTransform t = new AffineTransform();
+			t.rotate(rotation, ((ShapedElement) gdata).getRectProp().getCenterXY().getX(),
+					((ShapedElement) gdata).getRectProp().getCenterXY().getY());
+			bounds = t.createTransformedShape(bounds).getBounds2D();
+			return bounds;
+		}
+	}
+	
 	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
 	 * current zoom factor
@@ -225,19 +262,19 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 		return gdata.getShapeStyleProp().getZOrder();
 	}
 
-	protected Color getLineColor(ShapedElement gdata) {
-		Color linecolor = gdata.getShapeStyleProp().getBorderColor();
+	protected Color getBorderColor(ShapedElement gdata) {
+		Color borderColor = gdata.getShapeStyleProp().getBorderColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
 		 */
 		if (isSelected() && !canvas.isEditMode()) {
-			linecolor = selectColor;
+			borderColor = selectColor;
 		}
-		return linecolor;
+		return borderColor;
 	}
 
-	protected void setLineStyle(Graphics2D g, ShapedElement gdata) {
+	protected void setBorderStyle(Graphics2D g, ShapedElement gdata) {
 		LineStyleType ls = gdata.getShapeStyleProp().getBorderStyle();
 		float lt = (float) vFromM(gdata.getShapeStyleProp().getBorderWidth());
 		if (ls == LineStyleType.SOLID) {

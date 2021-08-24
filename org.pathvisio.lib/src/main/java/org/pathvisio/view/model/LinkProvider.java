@@ -20,12 +20,14 @@ import java.awt.geom.Point2D;
 
 /**
  * Classes that implement this interface can provide anchor points to which a
- * point can link.
+ * point can link. Implementations include: {@link VAnchor}, {@link VGroup},
+ * {@link DataNode}, {@link Label}, {@link Shape}, {@link State}, and
+ * {@link AbstractLinkAnchorDelegate}, {@link DefaultLinkAnchorDelegate}
  * 
  * @author thomas
  */
 public interface LinkProvider {
-	
+
 	public void showLinkAnchors();
 
 	public void hideLinkAnchors();

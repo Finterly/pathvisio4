@@ -17,6 +17,11 @@
 package org.pathvisio.view.model;
 
 import org.pathvisio.model.LinePoint;
+
+import java.awt.geom.Point2D;
+
+import org.pathvisio.io.listener.PathwayElementEvent;
+import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.LinAlg;
@@ -50,17 +55,15 @@ public class VPoint implements Adjustable {
 		this.line = line;
 	}
 
-	
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
-	 * @return linePoint the LinePoint pathway element this object corresponds to. 
+	 * @return linePoint the LinePoint pathway element this object corresponds to.
 	 */
 	public LinePoint getPathwayElement() {
 		return linePoint;
 	}
-	
-	
+
 	public boolean isHighlighted() {
 		return isHighlighted;
 	}
@@ -154,5 +157,52 @@ public class VPoint implements Adjustable {
 	public double getVHeight() {
 		return 0;
 	}
+
+	/*------------------------------------MPOINT METHODS ----------------------------------*/
+	
+	/**
+	 * Find out if this point is linked to an object. Returns true if a graphRef
+	 * exists and is not an empty string
+	 */
+	public boolean isLinked() {
+		LinkableTo ref = linePoint.getElementRef();
+		return ref != null;
+	}
+
+	
+	/**
+	 * Link to an object. Current absolute coordinates will be converted to relative
+	 * coordinates based on the object to link to.
+	 */
+	public void linkTo(LinkableTo pathwayElement) {
+		Point2D rel = pathwayElement.toRelativeCoordinate(linePoint.toPoint2D()); //TODO??? idc.toRelativeCoordinate? 
+		linkTo(pathwayElement, rel.getX(), rel.getY());
+	}
+
+	/**
+	 * Link to an object using the given relative coordinates
+	 */
+	public void linkTo(LinkableTo pathwayElement, double relX, double relY) {
+		linePoint.setElementRef(pathwayElement);
+		linePoint.setRelX(relX);
+		linePoint.setRelY(relY);
+	}
+	
+
+	//TODO 
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		return new Point2D.Double(p.getX() + linePoint.getXY().getX(), p.getY() + linePoint.getXY().getY());
+	}
+
+	//TODO 
+	public Point2D toRelativeCoordinate(Point2D p) {
+		return new Point2D.Double(p.getX() - linePoint.getXY().getX(), p.getY() - linePoint.getXY().getY());
+	}
+	
+
+	public Point2D toPoint2D(LinePoint linePoint) {
+		return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
+	}
+
 
 }

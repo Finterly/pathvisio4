@@ -32,6 +32,15 @@ public interface VLinkableTo {
 
 	public abstract Point2D toAbsoluteCoordinate(Point2D p);
 
+	
+	/**
+	 * @param mp a point in absolute model coordinates
+	 * @returns the same point relative to the bounding box of this pathway element:
+	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
+	 *          corner, and 0,0 meaning the center.
+	 */
+	public abstract Point2D toRelativeCoordinate(Point2D mp);
+	
 	public abstract int getZOrder(PathwayElement pathwayElement);
 
 }
