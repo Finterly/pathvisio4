@@ -1309,7 +1309,7 @@ public class VPathwayModel implements PathwayListener {
 				selection.addToSelection(getPathwayElementView(pe));
 			}
 		}
-		//TODO???? Citations, Annotations... other??? 
+		// TODO???? Citations, Annotations... other???
 		selection.stopSelecting();
 	}
 
@@ -1337,16 +1337,16 @@ public class VPathwayModel implements PathwayListener {
 		// groupSelection will be set to true if we are going to add / expand a group,
 		// false if we're going to remove a group.
 		boolean groupSelection = false;
-		Set<String> groupRefList = new HashSet<String>();
+		Set<Group> groupRefList = new HashSet<Group>();
 
 		/**
 		 * Check group status of current selection
 		 */
 		for (Graphics g : selection) {
 			PathwayElement pe = g.getPathwayElement();
-			String ref = pe.getGroupRef();
+			Group ref = ((Groupable) pe).getGroupRef();
 			// If not a group
-			if (pe.getObjectType() != ObjectType.GROUP) {
+			if (!(pe instanceof Group)) {
 				// and not a member of a group
 				if (ref == null) {
 					// then selection needs to be grouped
@@ -1357,8 +1357,7 @@ public class VPathwayModel implements PathwayListener {
 					// recursively get all parent group references.
 					while (ref != null) {
 						groupRefList.add(ref);
-						PathwayElement refGroup = data.getGroupById(ref);
-						ref = refGroup.getGroupRef();
+						ref = ref.getGroupRef(); //TODO???? for nested group 
 					}
 				}
 			}
@@ -1368,12 +1367,10 @@ public class VPathwayModel implements PathwayListener {
 		if (groupRefList.size() > 1) {
 			groupSelection = true;
 		}
-
-		// In all cases, any old groups in selection should be disolved.
-		for (String id : groupRefList) {
-			PathwayElement e = data.getGroupById(id);
-			if (e != null)
-				data.remove(e);
+		// In all cases, any old groups in selection should be dissolved.
+		for (Group ref : groupRefList) {
+			if (ref != null)
+				data.removeGroup(ref); //TODO make sure Group removes but doesn't delete!!!
 		}
 
 		// If selection was defined as a single group, then we're done.
