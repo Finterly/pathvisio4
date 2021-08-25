@@ -218,36 +218,6 @@ public class VPathwayModel implements PathwayListener {
 		return parent;
 	}
 
-//	/**
-//	 * Map the contents of a single data object to this VPathway.
-//	 * TODO replace with individual methods for different Pathway elements...
-//	 */
-//	private Graphics fromModelElement(PathwayElement o) {
-//		Graphics result = null;
-//		if (o.getClass() == DataNode.class) {
-//			result = new VDataNode(this, o);
-//		} else if (o.getClass() == State.class) {
-//			result = new VState(this, o);
-//		} else if (o.getClass() == LineElement.class) {
-//			result = new VLine(this, o);
-//		} else if (o.getClass() == Label.class) {
-//			result = new VLabel(this, o);
-//		} else if (o.getClass() == Shape.class) {
-//			result = new VShape(this, o);
-//		} else if (o.getClass() == Group.class) {
-//			result = new VGroup(this, o);
-//		}
-////		case MAPPINFO:
-////			VInfoBox mi = new VInfoBox(this, o);
-////			result = mi;
-////			mi.markDirty();
-////			break;
-//		else {
-//			// TODO
-//		}
-//		return result;
-//	}
-
 	/**
 	 * Used by undo manager.
 	 */
@@ -281,6 +251,13 @@ public class VPathwayModel implements PathwayListener {
 	 */
 	private Graphics fromModelDataNode(DataNode o) {
 		return new VDataNode(this, o);
+	}
+
+	/**
+	 * Map the contents of a single {@link DataNode} to this VPathwayModel.
+	 */
+	private Graphics fromModelState(State o) {
+		return new VState(this, o);
 	}
 
 	/**
@@ -327,6 +304,9 @@ public class VPathwayModel implements PathwayListener {
 		data = aData;
 		for (DataNode o : data.getDataNodes()) {
 			fromModelDataNode(o);
+			for (State st : o.getStates()) {
+				fromModelState(st);
+			}
 		}
 		for (Interaction o : data.getInteractions()) {
 			fromModelInteraction(o);
@@ -353,6 +333,40 @@ public class VPathwayModel implements PathwayListener {
 		undoManager.setPathwayModel(data);
 		addScheduled();
 		Logger.log.trace("Done creating view structure");
+	}
+
+	/**
+	 * Map the contents of a single data object to this VPathway. TODO replace with
+	 * individual methods for different Pathway elements...
+	 */
+	private Graphics fromModelElement(PathwayElement o) {
+		Graphics result = null;
+		if (o.getClass() == DataNode.class) {
+			return fromModelDataNode((DataNode) o);
+		} else if (o.getClass() == State.class) {
+			return fromModelState((State) o);
+		} else if (o.getClass() == Interaction.class) {
+			return fromModelInteraction((Interaction) o);
+		} else if (o.getClass() == GraphicalLine.class) {
+			return fromModelGraphicalLine((GraphicalLine) o);
+		} else if (o.getClass() == Label.class) {
+			return fromModelLabel((Label) o);
+		} else if (o.getClass() == Shape.class) {
+			return fromModelShape((Shape) o);
+		} else if (o.getClass() == Group.class) {
+			return fromModelGroup((Group) o);
+		}
+		// TODO Anchor...Point???
+		// TODO citation, annotation, etc...?
+//		case MAPPINFO:
+//			VInfoBox mi = new VInfoBox(this, o);
+//			result = mi;
+//			mi.markDirty();
+//			break;
+		else {
+			// TODO
+		}
+		return null;
 	}
 
 	Template newTemplate = null;
@@ -1357,7 +1371,7 @@ public class VPathwayModel implements PathwayListener {
 					// recursively get all parent group references.
 					while (ref != null) {
 						groupRefList.add(ref);
-						ref = ref.getGroupRef(); //TODO???? for nested group 
+						ref = ref.getGroupRef(); // TODO???? for nested group
 					}
 				}
 			}
@@ -1370,28 +1384,27 @@ public class VPathwayModel implements PathwayListener {
 		// In all cases, any old groups in selection should be dissolved.
 		for (Group ref : groupRefList) {
 			if (ref != null)
-				data.removeGroup(ref); //TODO make sure Group removes but doesn't delete!!!
+				data.removeGroup(ref);
 		}
-
 		// If selection was defined as a single group, then we're done.
 		// clear the selection from view
 		if (!groupSelection) {
 			clearSelection();
 		}
 		// Otherwise, a new group will be formed, replacing any former groups.
-		// No more nested or overlapping groups!
+		// No more nested or overlapping groups! TODO??? Do we wanted any nested
+		// groups????
 		else {
-			// Form new group with all selected elementsselectPathwayObjects
-			PathwayElement group = PathwayElement.createPathwayElement(ObjectType.GROUP);
-			data.add(group);
-			group.setGroupStyle(GroupStyle.NONE);
-			String id = group.createGroupId();
-
+			// Form new group with all pathway elements of selected pathway objects.
+//			RectProperty rectProperty, FontProperty fontProperty, ShapeStyleProperty shapeStyleProperty,
+//			GroupType type)					
+			Group group = new Group(null, null, null, GroupType.GROUP); // TODO GROUP SIZE?????
+			data.addGroup(group);
 			for (Graphics g : selection) {
 				PathwayElement pe = g.getPathwayElement();
-				pe.setGroupRef(id);
+				if (pe instanceof Groupable)
+					((Groupable) pe).setGroupRefTo(group);
 			}
-
 			// Select new group in view
 			Graphics vg = getPathwayElementView(group);
 			if (vg != null) {
@@ -1572,9 +1585,12 @@ public class VPathwayModel implements PathwayListener {
 		case PathwayEvent.DELETED:
 			Graphics deleted = getPathwayElementView(e.getAffectedData());
 			if (deleted != null) {
-				if (deleted.getPathwayElement() instanceof MLine) {
-					removeRefFromConnectingAnchors(deleted.getPathwayElement().getMStart().getGraphRef(),
-							deleted.getPathwayElement().getMEnd().getGraphRef());
+				if (deleted.getPathwayElement() instanceof LineElement) {
+					removeRefFromConnectingAnchors(
+							((LineElement) deleted.getPathwayElement()).getStartLinePoint().getElementRef()
+									.getElementId(),
+							((LineElement) deleted.getPathwayElement()).getEndLinePoint().getElementRef()
+									.getElementId());
 				}
 				deleted.markDirty();
 				removeDrawingObject(deleted, false);
@@ -1606,14 +1622,15 @@ public class VPathwayModel implements PathwayListener {
 		if (graphId1 == null && (graphId2 == null)) {
 			return;
 		}
-		for (PathwayElement element : getPathwayModel().getDataObjects()) {
-			if (element instanceof MLine) {
-				for (LinePoint point : element.getLinePoints()) {
-					if (point.getGraphRef() == null) {
+		for (PathwayElement element : getPathwayModel().getPathwayElements()) {
+			if (element instanceof LineElement) {
+				for (LinePoint point : ((LineElement) element).getLinePoints()) {
+					String linkableToId = ((LinePoint) point).getElementRef().getElementId();
+					if (linkableToId == null) {
 						// skip point
-					} else if (graphId1 != null && point.getGraphRef().equals(graphId1)) {
+					} else if (graphId1 != null && linkableToId.equals(graphId1)) {
 						graphId1 = null;
-					} else if (graphId2 != null && point.getGraphRef().equals(graphId2)) {
+					} else if (graphId2 != null && linkableToId.equals(graphId2)) {
 						graphId2 = null;
 					}
 				}
@@ -1622,12 +1639,12 @@ public class VPathwayModel implements PathwayListener {
 		if (graphId1 == null && (graphId2 == null)) {
 			return;
 		}
-		for (PathwayElement element : getPathwayModel().getDataObjects()) {
-			if (element instanceof MLine) {
-				for (MAnchor anchor : element.getMAnchors()) {
-					if (anchor.getGraphId() != null
-							&& (anchor.getGraphId().equals(graphId1) || anchor.getGraphId().equals(graphId2))) {
-						anchor.setGraphId(null);
+		for (PathwayElement element : getPathwayModel().getPathwayElements()) {
+			if (element instanceof LineElement) {
+				for (Anchor anchor : ((LineElement) element).getAnchors()) {
+					if (anchor.getElementId() != null
+							&& (anchor.getElementId().equals(graphId1) || anchor.getElementId().equals(graphId2))) {
+						anchor.setElementId(null);
 					}
 				}
 			}
@@ -1886,18 +1903,83 @@ public class VPathwayModel implements PathwayListener {
 	 */
 	public void moveGraphicsTop(List<Graphics> gs) {
 		Collections.sort(gs, new ZComparator());
-		int base = getPathwayModel().getMaxZOrder() + 1;
+		int base = getMaxZOrder(getPathwayModel()) + 1;
 		for (Graphics g : gs) {
 			g.gdata.setZOrder(base++);
 		}
 	}
 
 	/**
+	 * Returns the highest z-order of all pathway model objects with z-order.
+	 */
+	public int getMaxZOrder(PathwayModel pathwayModel) {
+		List<PathwayElement> dataObjects = pathwayModel.getPathwayElements();
+		if (dataObjects.size() == 0)
+			return 0;
+		// DataNode, State, Interaction, GraphicalLine, Label, Shape, Group have z-order
+		int zMax = 0;
+		for (DataNode e : pathwayModel.getDataNodes()) {
+			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+			for (State st : e.getStates())
+				zMax = Math.max(st.getShapeStyleProp().getZOrder(), zMax);
+		}
+		for (Interaction e : pathwayModel.getInteractions()) {
+			zMax = Math.max(e.getLineStyleProp().getZOrder(), zMax);
+		}
+		for (GraphicalLine e : pathwayModel.getGraphicalLines()) {
+			zMax = Math.max(e.getLineStyleProp().getZOrder(), zMax);
+		}
+		for (Label e : pathwayModel.getLabels()) {
+			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+		}
+		for (Shape e : pathwayModel.getShapes()) {
+			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+		}
+		for (Group e : pathwayModel.getGroups()) {
+			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+		}
+		return zMax;
+	}
+	
+
+	/**
+	 * Returns the lowest z-order of all pathway model objects with z-order.
+	 */
+	public int getMinZOrder(PathwayModel pathwayModel) {
+		List<PathwayElement> dataObjects = pathwayModel.getPathwayElements();
+		if (dataObjects.size() == 0)
+			return 0;
+		int zMin = 0;
+		for (DataNode e : pathwayModel.getDataNodes()) {
+			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+			for (State st : e.getStates())
+				zMin = Math.min(st.getShapeStyleProp().getZOrder(), zMin);
+		}
+		for (Interaction e : pathwayModel.getInteractions()) {
+			zMin = Math.min(e.getLineStyleProp().getZOrder(), zMin);
+		}
+		for (GraphicalLine e : pathwayModel.getGraphicalLines()) {
+			zMin = Math.min(e.getLineStyleProp().getZOrder(), zMin);
+		}
+		for (Label e : pathwayModel.getLabels()) {
+			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+		}
+		for (Shape e : pathwayModel.getShapes()) {
+			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+		}
+		for (Group e : pathwayModel.getGroups()) {
+			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+		}
+		return zMin;
+	}
+
+
+	/**
 	 * Move a set of graphics to the bottom in the z-order stack
 	 */
 	public void moveGraphicsBottom(List<Graphics> gs) {
 		Collections.sort(gs, new ZComparator());
-		int base = getPathwayModel().getMinZOrder() - gs.size() - 1;
+		int base = getMinZOrder(getPathwayModel()) - gs.size() - 1;
 		for (Graphics g : gs) {
 			g.gdata.setZOrder(base++);
 		}
@@ -2078,11 +2160,11 @@ public class VPathwayModel implements PathwayListener {
 			// generatePasteId(groupId, data.getGroupIds(), idmap, newids);TODO
 
 			// For a line, also process the point ids
-			if (o.getObjectType() == ObjectType.LINE || o.getObjectType() == ObjectType.GRAPHLINE) {
-				for (LinePoint mp : o.getLinePoints())
-					generatePasteId(mp.getGraphId(), data.getGraphIds(), idmap, newids);
-				for (MAnchor ma : o.getMAnchors())
-					generatePasteId(ma.getGraphId(), data.getGraphIds(), idmap, newids);
+			if (o.getClass() == Interaction.class || o.getClass() == GraphicalLine.class) {
+				for (LinePoint mp : ((LineElement) o).getLinePoints())
+					generatePasteId(mp.getElementId(), data.getElementIds(), idmap, newids);
+				for (Anchor ma : ((LineElement) o).getAnchors())
+					generatePasteId(ma.getElementId(), data.getElementIds(), idmap, newids);
 			}
 		}
 	}
@@ -2104,10 +2186,10 @@ public class VPathwayModel implements PathwayListener {
 		if (p.getElementId() != null) {
 			p.setElementId(idmap.get(p.getElementId()));
 		}
-		for (LinePoint mp : p.getLinePoints()) {
+		for (LinePoint mp : ((LineElement) p).getLinePoints()) {
 			mp.setElementId(idmap.get(mp.getElementId()));
 		}
-		for (MAnchor ma : p.getMAnchors()) {
+		for (Anchor ma : ((LineElement) p).getAnchors()) {
 			ma.setElementId(idmap.get(ma.getElementId()));
 		}
 		// set new group id
@@ -2143,9 +2225,9 @@ public class VPathwayModel implements PathwayListener {
 		String groupRef = p.getGroupRef();
 		if (groupRef != null) {
 			if (idmap.containsKey(groupRef)) {
-				p.setGroupRef(idmap.get(groupRef));
+				p.setGroupRefTo(idmap.get(groupRef));
 			} else {
-				p.setGroupRef(null);
+				p.setGroupRefTo(null);
 			}
 		}
 	}

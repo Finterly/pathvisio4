@@ -21,8 +21,8 @@ import java.awt.geom.GeneralPath;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.pathvisio.core.model.AbstractShape;
-import org.pathvisio.core.model.IShape;
+import org.pathvisio.core.modeltemp.AbstractShape;
+import org.pathvisio.core.modeltemp.IShape;
 
 /**
    The Shape registry stores all arrow heads and shapes
