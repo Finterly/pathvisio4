@@ -16,10 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-
-import org.pathvisio.model.Label;
 import org.pathvisio.model.Shape;
 
 /**
@@ -28,7 +24,7 @@ import org.pathvisio.model.Shape;
  * @author unknown, finterly
  */
 public class VShape extends VShapedElement {
-	
+
 	/**
 	 * Constructor for this class
 	 * 
@@ -37,26 +33,5 @@ public class VShape extends VShapedElement {
 	public VShape(VPathwayModel canvas, Shape gdata) {
 		super(canvas, gdata);
 	}
-	
-
-
-	@Override
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected java.awt.Shape getVShape(boolean rotate) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected void setVScaleRectangle(Rectangle2D r) {
-		// TODO Auto-generated method stub
-		
-	}
 
 }
-

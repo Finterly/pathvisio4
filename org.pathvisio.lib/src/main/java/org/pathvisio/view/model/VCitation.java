@@ -118,7 +118,7 @@ public class VCitation extends VElement implements VElementMouseListener {
 	}
 
 	protected String getXRefText() {
-		if (getParent().getPathwayElement().getParent() == null) {
+		if (getParent().getPathwayElement().getPathwayModel() == null) {
 			return ""; // In case a redraw is called after deletion of the model element
 		}
 		int maxNr = PreferenceManager.getCurrent().getInt(GlobalPreference.MAX_NR_CITATIONS);

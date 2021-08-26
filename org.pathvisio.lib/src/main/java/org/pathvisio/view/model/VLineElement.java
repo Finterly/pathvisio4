@@ -43,14 +43,13 @@ import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
-import org.pathvisio.model.graphics.LineStyleProperty;
+import org.pathvisio.events.PathwayElementEvent;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Label;
 import org.pathvisio.model.GraphLink.LinkableFrom;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LinePoint;
-import org.pathvisio.io.listener.PathwayElementEvent;
 import org.pathvisio.util.Utils;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
@@ -286,6 +285,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	/**
+	 * VLINE  TODO 
+	 * 
 	 * Be careful to prevent infinite recursion when Line.getVOutline triggers
 	 * recalculation of a connector.
 	 *
@@ -301,6 +302,39 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		}
 
 		return shape;
+	}
+	
+	
+	/**
+	 * MLINE!!!!!!!!!!!!! TODO 
+	 * 
+	 * TODO Check if the connector may cross this point Optionally, returns a shape
+	 * that defines the boundaries of the area around this point that the connector
+	 * may not cross. This method can be used for advanced connectors that route
+	 * along other objects on the drawing
+	 * 
+	 * @return A shape that defines the boundaries of the area around this point
+	 *         that the connector may not cross. Returning null is allowed for
+	 *         implementing classes.
+	 */
+	public Shape mayCross(Point2D point) {
+		PathwayModel parent = gdata.getPathwayModel();
+		Rectangle2D rect = null;
+		if (parent != null) {
+			for (PathwayElement e : parent.getPathwayElements()) { // TODO
+				if (e.getClass() == org.pathvisio.model.Shape.class || e.getClass() == DataNode.class
+						|| e.getClass() == Label.class) {
+					Rectangle2D b = getMBounds(); // TODO ...
+					if (b.contains(point)) {
+						if (rect == null)
+							rect = b;
+						else
+							rect.add(b);
+					}
+				}
+			}
+		}
+		return rect;
 	}
 
 	public Point2D getStartPoint2D() {
@@ -357,8 +391,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		ArrowShape hs = heads[0];
 		ArrowShape he = heads[1];
 
-		float thickness = (float) vFromM(gdata.getLineStyleProp().getLineWidth());
-		if (gdata.getLineStyleProp().getLineStyle() == LineStyleType.DOUBLE)
+		float thickness = (float) vFromM(gdata.getLineWidth());
+		if (gdata.getLineStyle() == LineStyleType.DOUBLE)
 			thickness *= 4;
 		BasicStroke bs = new BasicStroke(thickness);
 
@@ -429,7 +463,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	protected void drawHead(Graphics2D g, ArrowShape head, Color c) {
 		if (head != null) {
 			// reset stroked line to solid, but use given thickness
-			g.setStroke(new BasicStroke((float) vFromM(gdata.getLineStyleProp().getLineWidth())));
+			g.setStroke(new BasicStroke((float) vFromM(gdata.getLineWidth())));
 			switch (head.getFillType()) {
 			case OPEN:
 				g.setPaint(Color.WHITE);
@@ -476,7 +510,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		if (h != null) {
 			AffineTransform f = new AffineTransform();
-			double scaleFactor = vFromM(1.0 + 0.3 * gdata.getLineStyleProp().getLineWidth());
+			double scaleFactor = vFromM(1.0 + 0.3 * gdata.getLineWidth());
 			f.rotate(Math.atan2(ye - ys, xe - xs), xe, ye);
 			f.translate(xe, ye);
 			f.scale(scaleFactor, scaleFactor);
@@ -748,11 +782,11 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * Returns the z-order from the model
 	 */
 	protected int getZOrder() {
-		return gdata.getLineStyleProp().getZOrder();
+		return gdata.getZOrder();
 	}
 
 	protected Color getLineColor() {
-		Color linecolor = gdata.getLineStyleProp().getLineColor();
+		Color linecolor = gdata.getLineColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
@@ -764,8 +798,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	protected void setLineStyle(Graphics2D g) {
-		LineStyleType ls = gdata.getLineStyleProp().getLineStyle();
-		float lt = (float) vFromM(gdata.getLineStyleProp().getLineWidth());
+		LineStyleType ls = gdata.getLineStyle();
+		float lt = (float) vFromM(gdata.getLineWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {
@@ -790,12 +824,12 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * points
 	 */
 	public ConnectorShape getConnectorShape(LineElement gdata) {
-		String type = gdata.getLineStyleProp().getConnectorType().getName();
+		String type = gdata.getConnectorType().getName();
 
 		// Recreate the ConnectorShape when it's null or when the type
 		// doesn't match the implementing class
 		if (shape == null || !shape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
-			shape = ConnectorShapeFactory.createConnectorShape(gdata.getLineStyleProp().getConnectorType().getName());
+			shape = ConnectorShapeFactory.createConnectorShape(gdata.getConnectorType().getName());
 			shape.recalculateShape(this);
 		}
 		return shape;
@@ -1155,35 +1189,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		return -1;
 	}
 
-	/**
-	 * TODO Check if the connector may cross this point Optionally, returns a shape
-	 * that defines the boundaries of the area around this point that the connector
-	 * may not cross. This method can be used for advanced connectors that route
-	 * along other objects on the drawing
-	 * 
-	 * @return A shape that defines the boundaries of the area around this point
-	 *         that the connector may not cross. Returning null is allowed for
-	 *         implementing classes.
-	 */
-	public Shape mayCross(Point2D point) {
-		PathwayModel parent = gdata.getPathwayModel();
-		Rectangle2D rect = null;
-		if (parent != null) {
-			for (PathwayElement e : parent.getPathwayElements()) { // TODO
-				if (e.getClass() == org.pathvisio.model.Shape.class || e.getClass() == DataNode.class
-						|| e.getClass() == Label.class) {
-					Rectangle2D b = getMBounds(); // TODO ...
-					if (b.contains(point)) {
-						if (rect == null)
-							rect = b;
-						else
-							rect.add(b);
-					}
-				}
-			}
-		}
-		return rect;
-	}
+
 
 	/* ------------------------------------------------ */
 

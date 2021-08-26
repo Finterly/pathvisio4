@@ -34,32 +34,17 @@ import org.pathvisio.model.ShapedElement;
  * 
  * @author unknown, finterly
  */
-public class VState extends VShapedElement implements PathwayElementListener {
-
-	State gdata = null;
+public class VState extends VShapedElement {
 
 	public static final String ROTATION_KEY = "org.pathvisio.core.StateRotation";
 
-	public VState(VPathwayModel canvas, State o) {
-		super(canvas, o);
-		o.addListener(this);
-		gdata = o;
-		checkCitation(gdata.getCitationRefs()); // TODO
-	}
-
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return shape
-	 */
-	@Override
-	public State getPathwayElement() {
-		return gdata;
+	public VState(VPathwayModel canvas, State gdata) {
+		super(canvas, gdata);
 	}
 
 	public void doDraw(Graphics2D g) {
-		g.setColor(getBorderColor(gdata));
-		setBorderStyle(g, gdata);
+		g.setColor(getBorderColor());
+		setBorderStyle(g);
 		drawShape(g);
 
 		g.setFont(getVFont());
@@ -67,9 +52,9 @@ public class VState extends VShapedElement implements PathwayElementListener {
 
 		drawHighlight(g);
 	}
-	
+
 	protected Color getBorderColor(State gdata) {
-		Color borderColor = gdata.getShapeStyleProp().getBorderColor();
+		Color borderColor = gdata.getBorderColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
@@ -80,9 +65,9 @@ public class VState extends VShapedElement implements PathwayElementListener {
 		return borderColor;
 	}
 
-	protected void setBorderStyle(Graphics2D g, State gdata) {
-		LineStyleType ls = gdata.getShapeStyleProp().getBorderStyle();
-		float lt = (float) vFromM(gdata.getShapeStyleProp().getBorderWidth());
+	protected void setBorderStyle(Graphics2D g) {
+		LineStyleType ls = gdata.getBorderStyle();
+		float lt = (float) vFromM(gdata.getBorderWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {
@@ -105,7 +90,7 @@ public class VState extends VShapedElement implements PathwayElementListener {
 		double relX = mp.getX();
 		double relY = mp.getY();
 		// get bounds of parent data node
-		Rectangle2D bounds = getRBounds(gdata.getDataNode()); // TODO of dataNode
+		Rectangle2D bounds = getRBounds(((State) gdata).getDataNode()); // TODO of dataNode
 		// Translate
 		relX -= bounds.getCenterX();
 		relY -= bounds.getCenterY();

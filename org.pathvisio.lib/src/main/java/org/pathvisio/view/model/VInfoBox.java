@@ -31,7 +31,10 @@ import org.pathvisio.model.PathwayElement;
 
 /**
  * 
- * //TODO As code was before, Infobox could not be moved or resized.... //TODO:
+ * Infobox contains the meta-information (e.g. title, organism) for a pathway
+ * model. The infobox is always displayed in the top left corner at coordinate
+ * (0,0).
+ * 
  * view.InfoBox corresponds in some ways to
  * model.PathwayElement(ObjectType.MAPPINFO) and in some ways to
  * model.PathwayElement(ObjectType.INFOBOX). This confusion is rooted in
@@ -81,29 +84,28 @@ public class VInfoBox extends Graphics {
 		checkCitation();
 	}
 
-	@Override 
+	@Override
 	protected VCitation createCitation() {
-		return new VCitation(canvas, this, new Point2D.Double(1, 0)); //TODO  coordinates? 
-	}
-	
-	public final void checkCitation() {
-	List<CitationRef> citationRefs = gdata.getCitationRefs();
-	if (citationRefs.size() > 0 && getCitation() == null) {
-		citation = createCitation();
-		children.add(citation);
-	} else if (xrefs.size() == 0 && citation != null) {
-		citation.destroy();
-		children.remove(citation);
-		citation = null;
+		return new VCitation(canvas, this, new Point2D.Double(1, 0)); // TODO coordinates?
 	}
 
-	if (citation != null) {
-		// already exists, no need to create / destroy
-		// just redraw...
-		citation.markDirty();
+	public final void checkCitation() {
+		List<CitationRef> citationRefs = gdata.getCitationRefs();
+		if (citationRefs.size() > 0 && getCitation() == null) {
+			citation = createCitation();
+			children.add(citation);
+		} else if (xrefs.size() == 0 && citation != null) {
+			citation.destroy();
+			children.remove(citation);
+			citation = null;
+		}
+
+		if (citation != null) {
+			// already exists, no need to create / destroy
+			// just redraw...
+			citation.markDirty();
+		}
 	}
-}
-	
 
 	// public Point getBoardSize() { return new Point((int)gdata.getMBoardWidth(),
 	// (int)gdata.getMBoardHeight()); }

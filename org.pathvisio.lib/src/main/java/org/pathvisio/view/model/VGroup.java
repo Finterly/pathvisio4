@@ -48,25 +48,12 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	public static final int FLAG_MOUSEOVER = 1 << 1;
 	public static final int FLAG_ANCHORSVISIBLE = 1 << 2;
 	
-	protected Group gdata = null;
 
+	public VGroup(VPathwayModel canvas, Group gdata) {
+		super(canvas, gdata);
 
-	public VGroup(VPathwayModel canvas, Group o) {
-		super(canvas);
-		// pe.addListener(this); 
-		gdata = o;
-		canvas.addVElementMouseListener(this);
 	}
 	
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return
-	 */
-	@Override
-	public Group getPathwayElement() {
-		return gdata;
-	}
 
 	/**
 	 * Generates current id-ref pairs from all current groups
@@ -200,7 +187,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 			flags += FLAG_ANCHORSVISIBLE;
 
 		// Draw the group style appearance
-		GroupPainter p = GroupPainterRegistry.getPainter(gdata.getGroupStyle().toString());
+		GroupPainter p = GroupPainterRegistry.getPainter(((Group) gdata).getType().toString());
 		p.drawGroup(g2d, this, flags);
 	}
 
@@ -237,9 +224,9 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	protected Shape getVShape(boolean rotate) {
 		Rectangle2D mb = null;
 		if (rotate) {
-			mb = gdata.getRBounds();
+			mb = getRBounds();
 		} else {
-			mb = gdata.getMBounds();
+			mb = getMBounds();
 		}
 		return canvas.vFromM(mb);
 	}

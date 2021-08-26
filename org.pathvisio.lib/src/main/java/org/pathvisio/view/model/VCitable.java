@@ -20,6 +20,7 @@ import java.awt.geom.Point2D;
 
 import java.util.List;
 
+import org.pathvisio.events.PathwayElementEvent;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.ShapedElement;
 import org.pathvisio.model.ref.CitationRef;
@@ -51,6 +52,7 @@ public abstract class VCitable extends Graphics {
 	protected VCitation createCitation() {
 		return new VCitation(canvas, this, new Point2D.Double(1, -1));
 	}
+
 
 	/**
 	 * Check for {@link VCitation} if object has {@link CitationRef}s. Create or
@@ -87,5 +89,7 @@ public abstract class VCitable extends Graphics {
 //		Pathway parent = gdata.getParent();
 //		if(parent != null) parent.remove(gdata);
 	}
+	
+
 
 }

@@ -23,23 +23,21 @@ import org.pathvisio.model.PathwayElement;
 /**
  * This class represents the view of a {@link Label} pathway element.
  */
-public class VLabel extends VRotatable {
-	
-	Label gdata = null;
+public class VLabel extends VShapedElement {
+
 	/**
 	 * Constructor for this class
 	 * 
 	 * @param canvas - the VPathway this label will be part of
 	 */
-	public VLabel(VPathwayModel canvas, Label o) {
-		super(canvas);
+	public VLabel(VPathwayModel canvas, Label gdata) {
+		super(canvas, gdata);
 	}
 
-	
-	@Override 
+	@Override
 	protected void destroy() {
 		super.destroy();
-		gdata.removeListener(this); //TODO 
+		gdata.removeListener(this); // TODO
 		for (VElement child : getChildren()) {
 			child.destroy();
 		}
@@ -51,16 +49,4 @@ public class VLabel extends VRotatable {
 //		if(parent != null) parent.remove(gdata);
 	}
 
-
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return label
-	 */
-	@Override
-	public Label getPathwayElement() {
-		return gdata;
-	}
-	
-	
 }

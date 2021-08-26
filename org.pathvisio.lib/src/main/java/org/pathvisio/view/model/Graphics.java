@@ -23,10 +23,10 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import org.pathvisio.io.listener.PathwayElementEvent;
-import org.pathvisio.io.listener.PathwayElementListener;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.debug.DebugList;
+import org.pathvisio.events.PathwayElementEvent;
+import org.pathvisio.events.PathwayElementListener;
 import org.pathvisio.model.*;
 
 /**
