@@ -41,7 +41,7 @@ public class VState extends VShapedElement implements PathwayElementListener {
 	public static final String ROTATION_KEY = "org.pathvisio.core.StateRotation";
 
 	public VState(VPathwayModel canvas, State o) {
-		super(canvas);
+		super(canvas, o);
 		o.addListener(this);
 		gdata = o;
 		checkCitation(gdata.getCitationRefs()); // TODO

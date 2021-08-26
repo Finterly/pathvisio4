@@ -47,7 +47,7 @@ import org.pathvisio.model.*;
  */
 public abstract class VShapedElement extends VRotatable implements VLinkableTo, LinkProvider {
 
-//	protected ShapedElement gdata = null; //TODO 
+	protected ShapedElement gdata = null; // TODO
 
 //	public GraphicsShapedElement(VPathwayModel canvas, PathwayElement o) { //TODO 
 //		super(canvas);
@@ -56,10 +56,20 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 //		checkCitation();
 //	}
 
-	public VShapedElement(VPathwayModel canvas) {
+	public VShapedElement(VPathwayModel canvas, ShapedElement gdata) {
 		super(canvas);
-//		o.addListener(this);
-//		gdata = o;
+		this.gdata = gdata;
+		gdata.addListener(this);
+	}
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return shape
+	 */
+	@Override
+	public ShapedElement getPathwayElement() {
+		return gdata;
 	}
 
 	public Point2D toAbsoluteCoordinate(Point2D p, ShapedElement gdata) {
@@ -97,7 +107,7 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 			relY /= bounds.getHeight() / 2;
 		return new Point2D.Double(relX, relY);
 	}
-	
+
 	/**
 	 * Get the rectangular bounds of the object without rotation taken into account
 	 */
@@ -107,8 +117,8 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 	}
 
 	/**
-	 * TODO is in VRotatable...
-	 * Get the rectangular bounds of the object after rotation is applied
+	 * TODO is in VRotatable... Get the rectangular bounds of the object after
+	 * rotation is applied
 	 */
 	public Rectangle2D getRBounds(ShapedElement gdata) {
 		Double rotation = gdata.getRotation();
@@ -121,7 +131,7 @@ public abstract class VShapedElement extends VRotatable implements VLinkableTo, 
 			return bounds;
 		}
 	}
-	
+
 	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
 	 * current zoom factor

@@ -29,27 +29,16 @@ import org.pathvisio.model.Shape;
  */
 public class VShape extends VShapedElement {
 	
-	Shape gdata = null;
-	
 	/**
 	 * Constructor for this class
 	 * 
 	 * @param canvas - the VPathway this Shape will be part of
 	 */
 	public VShape(VPathwayModel canvas, Shape gdata) {
-		super(canvas);
-		this.gdata = gdata;
+		super(canvas, gdata);
 	}
 	
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return shape
-	 */
-	@Override
-	public Shape getPathwayElement() {
-		return gdata;
-	}
+
 
 	@Override
 	public Point2D toAbsoluteCoordinate(Point2D p) {

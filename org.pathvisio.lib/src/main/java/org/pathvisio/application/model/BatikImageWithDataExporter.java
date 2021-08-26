@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.model;
+package org.pathvisio.application.model;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -35,11 +35,11 @@ import org.apache.fop.svg.PDFTranscoder;
 import org.bridgedb.IDMapperException;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.io.ConverterException;
-import org.pathvisio.core.model.ImageExporter;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.model.ImageExporter;
+import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.data.DataException;
-import org.pathvisio.desktop.gex.GexManager;
-import org.pathvisio.desktop.visualization.VisualizationManager;
+import org.pathvisio.application.gex.GexManager;
+import org.pathvisio.application.visualization.VisualizationManager;
 import org.pathvisio.model.PathwayModel;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
