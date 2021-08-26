@@ -65,7 +65,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 
 	//TODO draft 
 	public Point2D toAbsoluteCoordinate(Point2D p) {
-		Point2D l = vLineElement.getConnectorShape().fromLineCoordinate(anchor.getPosition());
+		Point2D l = vLineElement.getConnectorShape().fromLineCoordinate(anchor.getPosition()); //TODO 
 		return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
 	}
 
@@ -192,7 +192,7 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 		if (isSelected()) {
 			c = selectColor;
 		} else {
-			c = vLineElement.getPathwayElement().getLineStyleProp().getLineColor();
+			c = vLineElement.getPathwayElement().getLineColor();
 		}
 
 		AnchorShape arrowShape = getAnchorShape();
@@ -242,8 +242,9 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable, VLink
 	/**
 	 * Returns the z-order of the parent line + 1.
 	 */
+	@Override 
 	public int getZOrder() {
-		return vLineElement.getPathwayElement().getLineStyleProp().getZOrder() + 1;
+		return vLineElement.getPathwayElement().getZOrder() + 1;
 	}
 
 }

@@ -51,7 +51,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 
 	public VGroup(VPathwayModel canvas, Group gdata) {
 		super(canvas, gdata);
-
+		canvas.addVElementMouseListener(this); //TODO???? 
 	}
 	
 
@@ -60,15 +60,19 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	 *
 	 * @return HashMap<String, String>
 	 */
-	protected Map<String, String> getIdRefPairs() {
+	protected Map<String, String> getIdRefPairs()
+	{
 		// idRefPairs<id, ref>
 		Map<String, String> idRefPairs = new HashMap<String, String>();
 
 		// Populate hash map of id-ref pairs for all groups
-		for (VElement vpe : canvas.getDrawingObjects()) {
-			if (vpe instanceof Graphics && vpe instanceof VGroup) {
-				Group o = ((Graphics) vpe).getPathwayElement();
-				if (pe.getGroupRef() != null) {
+		for (VPathwayElement vpe : canvas.getDrawingObjects())
+		{
+			if (vpe instanceof Graphics && vpe instanceof Group)
+			{
+				PathwayElement pe = ((Graphics) vpe).getPathwayElement();
+				if (pe.getGroupRef() != null)
+				{
 					idRefPairs.put(pe.getGroupId(), pe.getGroupRef());
 				}
 			}
@@ -76,7 +80,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 
 		return idRefPairs;
 	}
-
+	
 	/**
 	 * Generates list of group references nested under this group
 	 *

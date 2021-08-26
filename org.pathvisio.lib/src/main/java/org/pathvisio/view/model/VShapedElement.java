@@ -67,7 +67,6 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		super(canvas);
 		this.gdata = gdata;
 		gdata.addListener(this);
-		canvas.addVElementMouseListener(this);
 		checkCitation(gdata.getCitationRefs()); // TODO
 	}
 
@@ -205,14 +204,25 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 
 	/*----------------- Convenience methods from Model -----------------*/
 
+	
+
 	// startx for shapes TODO
 	public double getMLeft() {
 		return gdata.getCenterXY().getX() - gdata.getWidth() / 2;
 	}
 
 	// starty for shapes TODO
-	public double getMTop() {
-		return gdata.getCenterXY().getY() - gdata.getHeight() / 2;
+		public double getMTop() {
+			return gdata.getCenterXY().getY() - gdata.getHeight() / 2;
+		}
+		
+	public void setMTop(double v) {
+		gdata.getCenterXY().setY(v + gdata.getHeight() /2);
+	}
+
+
+	public void setMLeft(double v) {
+		gdata.getCenterXY().setX(v + gdata.getWidth() / 2);
 	}
 
 	/**
@@ -368,8 +378,8 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		// both setM operations fire the exact same objectModifiedEvent, one should be
 		// enough
 		gdata.dontFireEvents(1);
-		gdata.setMLeft(gdata.getMLeft() + mFromV(vdx));
-		gdata.setMTop(gdata.getMTop() + mFromV(vdy));
+		gdata.setMLeft(getMLeft() + mFromV(vdx));
+		gdata.setMTop(getMTop() + mFromV(vdy));
 	}
 
 	public Handle[] getHandles() {
@@ -660,7 +670,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		if (gdata.getShapeType() == null || gdata.getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
-			s = gdata.getShapeType().getShape(mw, mh); //IShape....
+			s = gdata.getShapeType().getShape(mw, mh); // IShape....
 		}
 
 		AffineTransform t = new AffineTransform();

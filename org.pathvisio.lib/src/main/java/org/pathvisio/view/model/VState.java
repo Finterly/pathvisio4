@@ -24,7 +24,7 @@ import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.State;
 import org.pathvisio.model.type.LineStyleType;
-import org.pathvisio.io.listener.PathwayElementListener;
+import org.pathvisio.events.PathwayElementListener;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.Shape;
 import org.pathvisio.model.ShapedElement;
@@ -115,8 +115,8 @@ public class VState extends VShapedElement {
 			y = 1;
 		if (y < -1)
 			y = -1;
-		gdata.setRelX(x);
-		gdata.setRelY(y);
+		((State) gdata).setRelX(x);
+		((State) gdata).setRelY(y);
 	}
 
 	@Override

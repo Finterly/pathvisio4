@@ -285,7 +285,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	/**
-	 * VLINE  TODO 
+	 * VLINE TODO
 	 * 
 	 * Be careful to prevent infinite recursion when Line.getVOutline triggers
 	 * recalculation of a connector.
@@ -303,10 +303,9 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		return shape;
 	}
-	
-	
+
 	/**
-	 * MLINE!!!!!!!!!!!!! TODO 
+	 * MLINE!!!!!!!!!!!!! TODO
 	 * 
 	 * TODO Check if the connector may cross this point Optionally, returns a shape
 	 * that defines the boundaries of the area around this point that the connector
@@ -1188,8 +1187,6 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		}
 		return -1;
 	}
-
-
 
 	/* ------------------------------------------------ */
 
