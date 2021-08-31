@@ -26,7 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.pathvisio.model.Group;
+import org.pathvisio.model.LineElement;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.ShapedElement;
 
 /**
  * This class implements a selectionbox
@@ -412,9 +415,20 @@ public class SelectionBox extends VElement implements Adjustable
 
 				if(o.vIntersects(bounds) ) { //&& !(o instanceof Group)
 					//exclude objects in a group to avoid double selection
-					if(o instanceof Graphics){
-						PathwayElement pe = ((Graphics) o).getPathwayElement();
-						String ref = pe.getGroupRef();
+					if(o instanceof VShapedElement){
+						ShapedElement pe = ((VShapedElement) o).getPathwayElement();
+						Group ref = pe.getGroupRef();
+						if (ref != null) {
+							continue;
+						}
+						if(o instanceof VGroup) {
+							groupObjects.addAll(((VGroup) o).getGroupGraphics());
+						}
+					}
+					//exclude objects in a group to avoid double selection
+					if(o instanceof VLineElement){
+						LineElement pe = ((VLineElement) o).getPathwayElement();
+						Group ref = pe.getGroupRef();
 						if (ref != null) {
 							continue;
 						}

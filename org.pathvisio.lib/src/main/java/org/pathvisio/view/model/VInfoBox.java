@@ -40,7 +40,7 @@ import org.pathvisio.model.PathwayElement;
  * model.PathwayElement(ObjectType.INFOBOX). This confusion is rooted in
  * inconsistencies in GPML. This should be cleaned up one day.
  */
-public class VInfoBox extends Graphics {
+public class VInfoBox extends VCitable {
 
 	protected Pathway gdata = null;
 
@@ -50,61 +50,33 @@ public class VInfoBox extends Graphics {
 
 	// TODO
 	public double getMLeft() {
-		return gdata.getInfoBox().getX() - 0 / 2;
+		return 0;
 	}
 
 	// TODO
 	public double getMTop() {
-		return gdata.getInfoBox().getY() - 0 / 2;
-	}
-
-	// TODO
-	public void setMLeft(double v) {
-		gdata.getInfoBox().setX(v + 0 / 2); // v + mWidth / 2;
-	}
-
-	// TODO
-	public void setMTop(double v) {
-		gdata.getInfoBox().setY(v + 0 / 2); // v + mHeight / 2;
+		return 0;
 	}
 
 	// Elements not stored in gpml
-	String fontName = "Times New Roman";
-	String fontWeight = "regular";
+	String fontName = "Times New Roman"; // TODO 
+	boolean fontWeight = false;
 	static final double M_INITIAL_FONTSIZE = 12.0;
 
 	int sizeX = 1;
 	int sizeY = 1; // Real size is calculated on first call to draw()
 
-	public VInfoBox(VPathwayModel canvas, Pathway o) {
+	public VInfoBox(VPathwayModel canvas, Pathway gdata) {
 		super(canvas);
 		canvas.setMappInfo(this);
-		o.addListener(this);
-		gdata = o;
-		checkCitation();
+		gdata.addListener(this); //TODO 
+		this.gdata = gdata;
+		checkCitation(gdata.getCitationRefs());
 	}
 
 	@Override
 	protected VCitation createCitation() {
 		return new VCitation(canvas, this, new Point2D.Double(1, 0)); // TODO coordinates?
-	}
-
-	public final void checkCitation() {
-		List<CitationRef> citationRefs = gdata.getCitationRefs();
-		if (citationRefs.size() > 0 && getCitation() == null) {
-			citation = createCitation();
-			children.add(citation);
-		} else if (xrefs.size() == 0 && citation != null) {
-			citation.destroy();
-			children.remove(citation);
-			citation = null;
-		}
-
-		if (citation != null) {
-			// already exists, no need to create / destroy
-			// just redraw...
-			citation.markDirty();
-		}
 	}
 
 	// public Point getBoardSize() { return new Point((int)gdata.getMBoardWidth(),
@@ -114,12 +86,12 @@ public class VInfoBox extends Graphics {
 		return (int) (vFromM(M_INITIAL_FONTSIZE));
 	}
 
-	protected void vMoveBy(double vdx, double vdy) {
-//		markDirty();
-		setMTop(getMTop() + mFromV(vdy));
-		setMLeft(getMLeft() + mFromV(vdx));
-//		markDirty();
-	}
+//	protected void vMoveBy(double vdx, double vdy) {
+////		markDirty();
+//		setMTop(getMTop() + mFromV(vdy));
+//		setMLeft(getMLeft() + mFromV(vdx));
+////		markDirty();
+//	}
 
 	public void doDraw(Graphics2D g) {
 		Font f = new Font(fontName, Font.PLAIN, getVFontSize());
@@ -140,8 +112,8 @@ public class VInfoBox extends Graphics {
 		};
 
 		int shift = 0;
-		int vLeft = (int) vFromM(gdata.getInfoBox().getX() / 2); // gdata.getMLeft
-		int vTop = (int) vFromM(gdata.getInfoBox().getY() / 2); // gdata.getMTop, mHeight is always 0?
+		int vLeft = (int) vFromM(0); // gdata.getMLeft
+		int vTop = (int) vFromM(0); // gdata.getMTop, mHeight is always 0?
 
 		int newSizeX = sizeX;
 		int newSizeY = sizeY;

@@ -43,6 +43,7 @@ import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.ShapedElement;
 import org.pathvisio.events.PathwayElementEvent;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
@@ -994,7 +995,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		LinkableTo e = getStartElement();
 		if (e != null) {
-			if (e instanceof PathwayElement) {
+			if (e instanceof ShapedElement) {
 				side = getSide(gdata.getStartLinePoint().getRelX(), gdata.getStartLinePoint().getRelY());
 			} else if (e instanceof Anchor) {
 				side = getAttachedLineDirection((Anchor) e);
@@ -1014,7 +1015,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		LinkableTo e = getEndElement();
 		if (e != null) {
-			if (e instanceof PathwayElement) {
+			if (e instanceof ShapedElement) {
 				side = getSide(gdata.getEndLinePoint().getRelX(), gdata.getEndLinePoint().getRelY());
 			} else if (e instanceof Anchor) {
 				side = getAttachedLineDirection((Anchor) e);

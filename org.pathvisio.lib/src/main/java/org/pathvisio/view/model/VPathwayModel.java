@@ -50,8 +50,8 @@ import org.pathvisio.model.*;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.PathwayModel.StatusFlagEvent;
 import org.pathvisio.model.PathwayModel.StatusFlagListener;
-import org.pathvisio.io.listener.PathwayEvent;
-import org.pathvisio.io.listener.PathwayListener;
+import org.pathvisio.events.PathwayEvent;
+import org.pathvisio.events.PathwayListener;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.util.Utils;
@@ -1919,24 +1919,24 @@ public class VPathwayModel implements PathwayListener {
 		// DataNode, State, Interaction, GraphicalLine, Label, Shape, Group have z-order
 		int zMax = 0;
 		for (DataNode e : pathwayModel.getDataNodes()) {
-			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+			zMax = Math.max(e.getZOrder(), zMax);
 			for (State st : e.getStates())
-				zMax = Math.max(st.getShapeStyleProp().getZOrder(), zMax);
+				zMax = Math.max(st.getZOrder(), zMax);
 		}
 		for (Interaction e : pathwayModel.getInteractions()) {
-			zMax = Math.max(e.getLineStyleProp().getZOrder(), zMax);
+			zMax = Math.max(e.getZOrder(), zMax);
 		}
 		for (GraphicalLine e : pathwayModel.getGraphicalLines()) {
-			zMax = Math.max(e.getLineStyleProp().getZOrder(), zMax);
+			zMax = Math.max(e.getZOrder(), zMax);
 		}
 		for (Label e : pathwayModel.getLabels()) {
-			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+			zMax = Math.max(e.getZOrder(), zMax);
 		}
 		for (Shape e : pathwayModel.getShapes()) {
-			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+			zMax = Math.max(e.getZOrder(), zMax);
 		}
 		for (Group e : pathwayModel.getGroups()) {
-			zMax = Math.max(e.getShapeStyleProp().getZOrder(), zMax);
+			zMax = Math.max(e.getZOrder(), zMax);
 		}
 		return zMax;
 	}
@@ -1951,24 +1951,24 @@ public class VPathwayModel implements PathwayListener {
 			return 0;
 		int zMin = 0;
 		for (DataNode e : pathwayModel.getDataNodes()) {
-			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+			zMin = Math.min(e.getZOrder(), zMin);
 			for (State st : e.getStates())
-				zMin = Math.min(st.getShapeStyleProp().getZOrder(), zMin);
+				zMin = Math.min(st.getZOrder(), zMin);
 		}
 		for (Interaction e : pathwayModel.getInteractions()) {
-			zMin = Math.min(e.getLineStyleProp().getZOrder(), zMin);
+			zMin = Math.min(e.getZOrder(), zMin);
 		}
 		for (GraphicalLine e : pathwayModel.getGraphicalLines()) {
-			zMin = Math.min(e.getLineStyleProp().getZOrder(), zMin);
+			zMin = Math.min(e.getZOrder(), zMin);
 		}
 		for (Label e : pathwayModel.getLabels()) {
-			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+			zMin = Math.min(e.getZOrder(), zMin);
 		}
 		for (Shape e : pathwayModel.getShapes()) {
-			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+			zMin = Math.min(e.getZOrder(), zMin);
 		}
 		for (Group e : pathwayModel.getGroups()) {
-			zMin = Math.min(e.getShapeStyleProp().getZOrder(), zMin);
+			zMin = Math.min(e.getZOrder(), zMin);
 		}
 		return zMin;
 	}

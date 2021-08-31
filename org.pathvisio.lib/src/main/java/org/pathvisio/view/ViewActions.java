@@ -40,11 +40,18 @@ import org.pathvisio.controller.Engine;
 import org.pathvisio.controller.Engine.ApplicationEventListener;
 import org.pathvisio.core.util.Resources;
 import org.pathvisio.util.Utils;
+import org.pathvisio.model.type.AnchorShapeType;
 import org.pathvisio.model.type.GroupType;
+import org.pathvisio.model.Anchor;
+import org.pathvisio.model.DataNode;
+import org.pathvisio.model.GraphicalLine;
 import org.pathvisio.model.Interaction;
+import org.pathvisio.model.Label;
+import org.pathvisio.model.LineElement;
 import org.pathvisio.model.State;
 //import org.pathvisio.core.model.ObjectType;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Shape;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.view.model.Graphics;
@@ -62,26 +69,30 @@ import org.pathvisio.view.connector.FreeConnectorShape;
 //import static org.pathvisio.model.ObjectType.STATE;
 
 /**
- * A collection of {@link Action}s related to the pathway view. An instance of this class contains
- * actions bound to one instance of a {@link VPathwayModel} (non-static fields). The static inner classes are not bound to a particular {@link VPathwayModel},
- * but act on the currently active pathway by calling {@link Engine#getActiveVPathway()}.
+ * A collection of {@link Action}s related to the pathway view. An instance of
+ * this class contains actions bound to one instance of a {@link VPathwayModel}
+ * (non-static fields). The static inner classes are not bound to a particular
+ * {@link VPathwayModel}, but act on the currently active pathway by calling
+ * {@link Engine#getActiveVPathway()}.
  *
- * Instances of actions may be registered to one or more groups, which changes the action's property on
- * certain events (see GROUP* constants). The {@link Action} instances that are fields of this class are
- * already registered to the proper groups.
+ * Instances of actions may be registered to one or more groups, which changes
+ * the action's property on certain events (see GROUP* constants). The
+ * {@link Action} instances that are fields of this class are already registered
+ * to the proper groups.
  *
- * An instance of this class belonging to a {@link VPathwayModel} can be obtained using {@link VPathwayModel#getViewActions()}.
+ * An instance of this class belonging to a {@link VPathwayModel} can be
+ * obtained using {@link VPathwayModel#getViewActions()}.
  *
- * @author thomas
+ * @author thomas, finterly
  */
 public class ViewActions implements VPathwayListener, SelectionListener {
-	private static final URL IMG_COPY= Resources.getResourceURL("copy.gif");
+	private static final URL IMG_COPY = Resources.getResourceURL("copy.gif");
 	private static final URL IMG_PASTE = Resources.getResourceURL("paste.gif");
 	private static final URL IMG_UNDO = Resources.getResourceURL("undo.gif");
 
 	/**
-	 * The group of actions that will be enabled when the VPathway is in edit mode and
-	 * disabled when not
+	 * The group of actions that will be enabled when the VPathway is in edit mode
+	 * and disabled when not
 	 */
 	public static final String GROUP_ENABLE_EDITMODE = "editmode";
 
@@ -99,7 +110,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	static final int SMALL_INCREMENT = 2;
 	static final int LARGE_INCREMENT = 20;
 
-	VPathwayModel vPathway;
+	VPathwayModel vPathwayModel;
 
 	public final SelectClassAction selectDataNodes;
 	public final SelectObjectAction selectInteractions;
@@ -132,16 +143,16 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 	ViewActions(Engine engine, VPathwayModel vp) {
 		this.engine = engine;
-		vPathway = vp;
+		vPathwayModel = vp;
 
 		vp.addSelectionListener(this);
 		vp.addVPathwayListener(this);
 
-		selectDataNodes = new SelectClassAction("DataNode", VDataNode.class);
-		selectInteractions = new SelectObjectAction("Interactions", ObjectType.LINE);
-		selectLines = new SelectObjectAction("Graphical Lines", ObjectType.GRAPHLINE);
-		selectShapes = new SelectObjectAction("Shapes", ObjectType.SHAPE);
-		selectLabels = new SelectObjectAction("Labels", ObjectType.LABEL);
+		selectDataNodes = new SelectClassAction("DataNode", DataNode.class);
+		selectInteractions = new SelectObjectAction("Interactions", Interaction.class);
+		selectLines = new SelectObjectAction("Graphical Lines", GraphicalLine.class);
+		selectShapes = new SelectObjectAction("Shapes", Shape.class);
+		selectLabels = new SelectObjectAction("Labels", Label.class);
 		selectAll = new SelectAllAction();
 		toggleGroup = new GroupAction();
 		toggleComplex = new ComplexAction();
@@ -172,11 +183,11 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		registerToGroup(toggleComplex, GROUP_ENABLE_WHEN_SELECTION);
 		registerToGroup(delete1, GROUP_ENABLE_EDITMODE);
 		registerToGroup(delete1, GROUP_ENABLE_WHEN_SELECTION);
-		registerToGroup(copy, 	ViewActions.GROUP_ENABLE_WHEN_SELECTION);
-		registerToGroup(paste, 	ViewActions.GROUP_ENABLE_VPATHWAY_LOADED);
-		registerToGroup(paste, 	ViewActions.GROUP_ENABLE_EDITMODE);
-		registerToGroup(positionPaste, 	ViewActions.GROUP_ENABLE_VPATHWAY_LOADED);
-		registerToGroup(positionPaste, 	ViewActions.GROUP_ENABLE_EDITMODE);
+		registerToGroup(copy, ViewActions.GROUP_ENABLE_WHEN_SELECTION);
+		registerToGroup(paste, ViewActions.GROUP_ENABLE_VPATHWAY_LOADED);
+		registerToGroup(paste, ViewActions.GROUP_ENABLE_EDITMODE);
+		registerToGroup(positionPaste, ViewActions.GROUP_ENABLE_VPATHWAY_LOADED);
+		registerToGroup(positionPaste, ViewActions.GROUP_ENABLE_EDITMODE);
 		registerToGroup(keyMove, ViewActions.GROUP_ENABLE_EDITMODE);
 		registerToGroup(addAnchor, GROUP_ENABLE_WHEN_SELECTION);
 		registerToGroup(addWaypoint, GROUP_ENABLE_WHEN_SELECTION);
@@ -191,61 +202,66 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 	/**
 	 * Register the given action to a group (one of the GROUP* contants)
-	 * @param a	The action to register
+	 * 
+	 * @param a     The action to register
 	 * @param group The group to register the action to
 	 */
-	public void registerToGroup(Action a, String group) 
-	{
+	public void registerToGroup(Action a, String group) {
 		Utils.multimapPut(actionGroups, group, a);
 		Utils.multimapPut(groupActions, a, group);
 	}
 
 	/**
 	 * Register the given actions to a group (one of the GROUP* constants)
+	 * 
 	 * @param actions The actions to register
-	 * @param group The group to register the actions to
+	 * @param group   The group to register the actions to
 	 */
 	public void registerToGroup(Action[] actions, String group) {
-		for(Action a : actions) registerToGroup(a, group);
+		for (Action a : actions)
+			registerToGroup(a, group);
 	}
 
 	/**
 	 * Register the given actions to a group (one of the GROUP* constants)
+	 * 
 	 * @param actions The actions to register
-	 * @param group The group to register the actions to
+	 * @param group   The group to register the actions to
 	 */
 	public void registerToGroup(Action[][] actions, String group) {
-		for(Action[] aa : actions) {
-			for(Action a : aa) registerToGroup(a, group);
+		for (Action[] aa : actions) {
+			for (Action a : aa)
+				registerToGroup(a, group);
 		}
 	}
 
 	/**
 	 * Resets the group state for the registered actions to the VPathway's state
-	 * e.g. all actions in GROUP_ENABLE_EDITMODE will be enabled when the pathway is in
-	 * edit mode, and disabled when not.
+	 * e.g. all actions in GROUP_ENABLE_EDITMODE will be enabled when the pathway is
+	 * in edit mode, and disabled when not.
 	 */
 	public void resetGroupStates() {
-		resetGroupStates(vPathway);
+		resetGroupStates(vPathwayModel);
 	}
 
 	Map<String, Boolean> groupState = new HashMap<String, Boolean>();
 
 	/**
-	 * Resets the group state for the registered actions to the given VPathway's state
-	 * e.g. all actions in GROUP_ENABLE_EDITMODE will be enabled when the pathway is in
-	 * edit mode, and disabled when not.
+	 * Resets the group state for the registered actions to the given VPathway's
+	 * state e.g. all actions in GROUP_ENABLE_EDITMODE will be enabled when the
+	 * pathway is in edit mode, and disabled when not.
+	 * 
 	 * @param v The VPathway of which the state will be determined
 	 */
 	private void resetGroupStates(VPathwayModel v) {
 		groupState.put(GROUP_ENABLE_VPATHWAY_LOADED, true);
-		groupState.put(GROUP_ENABLE_EDITMODE, vPathway.isEditMode());
-		groupState.put(GROUP_ENABLE_WHEN_SELECTION, vPathway.getSelectedPathwayElements().size() > 0);
+		groupState.put(GROUP_ENABLE_EDITMODE, vPathwayModel.isEditMode());
+		groupState.put(GROUP_ENABLE_WHEN_SELECTION, vPathwayModel.getSelectedPathwayElements().size() > 0);
 
-		for(Action a : groupActions.keySet()) {
+		for (Action a : groupActions.keySet()) {
 			Set<String> groups = groupActions.get(a);
 			boolean enable = true;
-			for(String g : groups) {
+			for (String g : groups) {
 				enable &= groupState.get(g);
 			}
 			a.setEnabled(enable);
@@ -264,9 +280,9 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 //	}
 
 	public void vPathwayEvent(VPathwayEvent e) {
-		VPathwayModel vp = (VPathwayModel)e.getSource();
-		//Don't refresh at object redraw / move
-		switch(e.getType()) {
+		VPathwayModel vp = (VPathwayModel) e.getSource();
+		// Don't refresh at object redraw / move
+		switch (e.getType()) {
 		case EDIT_MODE_OFF:
 		case EDIT_MODE_ON:
 		case ELEMENT_ADDED:
@@ -279,7 +295,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	}
 
 	public void selectionEvent(SelectionEvent e) {
-		VPathwayModel vp = ((SelectionBox)e.getSource()).getDrawing();
+		VPathwayModel vp = ((SelectionBox) e.getSource()).getDrawing();
 		resetGroupStates(vp);
 	}
 
@@ -293,7 +309,10 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 //	}
 //	}
 
-	/** "Copy" command in the menu / toolbar, copies selected pathway elements to the clipboard */
+	/**
+	 * "Copy" command in the menu / toolbar, copies selected pathway elements to the
+	 * clipboard
+	 */
 	public static class CopyAction extends AbstractAction {
 		Engine engine;
 
@@ -306,12 +325,13 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			putValue(Action.SHORT_DESCRIPTION, descr);
 			putValue(Action.LONG_DESCRIPTION, descr);
 			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C,
-							Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(vp != null) vp.copyToClipboard();
+			if (vp != null)
+				vp.copyToClipboard();
 		}
 	}
 
@@ -333,16 +353,17 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(isEnabled() && vp != null) vp.pasteFromClipboard();
+			if (isEnabled() && vp != null)
+				vp.pasteFromClipboard();
 		}
 	}
-	
+
 	/** "Paste" command from the right click menu, pastes from clipboard */
 	public static class PositionPasteAction extends AbstractAction {
 		private static final long serialVersionUID = 1L;
 		Engine engine;
 		private Point position;
-		
+
 		public PositionPasteAction(Engine engine) {
 			super();
 			this.engine = engine;
@@ -357,22 +378,25 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(isEnabled() && vp != null) {
+			if (isEnabled() && vp != null) {
 				vp.positionPasteFromClipboard(position);
 			}
 			resetPosition();
 		}
-		
+
 		public void setPosition(Point position) {
 			this.position = position;
 		}
-		
+
 		private void resetPosition() {
 			position = null;
 		}
 	}
 
-	/** "Nudge" action, move selected element(s) a bit in the direction of the cursor key pressed. */
+	/**
+	 * "Nudge" action, move selected element(s) a bit in the direction of the cursor
+	 * key pressed.
+	 */
 	public static class KeyMoveAction extends AbstractAction {
 		Engine engine;
 		KeyStroke key;
@@ -386,10 +410,11 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 			int moveIncrement = 0;
 
-			if ((e.getModifiers() &
-					ActionEvent.SHIFT_MASK) != 0)
-			{ moveIncrement = LARGE_INCREMENT;}
-			else {moveIncrement = SMALL_INCREMENT;}
+			if ((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+				moveIncrement = LARGE_INCREMENT;
+			} else {
+				moveIncrement = SMALL_INCREMENT;
+			}
 
 			VPathwayModel vp = engine.getActiveVPathway();
 			vp.moveByKey(key, moveIncrement);
@@ -399,33 +424,35 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	private class SelectClassAction extends AbstractAction {
 
 		Class<?> c;
+
 		public SelectClassAction(String name, Class<?> c) {
 			super("Select all " + name + "s");
 			this.c = c;
 		}
+
 		public void actionPerformed(ActionEvent e) {
-			vPathway.selectObjects(c);
+			vPathwayModel.selectObjects(c);
 		}
 	}
-	
+
 	/**
 	 * Selects all objects of a given objectType
 	 * 
 	 * @author anwesha
 	 */
 	private class SelectObjectAction extends AbstractAction {
-		private ObjectType objtype;
-		public SelectObjectAction(String name, ObjectType objtype) {
+		private Class c;
+
+		public SelectObjectAction(String name, Class c) {
 			super("Select all " + name);
-			this.objtype = objtype;
+			this.c = c;
 		}
-		
+
 		public void actionPerformed(ActionEvent e) {
-			vPathway.selectObjectsByObjectType(objtype);
+			vPathwayModel.selectObjectsByObjectType(c);
 		}
 	}
-		
-	
+
 	private class SelectAllAction extends AbstractAction {
 
 		public SelectAllAction() {
@@ -433,38 +460,41 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A,
 					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
+
 		public void actionPerformed(ActionEvent e) {
-			vPathway.selectAll();
+			vPathwayModel.selectAll();
 		}
 	}
 
 	/**
 	 * Add/remove waypoints on a segmented line.
+	 * 
 	 * @author thomas
 	 */
 	private class WaypointAction extends AbstractAction implements SelectionListener {
 		boolean add;
-		
+
 		public WaypointAction(boolean add) {
 			this.add = add;
-			
-			if(add) {
+
+			if (add) {
 				putValue(NAME, "Add waypoint");
 				putValue(SHORT_DESCRIPTION, "Add a waypoint to the selected line");
 			} else {
 				putValue(NAME, "Remove last waypoint");
 				putValue(SHORT_DESCRIPTION, "Removes the last waypoint from the selected line");
 			}
-			vPathway.addSelectionListener(this);
+			vPathwayModel.addSelectionListener(this);
 			setEnabled(false);
 		}
 
 		public void selectionEvent(SelectionEvent e) {
 			boolean enable = false;
-			if(e.selection.size() == 1) {
+			if (e.selection.size() == 1) {
 				VElement ve = e.selection.iterator().next();
-				if(ve instanceof VLine) {
-					ConnectorShape s = ((MLine)((VLine)ve).getPathwayElement()).getConnectorShape();
+				if (ve instanceof VLineElement) {
+					// TODO....
+					ConnectorShape s = ((VLineElement) ve).getConnectorShape(((VLineElement) ve).getPathwayElement());
 					enable = s instanceof FreeConnectorShape;
 				} else {
 					enable = false;
@@ -474,61 +504,65 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			List<Graphics> selection = vPathway.getSelectedGraphics();
-			if(selection.size() == 1) {
+			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			if (selection.size() == 1) {
 				Graphics g = selection.get(0);
-				if(g instanceof VLine) {
-					VLine l = (VLine)g;
-					ConnectorShape s = ((MLine)l.getPathwayElement()).getConnectorShape();
-					if(s instanceof FreeConnectorShape) {
-						vPathway.getUndoManager().newAction("" + getValue(NAME));
-						if(add) {
-							addWaypoint((FreeConnectorShape)s, (MLine)l.getPathwayElement());
+				if (g instanceof VLineElement) {
+					VLineElement l = (VLineElement) g;
+					ConnectorShape s = l.getConnectorShape(l.getPathwayElement()); // TODO...
+					if (s instanceof FreeConnectorShape) {
+						vPathwayModel.getUndoManager().newAction("" + getValue(NAME));
+						if (add) {
+							addWaypoint((FreeConnectorShape) s, (LineElement) l.getPathwayElement());
 						} else {
-							removeWaypoint((MLine)l.getPathwayElement());
+							removeWaypoint((MLine) l.getPathwayElement());
 						}
 					}
 				}
 			}
 		}
-		
+
 		private void removeWaypoint(MLine l) {
-			//TODO: Instead of removing the last point, it would be better to adjust the context
-			//menu to remove a specific point (like with anchors). This could be done by making 
-			//VPoint extend VPathwayElement so we can directly get the selected waypoint here.
+			// TODO: Instead of removing the last point, it would be better to adjust the
+			// context
+			// menu to remove a specific point (like with anchors). This could be done by
+			// making
+			// VPoint extend VPathwayElement so we can directly get the selected waypoint
+			// here.
 			List<MPoint> newPoints = new ArrayList<MPoint>(l.getMPoints());
 			newPoints.remove(newPoints.size() - 2);
 			l.setMPoints(newPoints);
 		}
-		
-		private void addWaypoint(FreeConnectorShape s, MLine l) {
-			//TODO: It would be nice to have access to the mouse position here, so
-			//we can add the waypoint to where the user clicked
-			//Point2D mp = new Point2D.Double(vPathway.mFromV(p.getX()), vPathway.mFromV(p.getY()));
-			//WayPoint nwp = new WayPoint(mp);
-			//double c = s.toLineCoordinate(p);
-			
-			//We don't have the mouse position, just add the waypoint in the center
-			//with an offset if needed
-			List<MPoint> oldPoints = l.getMPoints();
-			List<MPoint> newPoints = new ArrayList<MPoint>(oldPoints);
-			
-			int i = oldPoints.size() - 1; //MPoints size always >= 2
-			MPoint mp = oldPoints.get(i);
-			MPoint mp2 = oldPoints.get(i - 1);
+
+		private void addWaypoint(FreeConnectorShape s, LineElement l) {
+			// TODO: It would be nice to have access to the mouse position here, so
+			// we can add the waypoint to where the user clicked
+			// Point2D mp = new Point2D.Double(vPathway.mFromV(p.getX()),
+			// vPathway.mFromV(p.getY()));
+			// WayPoint nwp = new WayPoint(mp);
+			// double c = s.toLineCoordinate(p);
+
+			// We don't have the mouse position, just add the waypoint in the center
+			// with an offset if needed
+			List<LinePoint> oldPoints = l.getLinePoints();
+			List<LinePoint> newPoints = new ArrayList<LinePoint>(oldPoints);
+
+			int i = oldPoints.size() - 1; // MPoints size always >= 2
+			LinePoint mp = oldPoints.get(i);
+			LinePoint mp2 = oldPoints.get(i - 1);
 			double mc = s.toLineCoordinate(mp.toPoint2D());
 			double mc2 = s.toLineCoordinate(mp2.toPoint2D());
-			double c = mc2 + (mc - mc2) / 2.0; //Add new waypoint on center of last segment
+			double c = mc2 + (mc - mc2) / 2.0; // Add new waypoint on center of last segment
 			Point2D p = s.fromLineCoordinate(c);
-			newPoints.add(i, l.new MPoint(p.getX(), p.getY()));
-			l.setMPoints(newPoints);
+			newPoints.add(i, l.new LinePoint(p.getX(), p.getY()));
+			l.setLinePoints(newPoints);
 		}
 	}
-	
+
 	private class AddAnchorAction extends AbstractAction implements SelectionListener {
 
 		public AddAnchorAction() {
-			vPathway.addSelectionListener(this);
+			vPathwayModel.addSelectionListener(this);
 			putValue(NAME, "Add anchor");
 			putValue(SHORT_DESCRIPTION, "Add an anchor point to the selected line");
 			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R,
@@ -537,9 +571,9 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void selectionEvent(SelectionEvent e) {
-			boolean enable= false;
-			for(VElement ve : e.selection) {
-				if(ve instanceof VLine) {
+			boolean enable = false;
+			for (VElement ve : e.selection) {
+				if (ve instanceof VLineElement) {
 					enable = true;
 				} else {
 					enable = false;
@@ -550,113 +584,99 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			List<Graphics> selection = vPathway.getSelectedGraphics();
-			if(selection.size() > 0) {
-				vPathway.getUndoManager().newAction("Add anchor");
-				for(Graphics g : selection) {
-					if(g instanceof VLine) {
-						VLine l = (VLine)g;
-						l.lineElement.addMAnchor(0.4);
+			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			if (selection.size() > 0) {
+				vPathwayModel.getUndoManager().newAction("Add anchor");
+				for (Graphics g : selection) {
+					if (g instanceof VLineElement) {
+						VLineElement l = (VLineElement) g;
+						l.getPathwayElement().addAnchor(new Anchor(0.4, AnchorShapeType.SQUARE)); // TODO
 					}
 				}
 			}
 		}
 	}
 
-	private class AddState extends AbstractAction
-	{
-		AddState()
-		{
-			super ("Add State...");
+	private class AddState extends AbstractAction {
+		AddState() {
+			super("Add State...");
 		}
-		
-		public void actionPerformed(ActionEvent arg0)
-		{
-			List<Graphics> selection = vPathway.getSelectedGraphics();
-			if(selection.size() > 0) {
-				vPathway.getUndoManager().newAction("Add State");
-				for(Graphics g : selection) {
-					if(g instanceof VDataNode) {
-						VDataNode gp = (VDataNode)g;
-						PathwayElement elt = PathwayElement.createPathwayElement(STATE);
-						elt.setInitialSize();
-						((MState)elt).linkTo (gp.getPathwayElement(), 1.0, 1.0); 
+
+		private static final double STATE_SIZE = 15;
+
+		public void actionPerformed(ActionEvent arg0) {
+			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			if (selection.size() > 0) {
+				vPathwayModel.getUndoManager().newAction("Add State");
+				for (Graphics g : selection) {
+					if (g instanceof VDataNode) {
+						VDataNode gp = (VDataNode) g;
+						State elt = new State(null, null, 1.0, 1.0);
+						elt.setWidth(STATE_SIZE);
+						elt.setHeight(STATE_SIZE);
 						elt.setShapeType(ShapeType.OVAL);
-						engine.getActivePathway().add(elt);
-						elt.setGeneratedGraphId();
+						// adds state to datanode, to pathway model, and assigns elementId
+						((DataNode) gp.getPathwayElement()).addState(elt);
+						// engine.getActivePathway().add(elt); TODO not needed since already added in
+						// chain event...?
 					}
 				}
-			}			
+			}
 		}
 	}
 
-	private class RemoveState extends AbstractAction
-	{
-		RemoveState()
-		{
-			super ("Remove State...");
+	private class RemoveState extends AbstractAction {
+		RemoveState() {
+			super("Remove State...");
 		}
-		
-		public void actionPerformed(ActionEvent arg0)
-		{
-			vPathway.getUndoManager().newAction("Remove State");
+
+		public void actionPerformed(ActionEvent arg0) {
+			vPathwayModel.getUndoManager().newAction("Remove State");
 			List<VElement> toRemove = new ArrayList<VElement>();
-			List<Graphics> selection = vPathway.getSelectedGraphics();
-			if(selection.size() > 0) {
-				for(Graphics g : selection) {
-					if(g instanceof State) {
+			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			if (selection.size() > 0) {
+				for (Graphics g : selection) {
+					if (g instanceof State) {
 						toRemove.add(g);
 					}
 				}
-			}			
-			if (toRemove.size() > 0)
-			{
-				vPathway.getUndoManager().newAction("Remove state(s)");
-				vPathway.removeDrawingObjects(toRemove, true);
 			}
-			
+			if (toRemove.size() > 0) {
+				vPathwayModel.getUndoManager().newAction("Remove state(s)");
+				vPathwayModel.removeDrawingObjects(toRemove, true);
+			}
+
 		}
 	}
 
 	private class ComplexAction extends GroupActionBase {
 		public ComplexAction() {
-			super(
-				"Create complex", "Break complex",
-				"Create a complex from selected elements",
-				"Break selected complex",
-				GroupStyle.COMPLEX,
-				KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P,
-						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())
-				);
+			super("Create complex", "Break complex", "Create a complex from selected elements",
+					"Break selected complex", GroupStyle.COMPLEX, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P,
+							Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 	}
 
 	private class GroupAction extends GroupActionBase {
 		public GroupAction() {
-			super(
-				"Group", "Ungroup",
-				"Group selected elements",
-				"Ungroup selected group",
-				GroupStyle.GROUP,
-				KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G,
-						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())
-			);
+			super("Group", "Ungroup", "Group selected elements", "Ungroup selected group", GroupStyle.GROUP, KeyStroke
+					.getKeyStroke(java.awt.event.KeyEvent.VK_G, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 	}
+
 	private class GroupActionBase extends AbstractAction implements SelectionListener {
 		private String groupLbl, ungroupLbl, groupTt, ungroupTt;
 		private GroupStyle groupStyle;
 
-		public GroupActionBase(String groupLbl, String ungroupLbl,
-				String groupTt, String ungroupTt,
-				GroupStyle style, KeyStroke keyStroke) {
+		public GroupActionBase(String groupLbl, String ungroupLbl, String groupTt, String ungroupTt, GroupStyle style,
+				KeyStroke keyStroke) {
 			super();
 			this.groupStyle = style;
 			this.groupLbl = groupLbl;
 			this.ungroupLbl = ungroupLbl;
 			this.groupTt = groupTt;
 			this.ungroupTt = ungroupTt;
-			vPathway.addSelectionListener(this);
+			vPathwayModel.addSelectionListener(this);
 			putValue(NAME, groupLbl);
 			putValue(SHORT_DESCRIPTION, groupTt);
 			putValue(ACCELERATOR_KEY, keyStroke);
@@ -664,15 +684,16 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if(!isEnabled()) return; //Don't perform action if not enabled
-			VGroup g = vPathway.toggleGroup(vPathway.getSelectedGraphics());
-			if(g != null) {
+			if (!isEnabled())
+				return; // Don't perform action if not enabled
+			VGroup g = vPathwayModel.toggleGroup(vPathwayModel.getSelectedGraphics());
+			if (g != null) {
 				g.getPathwayElement().setGroupStyle(groupStyle);
 			}
 		}
 
 		public void selectionEvent(SelectionEvent e) {
-			switch(e.type) {
+			switch (e.type) {
 			case SelectionEvent.OBJECT_ADDED:
 			case SelectionEvent.OBJECT_REMOVED:
 			case SelectionEvent.SELECTION_CLEARED:
@@ -682,14 +703,14 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		private void setLabel() {
 			int unGrouped = 0;
-			List<Graphics> selection = vPathway.getSelectedGraphics();
-			for(Graphics g : selection) {
-				if(g.getPathwayElement().getGroupRef() == null) {
+			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			for (Graphics g : selection) {
+				if (g.getPathwayElement().getGroupRef() == null) {
 					unGrouped++;
 				}
 			}
 			setEnabled(true);
-			if(unGrouped >= 2) {
+			if (unGrouped >= 2) {
 				putValue(Action.NAME, groupLbl);
 				putValue(SHORT_DESCRIPTION, groupTt);
 			} else {
@@ -704,23 +725,22 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		public DeleteAction(int ke) {
 			super();
 			putValue(NAME, "Delete");
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(ke , 0));
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(ke, 0));
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if(!isEnabled()) return; //Don't perform action if not enabled
+			if (!isEnabled())
+				return; // Don't perform action if not enabled
 
 			List<VElement> toRemove = new ArrayList<VElement>();
-			for(VElement o : vPathway.getDrawingObjects())
-			{
-				if (!o.isSelected() || o == vPathway.selection || o == vPathway.getMappInfo())
+			for (VElement o : vPathwayModel.getDrawingObjects()) {
+				if (!o.isSelected() || o == vPathwayModel.selection || o == vPathwayModel.getMappInfo())
 					continue; // Object not selected, skip
 				toRemove.add(o);
 			}
-			if (toRemove.size() > 0)
-			{
-				vPathway.getUndoManager().newAction("Delete element(s)");
-				vPathway.removeDrawingObjects(toRemove, true);
+			if (toRemove.size() > 0) {
+				vPathwayModel.getUndoManager().newAction("Delete element(s)");
+				vPathwayModel.removeDrawingObjects(toRemove, true);
 			}
 		}
 	}
@@ -736,16 +756,14 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			putValue(SHORT_DESCRIPTION, "Undo last action");
 			putValue(SMALL_ICON, new ImageIcon(IMG_UNDO));
 			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z,
-							Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())
-					);
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 			engine.addApplicationEventListener(this);
 			setEnabled(false);
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if (vp != null)
-			{
+			if (vp != null) {
 				vp.undo();
 			}
 		}
@@ -756,14 +774,13 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			setEnabled(!msg.equals(UndoManager.CANT_UNDO));
 		}
 
-		public void applicationEvent(ApplicationEvent e) 
-		{
+		public void applicationEvent(ApplicationEvent e) {
 			switch (e.getType()) {
 			case VPATHWAY_CREATED:
-				((VPathwayModel)e.getSource()).getUndoManager().addListener(this);
+				((VPathwayModel) e.getSource()).getUndoManager().addListener(this);
 				break;
 			case VPATHWAY_DISPOSED:
-				((VPathwayModel)e.getSource()).getUndoManager().removeListener(this);
+				((VPathwayModel) e.getSource()).getUndoManager().removeListener(this);
 				break;
 			default:
 				break;
@@ -774,12 +791,10 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	/**
 	 * Action to change the order of the selected object
 	 */
-	public static class OrderTopAction extends AbstractAction
-	{
+	public static class OrderTopAction extends AbstractAction {
 		Engine engine;
 
-		public OrderTopAction(Engine engine)
-		{
+		public OrderTopAction(Engine engine) {
 			this.engine = engine;
 			putValue(NAME, "Bring to front");
 			putValue(SHORT_DESCRIPTION, "Bring the element in front of all other elements");
@@ -787,10 +802,9 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 					InputEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 
-		public void actionPerformed(ActionEvent e)
-		{
+		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(vp != null) {
+			if (vp != null) {
 				vp.moveGraphicsTop(vp.getSelectedGraphics());
 				vp.redraw();
 			}
@@ -800,12 +814,10 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	/**
 	 * Action to change the order of the selected object
 	 */
-	public static class OrderBottomAction extends AbstractAction
-	{
+	public static class OrderBottomAction extends AbstractAction {
 		Engine engine;
 
-		public OrderBottomAction(Engine engine)
-		{
+		public OrderBottomAction(Engine engine) {
 			this.engine = engine;
 			putValue(NAME, "Send to Back");
 			putValue(SHORT_DESCRIPTION, "Send the element behind all other elements");
@@ -813,11 +825,9 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 					InputEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 
-		public void actionPerformed(ActionEvent e)
-		{
+		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(vp != null)
-			{
+			if (vp != null) {
 				vp.moveGraphicsBottom(vp.getSelectedGraphics());
 				vp.redraw();
 			}
@@ -827,11 +837,10 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	/**
 	 * Action to change the order of the selected object
 	 */
-	public static class OrderUpAction extends AbstractAction
-	{
+	public static class OrderUpAction extends AbstractAction {
 		Engine engine;
-		public OrderUpAction(Engine engine)
-		{
+
+		public OrderUpAction(Engine engine) {
 			this.engine = engine;
 			putValue(NAME, "Bring Forward");
 			putValue(SHORT_DESCRIPTION, "Bring Forward");
@@ -841,7 +850,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(vp != null) {
+			if (vp != null) {
 				vp.moveGraphicsUp(vp.getSelectedGraphics());
 				vp.redraw();
 			}
@@ -851,12 +860,10 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	/**
 	 * Action to change the order of the selected object
 	 */
-	public static class OrderDownAction extends AbstractAction
-	{
+	public static class OrderDownAction extends AbstractAction {
 		Engine engine;
 
-		public OrderDownAction(Engine engine)
-		{
+		public OrderDownAction(Engine engine) {
 			this.engine = engine;
 			putValue(NAME, "Send Backward");
 			putValue(SHORT_DESCRIPTION, "Send Backward");
@@ -866,7 +873,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
-			if(vp != null) {
+			if (vp != null) {
 				vp.moveGraphicsDown(vp.getSelectedGraphics());
 				vp.redraw();
 			}
@@ -874,8 +881,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	}
 
 	/**
-	 * Action that toggles highlight of points that are not linked
-	 * to an object
+	 * Action that toggles highlight of points that are not linked to an object
 	 */
 	public class ShowUnlinkedConnectors extends AbstractAction {
 		public ShowUnlinkedConnectors() {
@@ -886,29 +892,27 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			vPathway.resetHighlight();
-				for(PathwayElement pe : vPathway.getPathwayModel().getDataObjects()) {
-					if(pe.getObjectType() == ObjectType.LINE) {
-						VLine vl = (VLine)vPathway.getPathwayElementView(pe);
-						String grs = pe.getStartGraphRef();
-						String gre = pe.getEndGraphRef();
-						if(grs == null || "".equals(grs)) {
-							vl.getStart().highlight();
-						}
-						if(gre == null || "".equals(gre)) {
-							vl.getEnd().highlight();
-						}
+			vPathwayModel.resetHighlight();
+			for (PathwayElement pe : vPathwayModel.getPathwayModel().getDataObjects()) {
+				if (pe.getObjectType() == ObjectType.LINE) {
+					VLine vl = (VLine) vPathwayModel.getPathwayElementView(pe);
+					String grs = pe.getStartGraphRef();
+					String gre = pe.getEndGraphRef();
+					if (grs == null || "".equals(grs)) {
+						vl.getStart().highlight();
+					}
+					if (gre == null || "".equals(gre)) {
+						vl.getEnd().highlight();
 					}
 				}
+			}
 		}
 	}
-	
-	
+
 	/**
 	 * Action for toggling bold or italic flags on selected elements.
 	 */
-	public static class TextFormattingAction extends AbstractAction 
-	{	
+	public static class TextFormattingAction extends AbstractAction {
 		Engine engine;
 		KeyStroke key;
 
@@ -916,25 +920,28 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			this.engine = engine;
 			this.key = key;
 		}
-		
+
 		public void actionPerformed(ActionEvent e) {
 			VPathwayModel vp = engine.getActiveVPathway();
 			Set<VElement> changeTextFormat = new HashSet<VElement>();
 			changeTextFormat = vp.getSelectedPathwayElements();
-			for(VElement velt : changeTextFormat) {
-				if (velt instanceof Graphics){
-					PathwayElement o = ((Graphics)velt).getPathwayElement();
-					if(key.equals (VPathwayModel.KEY_BOLD)) {
-                    				if(o.isBold()) o.setBold(false);
-                    				else o.setBold(true);
-                    }
-					else if(key.equals (VPathwayModel.KEY_ITALIC)) {
-						if(o.isItalic()) o.setItalic(false);
-						else o.setItalic(true);						
+			for (VElement velt : changeTextFormat) {
+				if (velt instanceof Graphics) {
+					PathwayElement o = ((Graphics) velt).getPathwayElement();
+					if (key.equals(VPathwayModel.KEY_BOLD)) {
+						if (o.isBold())
+							o.setBold(false);
+						else
+							o.setBold(true);
+					} else if (key.equals(VPathwayModel.KEY_ITALIC)) {
+						if (o.isItalic())
+							o.setItalic(false);
+						else
+							o.setItalic(true);
 					}
 				}
 			}
-			
+
 			vp.redraw();
 		}
 	}
