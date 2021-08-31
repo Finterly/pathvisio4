@@ -17,7 +17,6 @@
 package org.pathvisio.view.model;
 
 import java.awt.Color;
-import java.awt.Shape;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,10 +28,6 @@ import org.pathvisio.model.type.HAlignType;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.graphics.Coordinate;
-import org.pathvisio.model.graphics.FontProperty;
-import org.pathvisio.model.graphics.LineStyleProperty;
-import org.pathvisio.model.graphics.RectProperty;
-import org.pathvisio.model.graphics.ShapeStyleProperty;
 import org.pathvisio.model.type.AnchorShapeType;
 import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.State;
@@ -40,11 +35,9 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.core.util.Resources;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
-import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.GraphicalLine;
 import org.pathvisio.model.Interaction;
 import org.pathvisio.model.Label;
-import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.model.type.StateType;
@@ -59,7 +52,7 @@ import org.pathvisio.view.Template;
  * Contains a set of templates, patterns of PathwayElements that can be added to
  * a Pathway, including default values.
  * 
- * TODO remove addElement need for CAST 
+ * TODO remove addElement need for CAST
  */
 public abstract class DefaultTemplates {
 
@@ -144,14 +137,20 @@ public abstract class DefaultTemplates {
 	public static class LabelTemplate extends SingleElementTemplate {
 
 		public Label[] addElements(PathwayModel p, double mx, double my) {
-			RectProperty rectProp = new RectProperty(new Coordinate(mx, my), LABEL_WIDTH, LABEL_HEIGHT);
-			FontProperty fontProperty = new FontProperty(COLOR_LABEL, "Arial", false, false, false, false, FONTSIZE,
-					HALIGN, VALIGN);
-			// TODO borderColor, borderStyle, borderWidth, fillColor, shapeType, zOrder
-			ShapeStyleProperty shapeStyleProperty = new ShapeStyleProperty(null, null, LINEWIDTH, null, ShapeType.NONE,
-					Z_ORDER_LABEL);
-			// rotation = 0
-			Label e = new Label(rectProp, fontProperty, shapeStyleProperty, ROTATION, "Label");
+			// instantiate a label
+			Label e = new Label("Label");
+			// rect props
+			e.setCenterXY(new Coordinate(mx, my));
+			e.setWidth(LABEL_WIDTH);
+			e.setHeight(LABEL_HEIGHT);
+			// font props: default fontName, fontStyle, fontDecoration, fontStrikeThru,
+			// fontSize, hAlign, vAlign
+			e.setTextColor(COLOR_LABEL);
+			// shape style props: default borderColor, borderStyle, borderWidth, fillColor
+			// TODO
+			e.setShapeType(ShapeType.NONE);
+			e.setZOrder(Z_ORDER_LABEL);
+			// add label to pathway model
 			p.addLabel(e);
 			lastAdded = e;
 			return new Label[] { e };
@@ -178,6 +177,8 @@ public abstract class DefaultTemplates {
 		}
 
 		public DataNode[] addElements(PathwayModel p, double mx, double my) {
+			// instantiate a datanode
+			DataNode e = new DataNode(type.toString(), type);
 			// custom default graphics for data nodes
 			Color color = COLOR_DEFAULT;
 			ShapeType shapeType = ShapeType.RECTANGLE;
@@ -191,20 +192,23 @@ public abstract class DefaultTemplates {
 				fontWeight = true;
 				shapeType = ShapeType.NONE; // TODO rounded rectangle?
 			}
-			RectProperty rectProp = new RectProperty(new Coordinate(mx, my), DATANODE_WIDTH, DATANODE_HEIGHT);
-			// textColor, fontName, fontWeight, fontStyle, fontDecoration, fontStrikethru,
+			// rect props
+			e.setCenterXY(new Coordinate(mx, my));
+			e.setWidth(DATANODE_WIDTH);
+			e.setHeight(DATANODE_HEIGHT);
+			// font props: default fontName, fontStyle, fontDecoration, fontStrikeThru,
 			// fontSize, hAlign, vAlign
-			FontProperty fontProperty = new FontProperty(color, "Arial", fontWeight, false, false, false, FONTSIZE,
-					HALIGN, VALIGN);
-			// borderColor, borderStyle, borderWidth, fillColor, shapeType, zOrder
-			ShapeStyleProperty shapeStyleProperty = new ShapeStyleProperty(color, LINESTYLETYPE, LINEWIDTH, Color.WHITE,
-					shapeType, Z_ORDER_LABEL);
-			// rotation = 0
-			DataNode e = new DataNode(rectProp, fontProperty, shapeStyleProperty, ROTATION, type.toString(), type);
+			e.setTextColor(color);
+			e.setFontWeight(fontWeight);
+			// shape style props: default borderStyle, borderWidth, fillColor, rotation
+			e.setBorderColor(color);
+			e.setShapeType(shapeType);
+			e.setZOrder(Z_ORDER_DATANODE);
 			// TODO????
 			if (PreferenceManager.getCurrent().getBoolean(GlobalPreference.DATANODES_ROUNDED)) {
-				e.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
+				e.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			}
+			// add datanode to pathway model
 			p.addDataNode(e);
 			lastAdded = e;
 			return new DataNode[] { e };
@@ -225,44 +229,50 @@ public abstract class DefaultTemplates {
 	 * Pathway. Pass a ShapeType upon creation.
 	 */
 	public static class ShapeTemplate extends SingleElementTemplate {
-		ShapeType type;
+		ShapeType shapeType;
 
 		Set<ShapeType> CELL_COMPONENT_SET = new HashSet<>(Arrays.asList(ShapeType.CELL, ShapeType.NUCLEUS,
 				ShapeType.ENDOPLASMIC_RETICULUM, ShapeType.GOLGI_APPARATUS, ShapeType.MITOCHONDRIA,
 				ShapeType.SARCOPLASMIC_RETICULUM, ShapeType.ORGANELLE, ShapeType.VESICLE));
 
-		public ShapeTemplate(ShapeType type) {
-			this.type = type;
+		public ShapeTemplate(ShapeType shapeType) {
+			this.shapeType = shapeType;
 		}
 
 		public org.pathvisio.model.Shape[] addElements(PathwayModel p, double mx, double my) {
-			double width = getInitialSize(type)[0];
-			double height = getInitialSize(type)[1];
-			LineStyleType borderStyleType = getInitialBorderStyle(type);
+			// instantiate a shape pathway element
+			org.pathvisio.model.Shape e = new org.pathvisio.model.Shape();
+			// rect props
+			double width = getInitialSize(shapeType)[0];
+			double height = getInitialSize(shapeType)[1];
+			LineStyleType borderStyleType = getInitialBorderStyle(shapeType);
 			Color color;
 			double borderWidth;
-			if (CELL_COMPONENT_SET.contains(type)) {
+			if (CELL_COMPONENT_SET.contains(shapeType)) {
 				color = Color.lightGray;
 				borderWidth = 3;
 			} else {
 				color = COLOR_DEFAULT;
 				borderWidth = LINEWIDTH;
 			}
-//			e.setDynamicProperty(CellularComponentType.CELL_COMPONENT_KEY, ccType.toString());
-			RectProperty rectProp = new RectProperty(new Coordinate(mx, my), width, height);
-			// textColor, fontName, fontWeight, fontStyle, fontDecoration, fontStrikethru,
+			e.setCenterXY(new Coordinate(mx, my));
+			e.setWidth(width);
+			e.setHeight(height);
+			// font props: default fontName, fontWeight, fontStyle, fontDecoration,
+			// fontStrikethru,
 			// fontSize, hAlign, vAlign
-			FontProperty fontProperty = new FontProperty(color, "Arial", false, false, false, false, FONTSIZE, HALIGN,
-					VALIGN);
-			// borderColor, borderStyle, borderWidth, fillColor, shapeType, zOrder
-			ShapeStyleProperty shapeStyleProperty = new ShapeStyleProperty(color, borderStyleType, borderWidth,
-					Color.WHITE, type, Z_ORDER_LABEL);
-			org.pathvisio.model.Shape e = new org.pathvisio.model.Shape(rectProp, fontProperty, shapeStyleProperty,
-					ROTATION);
+			e.setTextColor(color);
+			// shape style props: default fillColor
+			e.setBorderColor(color);
+			e.setBorderStyle(borderStyleType);
+			e.setBorderWidth(borderWidth);
+			e.setShapeType(shapeType);
+			e.setZOrder(Z_ORDER_SHAPE);
+			// add shape to pathway model
 			p.addShape(e);
 			lastAdded = e;
 			// brace
-//			gdata.setOrientation(OrientationType.RIGHT);
+//			gdata.setOrientation(OrientationType.RIGHT); //TODO 
 			return new org.pathvisio.model.Shape[] { e };
 		}
 
@@ -272,7 +282,7 @@ public abstract class DefaultTemplates {
 		}
 
 		public String getName() {
-			return type.toString();
+			return shapeType.toString();
 		}
 
 		public double[] getInitialSize(ShapeType type) {
@@ -306,15 +316,15 @@ public abstract class DefaultTemplates {
 	 * Template for adding an Interaction line to a Pathway.
 	 */
 	public static class InteractionTemplate extends SingleElementTemplate {
-		LineStyleType style;
+		LineStyleType lineStyle;
 		ArrowHeadType startType;
 		ArrowHeadType endType;
 		ConnectorType connectorType;
 		String name;
 
-		public InteractionTemplate(String name, LineStyleType style, ArrowHeadType startType, ArrowHeadType endType,
+		public InteractionTemplate(String name, LineStyleType lineStyle, ArrowHeadType startType, ArrowHeadType endType,
 				ConnectorType connectorType) {
-			this.style = style;
+			this.lineStyle = lineStyle;
 			this.startType = startType;
 			this.endType = endType;
 			this.connectorType = connectorType;
@@ -322,17 +332,17 @@ public abstract class DefaultTemplates {
 		}
 
 		public Interaction[] addElements(PathwayModel p, double mx, double my) {
-			
-			
+			// instantiates an interaction
+			Interaction e = new Interaction();
 			LinePoint startLinePoint = new LinePoint(startType, new Coordinate(mx, my));
 			LinePoint endLinePoint = new LinePoint(endType, new Coordinate(mx, my));
-			// lineColor, lineStyle, lineWidth, connectorType
-			LineStyleProperty lineStyleProp = new LineStyleProperty(Color.BLACK, style, LINEWIDTH, connectorType);
-			Interaction e = new Interaction(lineStyleProp);
+			// line style props: default lineColor, lineWidth
+			e.setLineStyle(lineStyle);
+			e.setConnectorType(connectorType);
 			e.addLinePoint(startLinePoint);
 			e.addLinePoint(endLinePoint);
-			
-			//TODO set initial size???? 
+
+			// TODO set initial size????
 //			e.getEndLinePoint().getXY().setX(e.getStartLinePoint().getXY().getX() + LINE_LENGTH);
 //			e.getEndLinePoint().getXY().setY(e.getStartLinePoint().getXY().getY() + LINE_LENGTH);
 
@@ -355,15 +365,15 @@ public abstract class DefaultTemplates {
 	 * Template for adding a Graphical line to a Pathway.
 	 */
 	public static class GraphicalLineTemplate extends SingleElementTemplate {
-		LineStyleType style;
+		LineStyleType lineStyle;
 		ArrowHeadType startType;
 		ArrowHeadType endType;
 		ConnectorType connectorType;
 		String name;
 
-		public GraphicalLineTemplate(String name, LineStyleType style, ArrowHeadType startType, ArrowHeadType endType,
-				ConnectorType connectorType) {
-			this.style = style;
+		public GraphicalLineTemplate(String name, LineStyleType lineStyle, ArrowHeadType startType,
+				ArrowHeadType endType, ConnectorType connectorType) {
+			this.lineStyle = lineStyle;
 			this.startType = startType;
 			this.endType = endType;
 			this.connectorType = connectorType;
@@ -371,18 +381,20 @@ public abstract class DefaultTemplates {
 		}
 
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
+			// instantiates a graphical line
+			GraphicalLine e = new GraphicalLine();
 			LinePoint startLinePoint = new LinePoint(startType, new Coordinate(mx, my));
 			LinePoint endLinePoint = new LinePoint(endType, new Coordinate(mx, my));
-			// lineColor, lineStyle, lineWidth, connectorType
-			LineStyleProperty lineStyleProp = new LineStyleProperty(Color.BLACK, style, LINEWIDTH, connectorType);
-			GraphicalLine e = new GraphicalLine(lineStyleProp);
+			// line style pops: default lineColor, lineWidth
+			e.setLineStyle(lineStyle);
+			e.setConnectorType(connectorType);
 			e.addLinePoint(startLinePoint);
 			e.addLinePoint(endLinePoint);
-			
-			//TODO set initial size???? 
+
+			// TODO set initial size????
 //			e.getEndLinePoint().getXY().setX(e.getStartLinePoint().getXY().getX() + LINE_LENGTH);
 //			e.getEndLinePoint().getXY().setY(e.getStartLinePoint().getXY().getY() + LINE_LENGTH);
-			
+
 			p.addGraphicalLine(e);
 			lastAdded = e;
 			return new PathwayElement[] { e };
@@ -424,7 +436,7 @@ public abstract class DefaultTemplates {
 			DataNodeTemplate dnt = new DataNodeTemplate(DataNodeType.GENEPRODUCT);
 			lastStartNode = dnt.addElements(p, mx, my)[0];
 //			lastStartNode.setInitialSize();
-			lastEndNode = dnt.addElements(p, mx + 2 * lastStartNode.getRectProp().getWidth(), my)[0];
+			lastEndNode = dnt.addElements(p, mx + 2 * lastStartNode.getWidth(), my)[0];
 //			lastEndNode.setInitialSize();
 
 			InteractionTemplate lnt = new InteractionTemplate("defaultline", lineStyle, startType, endType,
@@ -509,16 +521,19 @@ public abstract class DefaultTemplates {
 			lastEndNode.setTextLabel("P-Protein");
 			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_MODIFICATION);
 
-			// textColor, fontName, fontWeight, fontStyle, fontDecoration, fontStrikethru,
-			// fontSize, hAlign, vAlign TODO FontSize???
-			FontProperty fontProperty = new FontProperty(COLOR_DEFAULT, "Arial", false, false, false, false, FONTSIZE,
-					HALIGN, VALIGN);
-			// borderColor, borderStyle, borderWidth, fillColor, shapeType, zOrder TODO
-			ShapeStyleProperty shapeStyleProperty = new ShapeStyleProperty(COLOR_DEFAULT, LINESTYLETYPE, LINEWIDTH,
-					Color.WHITE, ShapeType.OVAL, Z_ORDER_STATE);
-			State elt = new State("P", StateType.PROTEIN_MODIFICATION, 1.0, 1.0, STATE_SIZE, STATE_SIZE, fontProperty,
-					shapeStyleProperty);
-			lastEndNode.addState(elt);
+			// instantiates a state
+			State e = new State("P", StateType.PROTEIN_MODIFICATION, 1.0, 1.0);
+			// rect props
+			e.setWidth(STATE_SIZE);
+			e.setHeight(STATE_SIZE);
+			// font props: default textColor, fontName, fontWeight, fontStyle,
+			// fontDecoration, fontStrikethru,
+			// fontSize, hAlign, vAlign
+			// shape style props: default borderColor, borderStyle, borderWidth, fillColor
+			e.setShapeType(ShapeType.OVAL);
+			e.setZOrder(Z_ORDER_STATE);
+			// add state to datanode
+			lastEndNode.addState(e);
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine };
 		}
 
@@ -539,29 +554,28 @@ public abstract class DefaultTemplates {
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
 			DataNodeTemplate dnt = new DataNodeTemplate(DataNodeType.GENEPRODUCT);
-			lastCatalyst = dnt.addElements(p, mx + lastStartNode.getRectProp().getWidth(),
-					my - OFFSET_CATALYST)[0];
+			lastCatalyst = dnt.addElements(p, mx + lastStartNode.getWidth(), my - OFFSET_CATALYST)[0];
 			lastCatalyst.setTextLabel("Catalyst");
 
 			lastStartNode.setType(DataNodeType.METABOLITE);
-			lastStartNode.getShapeStyleProp().setBorderColor(COLOR_METABOLITE);
-			lastStartNode.getFontProp().setTextColor(COLOR_METABOLITE);
-			lastStartNode.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
+			lastStartNode.setBorderColor(COLOR_METABOLITE);
+			lastStartNode.setTextColor(COLOR_METABOLITE);
+			lastStartNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastStartNode.setTextLabel("Substrate");
 
 			lastEndNode.setType(DataNodeType.METABOLITE);
-			lastEndNode.getShapeStyleProp().setBorderColor(COLOR_METABOLITE);
-			lastEndNode.getFontProp().setTextColor(COLOR_METABOLITE);
-			lastEndNode.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
+			lastEndNode.setBorderColor(COLOR_METABOLITE);
+			lastEndNode.setTextColor(COLOR_METABOLITE);
+			lastEndNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastEndNode.setTextLabel("Product");
 
 			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
-			Anchor anchor = new Anchor(0.5, AnchorShapeType.SQUARE); //TODO Square default? 
+			Anchor anchor = new Anchor(0.5, AnchorShapeType.SQUARE); // TODO Square default?
 			lastLine.addAnchor(anchor);
 
 			InteractionTemplate lnt = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
-			lastCatLine = lnt.addElements(p, mx, my)[0]; //TODO Cast??? 
+			lastCatLine = lnt.addElements(p, mx, my)[0]; // TODO Cast???
 
 			lastCatLine.getStartLinePoint().linkTo(lastCatalyst, 0, 1);
 			lastCatLine.getEndLinePoint().linkTo(anchor, 0, 0);
@@ -590,22 +604,22 @@ public abstract class DefaultTemplates {
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
 			DataNodeTemplate dnt = new DataNodeTemplate(DataNodeType.PROTEIN);
-			lastCatalyst = dnt.addElements(p, mx + lastStartNode.getRectProp().getWidth(), my - OFFSET_CATALYST)[0];
+			lastCatalyst = dnt.addElements(p, mx + lastStartNode.getWidth(), my - OFFSET_CATALYST)[0];
 			lastCatalyst.setTextLabel("Catalyst 1");
 
-			lastCatalyst2 = dnt.addElements(p, mx + lastStartNode.getRectProp().getWidth(), my + OFFSET_CATALYST)[0];
+			lastCatalyst2 = dnt.addElements(p, mx + lastStartNode.getWidth(), my + OFFSET_CATALYST)[0];
 			lastCatalyst2.setTextLabel("Catalyst 2");
 
 			lastStartNode.setType(DataNodeType.METABOLITE);
-			lastStartNode.getShapeStyleProp().setBorderColor(COLOR_METABOLITE);
-			lastStartNode.getFontProp().setTextColor(COLOR_METABOLITE);
-			lastStartNode.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
+			lastStartNode.setBorderColor(COLOR_METABOLITE);
+			lastStartNode.setTextColor(COLOR_METABOLITE);
+			lastStartNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastStartNode.setTextLabel("Metabolite 1");
 
 			lastEndNode.setType(DataNodeType.METABOLITE);
-			lastEndNode.getShapeStyleProp().setBorderColor(COLOR_METABOLITE);
-			lastEndNode.getFontProp().setTextColor(COLOR_METABOLITE);
-			lastEndNode.getShapeStyleProp().setShapeType(ShapeType.ROUNDED_RECTANGLE);
+			lastEndNode.setBorderColor(COLOR_METABOLITE);
+			lastEndNode.setTextColor(COLOR_METABOLITE);
+			lastEndNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastEndNode.setTextLabel("Metabolite 2");
 			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
 
@@ -614,7 +628,7 @@ public abstract class DefaultTemplates {
 
 			InteractionTemplate lnt = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
-			lastCatLine = lnt.addElements(p, mx, my)[0]; //TODO Cast? 
+			lastCatLine = lnt.addElements(p, mx, my)[0]; // TODO Cast?
 
 			lastCatLine.getStartLinePoint().linkTo(lastCatalyst, 0, 1);
 			lastCatLine.getEndLinePoint().linkTo(anchor, 0, 0);
@@ -622,7 +636,7 @@ public abstract class DefaultTemplates {
 
 			InteractionTemplate rev = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
-			lastReverseLine = rev.addElements(p, mx, my)[0]; //TODO Cast? 
+			lastReverseLine = rev.addElements(p, mx, my)[0]; // TODO Cast?
 
 			lastReverseLine.getStartLinePoint().linkTo(lastEndNode, -1, 0.5);
 			lastReverseLine.getEndLinePoint().linkTo(lastStartNode, 1, 0.5);
@@ -633,7 +647,7 @@ public abstract class DefaultTemplates {
 
 			InteractionTemplate lnt2 = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
-			lastCatLine2 = lnt2.addElements(p, mx, my)[0]; //TODO Cast? 
+			lastCatLine2 = lnt2.addElements(p, mx, my)[0]; // TODO Cast?
 
 			lastCatLine2.getStartLinePoint().linkTo(lastCatalyst2, 0, -1);
 			lastCatLine2.getEndLinePoint().linkTo(anchor2, 0, 0);
