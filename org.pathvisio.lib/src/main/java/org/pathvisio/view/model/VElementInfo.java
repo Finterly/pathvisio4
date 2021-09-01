@@ -16,18 +16,88 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-//import org.pathvisio.core.biopax.PublicationXref;
+import java.awt.geom.Point2D;
+
+import java.util.List;
+
+import org.pathvisio.model.ShapedElement;
+import org.pathvisio.model.ref.CitationRef;
+import org.pathvisio.model.ref.ElementInfo;
 
 /**
- * This class represents the view of a {@link ElementInfo} pathway element. 
-
+ * This class is a parent class for all graphics which can have a
+ * {@link VCitation}. This class represents the view of a {@link ElementInfo}
+ * pathway element.
+ * 
+ * 
+ * @author finterly
  */
-public abstract class VElementInfo extends VCitable {
+public abstract class VElementInfo extends Graphics {
 
-	public VElementInfo(VPathwayModel canvas) {
-		super(canvas);
-		// TODO Auto-generated constructor stub
+	private VCitation vCitation;
+
+	public VElementInfo(VPathwayModel canvas, ElementInfo gdata) {
+		super(canvas, gdata);
+		checkCitation(); // TODO
 	}
-	
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return gdata
+	 */
+	@Override
+	public ElementInfo getPathwayElement() {
+		return getPathwayElement();
+	}
+
+	protected VCitation getVCitation() {
+		return vCitation;
+	}
+
+	protected void setVCitation(VCitation vCitation) {
+		this.vCitation = vCitation;
+	}
+
+	protected VCitation createCitation() {
+		return new VCitation(canvas, this, new Point2D.Double(1, -1));
+	}
+
+	/**
+	 * Check for {@link VCitation} if object has {@link CitationRef}s. Create or
+	 * destroy vCitation if necessary.
+	 */
+	public final void checkCitation() {
+		List<CitationRef> citationRefs = getPathwayElement().getCitationRefs();
+		// if object has citationRefs but no vCitation, create
+		if (citationRefs.size() > 0 && vCitation == null) {
+			vCitation = createCitation();
+			addChild(vCitation);
+		}
+		// if object has no citationRefs but has vCitation, destroy
+		else if (citationRefs.size() == 0 && vCitation != null) {
+			vCitation.destroy();
+			removeChild(vCitation);
+			vCitation = null;
+		}
+		// if object has citationRefs and vCitation, redraw
+		if (vCitation != null) {
+			vCitation.markDirty();
+		}
+	}
+
+	protected void destroy(ElementInfo gdata) {
+		super.destroy();
+		gdata.removeListener(this);
+		for (VElement child : getChildren()) {
+			child.destroy();
+		}
+		getChildren().clear();
+		vCitation = null;
+
+		// View should not remove its model
+//		Pathway parent = gdata.getParent();
+//		if(parent != null) parent.remove(gdata);
+	}
 
 }

@@ -54,7 +54,7 @@ import org.pathvisio.io.PathwayIO;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.Preference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.VPathwayWrapper;
+import org.pathvisio.view.model.VPathwayWrapper;
 import org.pathvisio.gui.CommonActions;
 import org.pathvisio.gui.MainPanel;
 import org.pathvisio.gui.dialog.NewPathwayDialog;

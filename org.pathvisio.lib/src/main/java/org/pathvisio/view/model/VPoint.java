@@ -20,7 +20,6 @@ import org.pathvisio.model.LinePoint;
 
 import java.awt.geom.Point2D;
 
-import org.pathvisio.io.listener.PathwayElementEvent;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
@@ -29,6 +28,8 @@ import org.pathvisio.view.LinAlg.Point;
 
 /**
  * One of the two endpoints of a line. Carries a single handle.
+ * 
+ * @author unknown, finterly
  */
 public class VPoint implements Adjustable {
 
@@ -159,9 +160,19 @@ public class VPoint implements Adjustable {
 	}
 
 	/*------------------------------------MPOINT METHODS ----------------------------------*/
-	
+
+	private VLinkableTo pathwayElement;
+
+	public VLinkableTo getVLinkableTo() {
+		return pathwayElement;
+	}
+
+	public void setVLinkableTo(VLinkableTo pathwayElement) {
+		this.pathwayElement = pathwayElement;
+	}
+
 	/**
-	 * Find out if this point is linked to an object. Returns true if a graphRef
+	 * Find out if this point is linked to an object. Returns true if a elementRef
 	 * exists and is not an empty string
 	 */
 	public boolean isLinked() {
@@ -169,40 +180,37 @@ public class VPoint implements Adjustable {
 		return ref != null;
 	}
 
-	
 	/**
 	 * Link to an object. Current absolute coordinates will be converted to relative
-	 * coordinates based on the object to link to.
+	 * coordinates based on the object to link to. //TODO ?????
 	 */
-	public void linkTo(LinkableTo pathwayElement) {
-		Point2D rel = pathwayElement.toRelativeCoordinate(linePoint.toPoint2D()); //TODO??? idc.toRelativeCoordinate? 
+	public void linkTo(VLinkableTo pathwayElement) {
+		setVLinkableTo(pathwayElement); // TODO
+		Point2D rel = pathwayElement.toRelativeCoordinate(linePoint.toPoint2D()); // TODO??? idc.toRelativeCoordinate?
 		linkTo(pathwayElement, rel.getX(), rel.getY());
 	}
 
 	/**
-	 * Link to an object using the given relative coordinates
+	 * Link to an object using the given relative coordinates //TODO ?????
 	 */
-	public void linkTo(LinkableTo pathwayElement, double relX, double relY) {
-		linePoint.setElementRef(pathwayElement);
+	public void linkTo(VLinkableTo pathwayElement, double relX, double relY) {
+		linePoint.setElementRef(pathwayElement.getPathwayElement());
 		linePoint.setRelX(relX);
 		linePoint.setRelY(relY);
 	}
-	
 
-	//TODO 
+	// TODO
 	public Point2D toAbsoluteCoordinate(Point2D p) {
 		return new Point2D.Double(p.getX() + linePoint.getXY().getX(), p.getY() + linePoint.getXY().getY());
 	}
 
-	//TODO 
+	// TODO
 	public Point2D toRelativeCoordinate(Point2D p) {
 		return new Point2D.Double(p.getX() - linePoint.getXY().getX(), p.getY() - linePoint.getXY().getY());
 	}
-	
 
 	public Point2D toPoint2D(LinePoint linePoint) {
 		return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
 	}
-
 
 }

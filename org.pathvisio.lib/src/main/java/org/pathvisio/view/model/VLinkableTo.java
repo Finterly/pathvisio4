@@ -18,6 +18,8 @@ package org.pathvisio.view.model;
 
 import java.awt.geom.Point2D;
 
+import org.pathvisio.model.GraphLink.LinkableTo;
+
 
 /**
  * This class represents the view of a {@link LinkableTo} PathwayElement.
@@ -31,7 +33,6 @@ public interface VLinkableTo {
 
 	abstract Point2D toAbsoluteCoordinate(Point2D p);
 
-	
 	/**
 	 * @param mp a point in absolute model coordinates
 	 * @returns the same point relative to the bounding box of this pathway element:
@@ -41,5 +42,10 @@ public interface VLinkableTo {
 	abstract Point2D toRelativeCoordinate(Point2D mp);
 	
 	abstract int getZOrder();
+	
+	abstract LinkableTo getPathwayElement(); 
+	
+	//from VElement 
+	public VPathwayModel getDrawing();
 
 }

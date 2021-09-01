@@ -1,6 +1,6 @@
 /*******************************************************************************
  * PathVisio, a tool for data visualization and analysis using biological pathways
-  * Copyright 2006-2021 BiGCaT Bioinformatics, WikiPathways
+ * Copyright 2006-2021 BiGCaT Bioinformatics, WikiPathways
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License.  You may obtain a copy
@@ -14,35 +14,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view.model;
+package org.pathvisio.gui.core;
 
-import org.pathvisio.model.Shape;
-import org.pathvisio.model.State;
+import java.awt.Component;
+import java.util.Collection;
 
-/**
- * This class represents the view of a {@link Shape} PathwayElement.
- *
- * @author unknown, finterly
- */
-public class VShape extends VShapedElement {
+import javax.swing.JComponent;
 
-	/**
-	 * Constructor for this class
-	 * 
-	 * @param canvas - the VPathway this Shape will be part of
-	 */
-	public VShape(VPathwayModel canvas, Shape gdata) {
-		super(canvas, gdata);
-	}
+import org.pathvisio.view.model.VElement;
 
-	/**
-	 * Gets the model representation (PathwayElement) of this class
-	 * 
-	 * @return
-	 */
-	@Override
-	public Shape getPathwayElement() {
-		return getPathwayElement();
-	}
-
+public interface ToolTipProvider {
+	public Component createToolTipComponent(JComponent parent, Collection<VElement> elements);
 }

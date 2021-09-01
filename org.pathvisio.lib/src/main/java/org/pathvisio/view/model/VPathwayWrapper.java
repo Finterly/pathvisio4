@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -25,7 +25,6 @@ import javax.swing.KeyStroke;
 
 import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * Wrapper for VPathwayModel that handles toolkit (swing / SWT) dependent differences.

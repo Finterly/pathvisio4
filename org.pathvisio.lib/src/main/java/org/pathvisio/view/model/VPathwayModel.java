@@ -47,9 +47,11 @@ import org.pathvisio.debug.Logger;
 import org.pathvisio.model.type.*;
 //import org.pathvisio.model.Pathway.StatusFlagEvent;
 import org.pathvisio.model.*;
+import org.pathvisio.model.GraphLink.LinkableFrom;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.PathwayModel.StatusFlagEvent;
 import org.pathvisio.model.PathwayModel.StatusFlagListener;
+import org.pathvisio.model.ref.ElementInfo;
 import org.pathvisio.events.PathwayEvent;
 import org.pathvisio.events.PathwayListener;
 import org.pathvisio.util.preferences.GlobalPreference;
@@ -63,22 +65,18 @@ import org.pathvisio.view.UndoAction;
 import org.pathvisio.view.UndoManager;
 import org.pathvisio.view.VElementMouseEvent;
 import org.pathvisio.view.VElementMouseListener;
-import org.pathvisio.view.VPathwayEvent;
-import org.pathvisio.view.VPathwayListener;
-import org.pathvisio.view.VPathwayWrapper;
-import org.pathvisio.view.ViewActions;
-import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
-import org.pathvisio.view.ViewActions.KeyMoveAction;
-import org.pathvisio.view.ViewActions.TextFormattingAction;
 import org.pathvisio.view.model.Handle.Freedom;
 import org.pathvisio.view.model.SelectionBox.SelectionListener;
+import org.pathvisio.view.model.VPathwayEvent.VPathwayEventType;
+import org.pathvisio.view.model.ViewActions.KeyMoveAction;
+import org.pathvisio.view.model.ViewActions.TextFormattingAction;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
  * the drawing and can be visualized. The class also provides methods for mouse
  * and key event handling.
  *
- * It's necessary to call PreferenceManager.init() before you can instantiate
+ * It's necessary to call {@link PreferenceManager.init()} before you can instantiate
  * this class.
  */
 public class VPathwayModel implements PathwayListener {
@@ -725,7 +723,7 @@ public class VPathwayModel implements PathwayListener {
 			if (!lastMouseOver.contains(vpe)) {
 				lastMouseOver.add(vpe);
 				stateEntered = true;
-				if (vpe instanceof VLabel && !((VLabel) vpe).gdata.getHref().equals("")) {
+				if (vpe instanceof VLabel && !((VLabel) vpe).getPathwayElement().getHref().equals("")) {
 					lastEnteredElement = vpe;
 				} else {
 					fireVElementMouseEvent(new VElementMouseEvent(this, VElementMouseEvent.TYPE_MOUSEENTER, vpe, ve));
@@ -829,7 +827,7 @@ public class VPathwayModel implements PathwayListener {
 	// opens href of a Label with ctrl + click
 	private boolean openHref(MouseEvent e, VElement o) {
 		if (e.isKeyDown(128) && o != null && o instanceof VLabel) {
-			String href = ((VLabel) o).gdata.getHref();
+			String href = ((VLabel) o).getPathwayElement().getHref();
 			if (selection.getSelection().size() < 1 && !href.equals("")) {
 				fireVPathwayEvent(new VPathwayEvent(this, o, VPathwayEventType.HREF_ACTIVATED));
 				return true;
@@ -1043,7 +1041,9 @@ public class VPathwayModel implements PathwayListener {
 	public void resetHighlight() {
 		for (VElement o : drawingObjects)
 			o.unhighlight();
-		redrawDirtyRect();
+		// redrawDirtyRect(); //TODO deprecated
+		// addDirtyRect(); //TODO use redraw for now
+		redraw();
 	}
 
 	/**
@@ -1191,7 +1191,9 @@ public class VPathwayModel implements PathwayListener {
 					clearSelection();
 			}
 		}
-		redrawDirtyRect();
+		// redrawDirtyRect(); //TODO deprecated
+		// addDirtyRect(); //TODO use redraw for now
+		redraw();
 	}
 
 	/**
@@ -1358,7 +1360,7 @@ public class VPathwayModel implements PathwayListener {
 		 */
 		for (Graphics g : selection) {
 			PathwayElement pe = g.getPathwayElement();
-			Group ref = ((Groupable) pe).getGroupRef();
+			Group ref = ((ElementInfo) pe).getGroupRef();
 			// If not a group
 			if (!(pe instanceof Group)) {
 				// and not a member of a group
@@ -1395,15 +1397,12 @@ public class VPathwayModel implements PathwayListener {
 		// No more nested or overlapping groups! TODO??? Do we wanted any nested
 		// groups????
 		else {
-			// Form new group with all pathway elements of selected pathway objects.
-//			RectProperty rectProperty, FontProperty fontProperty, ShapeStyleProperty shapeStyleProperty,
-//			GroupType type)					
-			Group group = new Group(null, null, null, GroupType.GROUP); // TODO GROUP SIZE?????
+			Group group = new Group(GroupType.GROUP); // TODO GROUP SIZE?????
 			data.addGroup(group);
 			for (Graphics g : selection) {
 				PathwayElement pe = g.getPathwayElement();
-				if (pe instanceof Groupable)
-					((Groupable) pe).setGroupRefTo(group);
+				if (pe instanceof ElementInfo)
+					((ElementInfo) pe).setGroupRefTo(group);
 			}
 			// Select new group in view
 			Graphics vg = getPathwayElementView(group);
@@ -1671,7 +1670,7 @@ public class VPathwayModel implements PathwayListener {
 		List<PathwayElement> result = new ArrayList<PathwayElement>();
 		for (VElement g : drawingObjects) {
 			if (g.isSelected() && g instanceof Graphics && !(g instanceof SelectionBox)) {
-				result.add(((Graphics) g).gdata.copy());
+				result.add(((Graphics) g).getPathwayElement().copy());
 			}
 		}
 		if (result.size() > 0) {
@@ -1773,7 +1772,9 @@ public class VPathwayModel implements PathwayListener {
 			}
 
 			selection.fitToSelection();
-			redrawDirtyRect();
+			// redrawDirtyRect(); //TODO deprecated
+			// addDirtyRect(); //TODO use redraw for now
+			redraw();
 		}
 	}
 
@@ -1905,7 +1906,12 @@ public class VPathwayModel implements PathwayListener {
 		Collections.sort(gs, new ZComparator());
 		int base = getMaxZOrder(getPathwayModel()) + 1;
 		for (Graphics g : gs) {
-			g.gdata.setZOrder(base++);
+			if (g instanceof VShapedElement) { // TODO
+				((ShapedElement) g.getPathwayElement()).setZOrder(base++);
+			}
+			if (g instanceof VLineElement) { // TODO
+				((LineElement) g.getPathwayElement()).setZOrder(base++);
+			}
 		}
 	}
 
@@ -1940,7 +1946,6 @@ public class VPathwayModel implements PathwayListener {
 		}
 		return zMax;
 	}
-	
 
 	/**
 	 * Returns the lowest z-order of all pathway model objects with z-order.
@@ -1973,7 +1978,6 @@ public class VPathwayModel implements PathwayListener {
 		return zMin;
 	}
 
-
 	/**
 	 * Move a set of graphics to the bottom in the z-order stack
 	 */
@@ -1981,25 +1985,27 @@ public class VPathwayModel implements PathwayListener {
 		Collections.sort(gs, new ZComparator());
 		int base = getMinZOrder(getPathwayModel()) - gs.size() - 1;
 		for (Graphics g : gs) {
-			g.gdata.setZOrder(base++);
+			g.getPathwayElement().setZOrder(base++);
 		}
 	}
 
 	/**
 	 * Looks for overlapping graphics with a higher z-order and moves g on top of
 	 * that.
+	 * 
+	 * TODO was Graphics, but VElementInfo includes VShapedElement and VLineElement
 	 */
-	public void moveGraphicsUp(List<Graphics> gs) {
+	public void moveGraphicsUp(List<VElementInfo> gs) {
 		// TODO: Doesn't really work very well with multiple selections
-		for (Graphics g : gs) {
+		for (VElementInfo g : gs) {
 			// make sure there is enough space between g and the next
 			autoRenumberZOrder();
 
-			int order = g.gdata.getZOrder();
-			Graphics nextGraphics = null;
+			int order = g.getPathwayElement().getZOrder();
+			VElementInfo nextGraphics = null;
 			int nextZ = order;
-			for (Graphics i : getOverlappingGraphics(g)) {
-				int iorder = i.gdata.getZOrder();
+			for (VElementInfo i : getOverlappingGraphics(g)) {
+				int iorder = i.getPathwayElement().getZOrder();
 				if (nextGraphics == null && iorder > nextZ) {
 					nextZ = iorder;
 					nextGraphics = i;
@@ -2008,7 +2014,7 @@ public class VPathwayModel implements PathwayListener {
 					nextGraphics = i;
 				}
 			}
-			g.gdata.setZOrder(nextZ + 1);
+			g.getPathwayElement().setZOrder(nextZ + 1);
 		}
 	}
 
@@ -2017,10 +2023,10 @@ public class VPathwayModel implements PathwayListener {
 	 * elements, so that we can freely move items in between
 	 */
 	private void autoRenumberZOrder() {
-		List<Graphics> elts = new ArrayList<Graphics>();
+		List<VElementInfo> elts = new ArrayList<VElementInfo>();
 		for (VElement vp : drawingObjects) {
-			if (vp instanceof Graphics) {
-				elts.add((Graphics) vp);
+			if (vp instanceof VElementInfo) {
+				elts.add((VElementInfo) vp);
 			}
 		}
 		if (elts.size() < 2)
@@ -2029,13 +2035,13 @@ public class VPathwayModel implements PathwayListener {
 
 		final int spacing = 2;
 
-		int waterLevel = elts.get(0).gdata.getZOrder();
+		int waterLevel = elts.get(0).getPathwayElement().getZOrder();
 		for (int i = 1; i < elts.size(); ++i) {
-			Graphics curr = elts.get(i);
-			if (curr.gdata.getZOrder() - waterLevel < spacing) {
-				curr.gdata.setZOrder(waterLevel + spacing);
+			VElementInfo curr = elts.get(i);
+			if (curr.getPathwayElement().getZOrder() - waterLevel < spacing) {
+				curr.getPathwayElement().setZOrder(waterLevel + spacing);
 			}
-			waterLevel = curr.gdata.getZOrder();
+			waterLevel = curr.getPathwayElement().getZOrder();
 		}
 	}
 
@@ -2043,17 +2049,17 @@ public class VPathwayModel implements PathwayListener {
 	 * Looks for overlapping graphics with a lower z-order and moves g on under
 	 * that.
 	 */
-	public void moveGraphicsDown(List<Graphics> gs) {
+	public void moveGraphicsDown(List<VElementInfo> gs) {
 		// TODO: Doesn't really work very well with multiple selections
-		for (Graphics g : gs) {
+		for (VElementInfo g : gs) {
 			// make sure there is enough space between g and the previous
 			autoRenumberZOrder();
 
-			int order = g.gdata.getZOrder();
-			Graphics nextGraphics = null;
+			int order = g.getPathwayElement().getZOrder();
+			VElementInfo nextGraphics = null;
 			int nextZ = order;
-			for (Graphics i : getOverlappingGraphics(g)) {
-				int iorder = i.gdata.getZOrder();
+			for (VElementInfo i : getOverlappingGraphics(g)) {
+				int iorder = i.getPathwayElement().getZOrder();
 				if (nextGraphics == null && iorder < nextZ) {
 					nextZ = iorder;
 					nextGraphics = i;
@@ -2062,7 +2068,7 @@ public class VPathwayModel implements PathwayListener {
 					nextGraphics = i;
 				}
 			}
-			g.gdata.setZOrder(nextZ - 1);
+			g.getPathwayElement().setZOrder(nextZ - 1);
 		}
 	}
 
@@ -2071,13 +2077,13 @@ public class VPathwayModel implements PathwayListener {
 	 * bounding rectangles is used, so the returned list is only an approximation
 	 * for rounded shapes.
 	 */
-	public List<Graphics> getOverlappingGraphics(Graphics g) {
-		List<Graphics> result = new ArrayList<Graphics>();
+	public List<VElementInfo> getOverlappingGraphics(VElementInfo g) { // TODO sure V ELementInfo of Graphics???
+		List<VElementInfo> result = new ArrayList<VElementInfo>();
 		Rectangle2D r1 = g.getVBounds();
 
 		for (VElement ve : drawingObjects) {
-			if (ve instanceof Graphics && ve != g) {
-				Graphics i = (Graphics) ve;
+			if (ve instanceof VElementInfo && ve != g) {
+				VElementInfo i = (VElementInfo) ve;
 				if (r1.intersects(ve.getVBounds())) {
 					result.add(i);
 				}
@@ -2287,7 +2293,9 @@ public class VPathwayModel implements PathwayListener {
 			}
 		}
 		moveGraphicsTop(getSelectedGraphics());
-		redrawDirtyRect();
+		// redrawDirtyRect(); //TODO deprecated
+		// addDirtyRect(); //TODO use redraw for now
+		redraw();
 	}
 
 	public void pasteFromClipboard() {
@@ -2428,8 +2436,8 @@ public class VPathwayModel implements PathwayListener {
 
 	/** sorts Graphics by ZOrder */
 	public static class ZComparator implements Comparator<Graphics> {
-		public int compare(Graphics g1, Graphics g2) {
-			return g1.gdata.getZOrder() - g2.gdata.getZOrder();
+		public int compare(VElementInfo g1, VElementInfo g2) {
+			return g1.getPathwayElement().getZOrder() - g2.getPathwayElement().getZOrder();
 		}
 	}
 
@@ -2529,20 +2537,21 @@ public class VPathwayModel implements PathwayListener {
 				String id = elt.getElementId();
 				if (id != null)
 					eltIds.add(id);
-//				String groupId = elt.getGroupId();
-//				if (elt.getObjectType() == ObjectType.GROUP && groupId != null)
-//					groupIds.add(id);
+				String groupId = elt.getGroupId();
+				if (elt.getObjectType() == ObjectType.GROUP && groupId != null)
+					groupIds.add(id);
 			}
 		}
 
 		for (VElement o : toMove) {
 			// skip if parent of state is also in selection.
-			if (o instanceof VState && eltIds.contains(((VState) o).getPathwayElement().getDataNode()))
+			if (o instanceof VState && eltIds
+					.contains(((LinkableFrom) ((VState) o).getPathwayElement()).getElementRef().getElementId()))
 				continue;
 
-			if (o instanceof VLineElement || o instanceof VShapedElement) {
+			if (o instanceof VElementInfo) {
 				// skip if parent group is also in selection
-				if (groupIds.contains(((Graphics) o).getPathwayElement().getGroupRef()))
+				if (groupIds.contains(((VElementInfo) o).getPathwayElement().getGroupRef()))
 					continue;
 
 				o.vMoveBy(vdx, vdy);

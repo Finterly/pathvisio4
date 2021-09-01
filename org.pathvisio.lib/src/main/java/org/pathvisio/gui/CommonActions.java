@@ -44,22 +44,23 @@ import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.PathwayModel.StatusFlagEvent;
 import org.pathvisio.model.PathwayModel.StatusFlagListener;
+import org.pathvisio.model.Label;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.view.model.VLabel;
 import org.pathvisio.view.LayoutType;
 import org.pathvisio.view.MIMShapes;
-import org.pathvisio.view.SelectionBox;
+import org.pathvisio.view.model.SelectionBox;
 import org.pathvisio.view.Template;
-import org.pathvisio.view.ViewActions;
 import org.pathvisio.view.model.DefaultTemplates;
 import org.pathvisio.view.model.Graphics;
 import org.pathvisio.view.model.Handle;
 import org.pathvisio.view.model.VElement;
 import org.pathvisio.view.model.VPathwayModel;
-import org.pathvisio.gui.AboutDlg;
-import org.pathvisio.gui.PathwayElementDialog;
-import org.pathvisio.gui.PublicationXRefDialog;
+import org.pathvisio.view.model.ViewActions;
+import org.pathvisio.gui.dialog.AboutDlg;
+import org.pathvisio.gui.dialog.PathwayElementDialog;
+import org.pathvisio.gui.dialog.PublicationXRefDialog;
 
 /**
  * A collection of {@link Action}s that may be used throughout the program (e.g.
@@ -208,7 +209,7 @@ public class CommonActions implements ApplicationEventListener {
 //									"receptorsquare", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, LineType.RECEPTOR_SQUARE, ConnectorType.STRAIGHT)
 //							),
 //					},
-				new Action[] { new NewElementAction(e, new DefaultTemplates.InteractionTemplate()) },
+				new Action[] { new NewElementAction(e, new DefaultTemplates.DataNodeInteractionTemplate()) },
 				new Action[] { new NewElementAction(e, new DefaultTemplates.ReactionTemplate()) },
 				new Action[] { new NewElementAction(e, new DefaultTemplates.PhosphorylationTemplate()) },
 				new Action[] { new NewElementAction(e, new DefaultTemplates.ReversibleReactionTemplate()) },
@@ -272,44 +273,38 @@ public class CommonActions implements ApplicationEventListener {
 						new DefaultTemplates.InteractionTemplate("curve", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, ArrowHeadType.UNDIRECTED,
 								ConnectorType.CURVED)),
 				new NewElementAction(e, new DefaultTemplates.InteractionTemplate("tbar", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-						LineType.TBAR, ConnectorType.STRAIGHT)), };
+						ArrowHeadType.INHIBITION, ConnectorType.STRAIGHT)), };
 
 		// actions for "Receptor/ligand interactions" section
 		newRLInteractionActions = new Action[] {
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("ligandround", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								LineType.LIGAND_ROUND, ConnectorType.STRAIGHT)),
+								ArrowHeadType.LIGAND_ROUND, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("ligandsquare", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								LineType.LIGAND_SQUARE, ConnectorType.STRAIGHT)),
+								ArrowHeadType.LIGAND_SQUARE, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("receptorround", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								LineType.RECEPTOR_ROUND, ConnectorType.STRAIGHT)),
+								ArrowHeadType.RECEPTOR_ROUND, ConnectorType.STRAIGHT)),
 				new NewElementAction(e, new DefaultTemplates.InteractionTemplate("receptorsquare", LineStyleType.SOLID,
-						ArrowHeadType.UNDIRECTED, LineType.RECEPTOR_SQUARE, ConnectorType.STRAIGHT)), };
+						ArrowHeadType.UNDIRECTED, ArrowHeadType.RECEPTOR_SQUARE, ConnectorType.STRAIGHT)), };
 
 		// actions for "Cellular Compartment" section
 		newCellularComponentActions = new Action[] {
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.ROUNDED_RECTANGLE,
-								CellularComponentType.CELL)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.CELL)), //TODO now just one.... was rounded etc...
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.OVAL, CellularComponentType.NUCLEUS)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.NUCLEUS)),
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.ENDOPLASMICRETICULUM,
-								CellularComponentType.ENDOPLASMICRETICULUM)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.ENDOPLASMIC_RETICULUM)),
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.GOLGIAPPARATUS,
-								CellularComponentType.GOLGIAPPARATUS)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.GOLGI_APPARATUS)),
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.MITOCHONDRIA,
-								CellularComponentType.MITOCHONDRIA)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.MITOCHONDRIA)),
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.SARCOPLASMICRETICULUM,
-								CellularComponentType.SARCOPLASMICRETICULUM)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.SARCOPLASMIC_RETICULUM)),
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.ROUNDED_RECTANGLE,
-								CellularComponentType.ORGANELLE)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.ORGANELLE)),
 				// new NewElementAction(e, new
 				// DefaultTemplates.CellularComponentTemplate(ShapeType.OVAL,
 				// CellularComponentType.LYSOSOME)),
@@ -320,12 +315,11 @@ public class CommonActions implements ApplicationEventListener {
 				// DefaultTemplates.CellularComponentTemplate(ShapeType.OVAL,
 				// CellularComponentType.VACUOLE)),
 				new NewElementAction(e,
-						new DefaultTemplates.CellularComponentTemplate(ShapeType.OVAL, CellularComponentType.VESICLE)),
+						new DefaultTemplates.ShapeTemplate(ShapeType.VESICLE)),
 				// new NewElementAction(e, new
 				// DefaultTemplates.CellularComponentTemplate(ShapeType.ROUNDED_RECTANGLE,
 				// CellularComponentType.CYTOSOL)),
-				new NewElementAction(e, new DefaultTemplates.CellularComponentTemplate(ShapeType.ROUNDED_RECTANGLE,
-						CellularComponentType.EXTRACELLULAR)),
+				new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.EXTRACELLULAR)),
 				// new NewElementAction(e, new
 				// DefaultTemplates.CellularComponentTemplate(ShapeType.ROUNDED_RECTANGLE,
 				// CellularComponentType.MEMBRANE))
@@ -408,10 +402,10 @@ public class CommonActions implements ApplicationEventListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			VPathway vPathway = engine.getActiveVPathway();
-			if (vPathway != null) {
-				double zoomFactor = vPathway.getFitZoomFactor();
-				vPathway.setPctZoom(zoomFactor);
+			VPathwayModel vPathwayModel = engine.getActiveVPathway();
+			if (vPathwayModel != null) {
+				double zoomFactor = vPathwayModel.getFitZoomFactor();
+				vPathwayModel.setPctZoom(zoomFactor);
 			}
 		}
 
@@ -514,7 +508,7 @@ public class CommonActions implements ApplicationEventListener {
 			switch (e.getType()) {
 			case PATHWAY_NEW:
 			case PATHWAY_OPENED:
-				Pathway p = swingEngine.getEngine().getActivePathway();
+				PathwayModel p = swingEngine.getEngine().getActivePathway();
 				p.addStatusFlagListener(this);
 				handleStatus(p.hasChanged());
 				break;
@@ -592,7 +586,7 @@ public class CommonActions implements ApplicationEventListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			VPathway vp = engine.getActiveVPathway();
+			VPathwayModel vp = engine.getActiveVPathway();
 			if (vp != null) {
 //				vp.addVPathwayListener(this);
 				vp.setNewTemplate(template);
@@ -631,7 +625,7 @@ public class CommonActions implements ApplicationEventListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			VPathway vp = engine.getActiveVPathway();
+			VPathwayModel vp = engine.getActiveVPathway();
 			if (vp != null)
 				vp.layoutSelected(type);
 		}
@@ -736,8 +730,8 @@ public class CommonActions implements ApplicationEventListener {
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			if (vpe instanceof Label) {
-				PathwayElement pe = ((Label) vpe).getPathwayElement();
+			if (vpe instanceof VLabel) {
+				Label pe = ((VLabel) vpe).getPathwayElement();
 				String currentHref = pe.getHref();
 				String userInput = JOptionPane.showInputDialog(se.getFrame(), "Label hyperlink", currentHref);
 				if (userInput != null) {

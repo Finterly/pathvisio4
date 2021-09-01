@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -44,7 +44,9 @@ import org.pathvisio.model.type.AnchorShapeType;
 import org.pathvisio.model.type.GroupType;
 import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
+import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.GraphicalLine;
+import org.pathvisio.model.Group;
 import org.pathvisio.model.Interaction;
 import org.pathvisio.model.Label;
 import org.pathvisio.model.LineElement;
@@ -52,17 +54,12 @@ import org.pathvisio.model.State;
 //import org.pathvisio.core.model.ObjectType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.Shape;
+import org.pathvisio.model.ShapedElement;
 import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.type.ShapeType;
-import org.pathvisio.view.model.Graphics;
-import org.pathvisio.view.model.SelectionBox;
-import org.pathvisio.view.model.VDataNode;
-import org.pathvisio.view.model.VElement;
-import org.pathvisio.view.model.VGroup;
-import org.pathvisio.view.model.VLineElement;
-import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.view.model.SelectionBox.SelectionEvent;
 import org.pathvisio.view.model.SelectionBox.SelectionListener;
+import org.pathvisio.view.UndoManagerListener;
 import org.pathvisio.view.connector.ConnectorShape;
 import org.pathvisio.view.connector.FreeConnectorShape;
 
@@ -201,7 +198,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	private Map<Action, Set<String>> groupActions = new HashMap<Action, Set<String>>();
 
 	/**
-	 * Register the given action to a group (one of the GROUP* contants)
+	 * Register the given action to a group (one of the GROUP* constants)
 	 * 
 	 * @param a     The action to register
 	 * @param group The group to register the action to
@@ -522,16 +519,16 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			}
 		}
 
-		private void removeWaypoint(MLine l) {
+		private void removeWaypoint(LineElement l) {
 			// TODO: Instead of removing the last point, it would be better to adjust the
 			// context
 			// menu to remove a specific point (like with anchors). This could be done by
 			// making
 			// VPoint extend VPathwayElement so we can directly get the selected waypoint
 			// here.
-			List<MPoint> newPoints = new ArrayList<MPoint>(l.getMPoints());
+			List<LinePoint> newPoints = new ArrayList<LinePoint>(l.getLinePoints());
 			newPoints.remove(newPoints.size() - 2);
-			l.setMPoints(newPoints);
+			l.setLinePoints(newPoints);
 		}
 
 		private void addWaypoint(FreeConnectorShape s, LineElement l) {
@@ -636,7 +633,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
 			if (selection.size() > 0) {
 				for (Graphics g : selection) {
-					if (g instanceof State) {
+					if (g instanceof VState) {
 						toRemove.add(g);
 					}
 				}
@@ -652,23 +649,23 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 	private class ComplexAction extends GroupActionBase {
 		public ComplexAction() {
 			super("Create complex", "Break complex", "Create a complex from selected elements",
-					"Break selected complex", GroupStyle.COMPLEX, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P,
+					"Break selected complex", GroupType.COMPLEX, KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P,
 							Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 	}
 
 	private class GroupAction extends GroupActionBase {
 		public GroupAction() {
-			super("Group", "Ungroup", "Group selected elements", "Ungroup selected group", GroupStyle.GROUP, KeyStroke
+			super("Group", "Ungroup", "Group selected elements", "Ungroup selected group", GroupType.GROUP, KeyStroke
 					.getKeyStroke(java.awt.event.KeyEvent.VK_G, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 	}
 
 	private class GroupActionBase extends AbstractAction implements SelectionListener {
 		private String groupLbl, ungroupLbl, groupTt, ungroupTt;
-		private GroupStyle groupStyle;
+		private GroupType groupStyle;
 
-		public GroupActionBase(String groupLbl, String ungroupLbl, String groupTt, String ungroupTt, GroupStyle style,
+		public GroupActionBase(String groupLbl, String ungroupLbl, String groupTt, String ungroupTt, GroupType style,
 				KeyStroke keyStroke) {
 			super();
 			this.groupStyle = style;
@@ -688,7 +685,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 				return; // Don't perform action if not enabled
 			VGroup g = vPathwayModel.toggleGroup(vPathwayModel.getSelectedGraphics());
 			if (g != null) {
-				g.getPathwayElement().setGroupStyle(groupStyle);
+				g.getPathwayElement().setType(groupStyle); // TODO
 			}
 		}
 
@@ -705,8 +702,16 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			int unGrouped = 0;
 			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
 			for (Graphics g : selection) {
-				if (g.getPathwayElement().getGroupRef() == null) {
-					unGrouped++;
+				//TODO 
+				if (g instanceof VShapedElement) {
+					if (((ShapedElement) g.getPathwayElement()).getGroupRef() == null) {
+						unGrouped++;
+					}
+				}
+				if (g instanceof VLineElement) {
+					if (((LineElement) g.getPathwayElement()).getGroupRef() == null) {
+						unGrouped++;
+					}
 				}
 			}
 			setEnabled(true);
@@ -893,11 +898,11 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			vPathwayModel.resetHighlight();
-			for (PathwayElement pe : vPathwayModel.getPathwayModel().getDataObjects()) {
-				if (pe.getObjectType() == ObjectType.LINE) {
-					VLine vl = (VLine) vPathwayModel.getPathwayElementView(pe);
-					String grs = pe.getStartGraphRef();
-					String gre = pe.getEndGraphRef();
+			for (PathwayElement pe : vPathwayModel.getPathwayModel().getPathwayElements()) {
+				if (pe.getClass() == Interaction.class) {
+					VLineElement vl = (VLineElement) vPathwayModel.getPathwayElementView(pe);
+					String grs = ((LineElement) pe).getStartLinePoint().getElementRef().getElementId(); // TODO
+					String gre = ((LineElement) pe).getEndLinePoint().getElementRef().getElementId(); // TODO
 					if (grs == null || "".equals(grs)) {
 						vl.getStart().highlight();
 					}
@@ -926,18 +931,18 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			Set<VElement> changeTextFormat = new HashSet<VElement>();
 			changeTextFormat = vp.getSelectedPathwayElements();
 			for (VElement velt : changeTextFormat) {
-				if (velt instanceof Graphics) {
-					PathwayElement o = ((Graphics) velt).getPathwayElement();
+				if (velt instanceof VShapedElement) {
+					ShapedElement o = ((VShapedElement) velt).getPathwayElement();
 					if (key.equals(VPathwayModel.KEY_BOLD)) {
-						if (o.isBold())
-							o.setBold(false);
+						if (o.getFontWeight())
+							o.setFontWeight(false);
 						else
-							o.setBold(true);
+							o.setFontWeight(true);
 					} else if (key.equals(VPathwayModel.KEY_ITALIC)) {
-						if (o.isItalic())
-							o.setItalic(false);
+						if (o.getFontStyle())
+							o.setFontStyle(false);
 						else
-							o.setItalic(true);
+							o.setFontStyle(true);
 					}
 				}
 			}

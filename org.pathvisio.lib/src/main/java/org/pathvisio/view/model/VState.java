@@ -25,6 +25,7 @@ import java.awt.geom.Rectangle2D;
 import org.pathvisio.model.State;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.events.PathwayElementListener;
+import org.pathvisio.model.Group;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.Shape;
 import org.pathvisio.model.ShapedElement;
@@ -40,6 +41,16 @@ public class VState extends VShapedElement {
 
 	public VState(VPathwayModel canvas, State gdata) {
 		super(canvas, gdata);
+	}
+	
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return
+	 */
+	@Override
+	public State getPathwayElement() {
+		return getPathwayElement();
 	}
 
 	public void doDraw(Graphics2D g) {

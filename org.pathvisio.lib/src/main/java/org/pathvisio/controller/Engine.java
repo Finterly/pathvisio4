@@ -33,12 +33,12 @@ import javax.swing.SwingUtilities;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.io.ConverterException;
 import org.pathvisio.model.PathwayModel;
-import org.pathvisio.io.PathwayExporter;
-import org.pathvisio.io.PathwayImporter;
+import org.pathvisio.events.PathwayExporter;
+import org.pathvisio.events.PathwayImporter;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.util.Utils;
-import org.pathvisio.view.VPathwayWrapper;
 import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.model.VPathwayWrapper;
 
 /**
  * This class manages loading, importing and exporting a PathwayModel and

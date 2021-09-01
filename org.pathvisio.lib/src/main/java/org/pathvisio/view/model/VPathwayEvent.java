@@ -14,15 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
-
-import org.pathvisio.view.model.VElement;
-import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * event sent by VPathway upon modification of one or more VPathwayElements.

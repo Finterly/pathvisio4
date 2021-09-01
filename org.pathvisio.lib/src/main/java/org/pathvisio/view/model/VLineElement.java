@@ -74,17 +74,11 @@ import org.pathvisio.view.model.Handle.Style;
  * @see ConnectorShape
  * @see org.pathvisio.view.connector.ConnectorShapeFactory
  */
-public class VLineElement extends VCitable implements Adjustable, ConnectorRestrictions { // TODO ConnectorRestrictions
-
-//	protected MLine gdata = null;
-	protected LineElement gdata = null;
-
+public class VLineElement extends VElementInfo implements Adjustable, ConnectorRestrictions { // TODO
+																								// ConnectorRestrictions
 	private List<VPoint> points;
-
 	private Map<Anchor, VAnchor> anchors = new HashMap<Anchor, VAnchor>();
-
 	List<Handle> segmentHandles = new ArrayList<Handle>();
-
 	ConnectorShape connectorShape;
 
 	/**
@@ -93,15 +87,12 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @param canvas - the VPathway this line will be part of
 	 */
 	public VLineElement(VPathwayModel canvas, LineElement gdata) {
-		super(canvas);
-		gdata.addListener(this);
-		this.gdata = gdata;
-		checkCitation(gdata.getCitationRefs()); // TODO
+		super(canvas, gdata);
 		points = new ArrayList<VPoint>();
-		addPoint(gdata.getStartLinePoint()); // TODO
-		addPoint(gdata.getEndLinePoint()); // TODO
+		addPoint(getPathwayElement().getStartLinePoint()); // TODO
+		addPoint(getPathwayElement().getEndLinePoint()); // TODO
 		setAnchors();
-		getConnectorShape(gdata).recalculateShape(this); // TODO weird???
+		getConnectorShape(getPathwayElement()).recalculateShape(this); // TODO weird???
 //		updateSegmentHandles();
 		updateCitationPosition();
 	}
@@ -113,7 +104,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 //	private MLine getMLine() {
-//		return (MLine) gdata;
+//		return (MLine) getPathwayElement();
 //	}
 
 	public void createHandles() {
@@ -131,7 +122,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * Create new segment handles
 	 */
 	private void createSegmentHandles() {
-		ConnectorShape cs = getConnectorShape(gdata);
+		ConnectorShape cs = getConnectorShape(getPathwayElement());
 		WayPoint[] waypoints = cs.getWayPoints();
 
 		// Destroy the old handles, just to be sure
@@ -159,7 +150,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * number of segments, they will be destroyed and recreated.
 	 */
 	private void updateSegmentHandles() {
-		ConnectorShape cs = getConnectorShape(gdata);
+		ConnectorShape cs = getConnectorShape(getPathwayElement());
 		WayPoint[] waypoints = cs.getWayPoints();
 
 		// Destroy and recreate the handles if the number
@@ -180,21 +171,21 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * Updates the segment preferences to the new handle position
 	 */
 	public void adjustToHandle(Handle h, double vx, double vy) {
-		WayPoint[] waypoints = getConnectorShape(gdata).getWayPoints();
+		WayPoint[] waypoints = getConnectorShape(getPathwayElement()).getWayPoints();
 		int index = segmentHandles.indexOf(h);
 		if (index > -1) {
-			List<LinePoint> points = gdata.getLinePoints();
+			List<LinePoint> points = getPathwayElement().getLinePoints();
 			if (points.size() - 2 != (waypoints.length)) {
 				// Recreate points from segments
 				points = new ArrayList<LinePoint>();
-				points.add(gdata.getStartLinePoint());
+				points.add(getPathwayElement().getStartLinePoint());
 				for (int i = 0; i < waypoints.length; i++) {
-					LinePoint p = gdata.new LinePoint(waypoints[i].getX(), waypoints[i].getY());
+					LinePoint p = getPathwayElement().new LinePoint(waypoints[i].getX(), waypoints[i].getY());
 					points.add(p);
 				}
-				points.add(gdata.getEndLinePoint());
-				gdata.dontFireEvents(1);
-				gdata.setLinePoints(points);
+				points.add(getPathwayElement().getEndLinePoint());
+				getPathwayElement().dontFireEvents(1);
+				getPathwayElement().setLinePoints(points);
 			}
 			points.get(index + 1).moveTo(mFromV(vx), mFromV(vy));
 		}
@@ -216,7 +207,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		double endGap = getGap(getEndLineType());
 
 		// From the segments
-		Shape s = getConnectorShape(gdata).calculateAdjustedShape(startGap, endGap);
+		Shape s = getConnectorShape(getPathwayElement()).calculateAdjustedShape(startGap, endGap);
 
 		AffineTransform t = new AffineTransform();
 		double scale = vFromM(1);
@@ -318,7 +309,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 *         implementing classes.
 	 */
 	public Shape mayCross(Point2D point) {
-		PathwayModel parent = gdata.getPathwayModel();
+		PathwayModel parent = getPathwayElement().getPathwayModel();
 		Rectangle2D rect = null;
 		if (parent != null) {
 			for (PathwayElement e : parent.getPathwayElements()) { // TODO
@@ -355,7 +346,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @return An array with two arrowheads, for the start and end respectively
 	 */
 	public ArrowShape[] getVHeads() {
-		Segment[] segments = getConnectorShape(gdata).getSegments();
+		Segment[] segments = getConnectorShape(getPathwayElement()).getSegments();
 
 		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), segments[segments.length - 1].getMEnd(),
 				getEndLineType());
@@ -370,7 +361,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @return An array with two arrowheads, for the start and end respectively
 	 */
 	public ArrowShape[] getVHeadsAdjusted() {
-		Segment[] segments = getConnectorShape(gdata).getSegments();
+		Segment[] segments = getConnectorShape(getPathwayElement()).getSegments();
 
 		// last segment in the Connector Shape
 		double lineEndingWidth = getGap(getEndLineType());
@@ -391,8 +382,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		ArrowShape hs = heads[0];
 		ArrowShape he = heads[1];
 
-		float thickness = (float) vFromM(gdata.getLineWidth());
-		if (gdata.getLineStyle() == LineStyleType.DOUBLE)
+		float thickness = (float) vFromM(getPathwayElement().getLineWidth());
+		if (getPathwayElement().getLineStyle() == LineStyleType.DOUBLE)
 			thickness *= 4;
 		BasicStroke bs = new BasicStroke(thickness);
 
@@ -407,7 +398,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	private void setAnchors() {
 		// Check for new anchors
-		List<Anchor> Anchors = gdata.getAnchors();
+		List<Anchor> Anchors = getPathwayElement().getAnchors();
 		for (Anchor ma : Anchors) {
 			if (!anchors.containsKey(ma)) {
 				anchors.put(ma, new VAnchor(ma, this));
@@ -434,7 +425,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	void removeVAnchor(VAnchor va) {
 		anchors.remove(va.getAnchor());
-		gdata.removeAnchor(va.getAnchor());
+		getPathwayElement().removeAnchor(va.getAnchor());
 	}
 
 	private void updateAnchorPositions() {
@@ -446,7 +437,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	private void updateCitationPosition() {
 		if (getVCitation() == null)
 			return;
-		Point2D p = getConnectorShape(gdata).fromLineCoordinate(0.7);
+		Point2D p = getConnectorShape(getPathwayElement()).fromLineCoordinate(0.7);
 		p.setLocation(p.getX() - 5, p.getY());
 		Point2D r = toRelativeCoordinate(p);
 		getVCitation().setRPosition(r);
@@ -463,7 +454,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	protected void drawHead(Graphics2D g, ArrowShape head, Color c) {
 		if (head != null) {
 			// reset stroked line to solid, but use given thickness
-			g.setStroke(new BasicStroke((float) vFromM(gdata.getLineWidth())));
+			g.setStroke(new BasicStroke((float) vFromM(getPathwayElement().getLineWidth())));
 			switch (head.getFillType()) {
 			case OPEN:
 				g.setPaint(Color.WHITE);
@@ -510,7 +501,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 		if (h != null) {
 			AffineTransform f = new AffineTransform();
-			double scaleFactor = vFromM(1.0 + 0.3 * gdata.getLineWidth());
+			double scaleFactor = vFromM(1.0 + 0.3 * getPathwayElement().getLineWidth());
 			f.rotate(Math.atan2(ye - ys, xe - xs), xe, ye);
 			f.translate(xe, ye);
 			f.scale(scaleFactor, scaleFactor);
@@ -575,7 +566,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	protected void vMoveWayPointsBy(double vdx, double vdy) {
-		List<LinePoint> mps = gdata.getLinePoints();
+		List<LinePoint> mps = getPathwayElement().getLinePoints();
 		for (int i = 1; i < mps.size() - 1; i++) {
 			mps.get(i).moveBy(mFromV(vdx), mFromV(vdy));
 		}
@@ -590,11 +581,11 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	protected void vMoveBy(double vdx, double vdy) {
 		// move LinePoints directly, not every LinePoint is represented
 		// by a VPoint but we want to move them all.
-		for (LinePoint p : gdata.getLinePoints()) {
+		for (LinePoint p : getPathwayElement().getLinePoints()) {
 			p.moveBy(canvas.mFromV(vdx), canvas.mFromV(vdy));
 		}
 		// Redraw graphRefs
-		for (LinkableFrom ref : gdata.getReferences()) { // TODO ....
+		for (LinkableFrom ref : getPathwayElement().getReferences()) { // TODO ....
 			if (ref instanceof LinePoint) {
 				VPoint vp = canvas.getPoint((LinePoint) ref);
 				if (vp != null) {
@@ -612,7 +603,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	public void recalculateConnector() {
-		getConnectorShape(gdata).recalculateShape(this); // TODO ConnectorRestrictions
+		getConnectorShape(getPathwayElement()).recalculateShape(this); // TODO ConnectorRestrictions
 		updateAnchorPositions();
 		updateCitationPosition();
 		for (VPoint vp : points)
@@ -621,11 +612,11 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	public void gmmlObjectModified(PathwayElementEvent e) {
-		getConnectorShape(gdata).recalculateShape(this); // TODO ConnectorRestrictions
+		getConnectorShape(getPathwayElement()).recalculateShape(this); // TODO ConnectorRestrictions
 
-		WayPoint[] wps = getConnectorShape(gdata).getWayPoints();
-		List<LinePoint> mps = gdata.getLinePoints();
-		if (wps.length == mps.size() - 2 && getConnectorShape(gdata).hasValidWaypoints(this)) { // TODO
+		WayPoint[] wps = getConnectorShape(getPathwayElement()).getWayPoints();
+		List<LinePoint> mps = getPathwayElement().getLinePoints();
+		if (wps.length == mps.size() - 2 && getConnectorShape(getPathwayElement()).hasValidWaypoints(this)) { // TODO
 																								// ConnectorRestrictions
 			adjustWayPointPreferences(wps);
 		} else {
@@ -637,10 +628,10 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		for (VPoint p : points) {
 			setHandleLocation(p);
 		}
-		if (gdata.getAnchors().size() != anchors.size()) {
+		if (getPathwayElement().getAnchors().size() != anchors.size()) {
 			setAnchors();
 		}
-		checkCitation(gdata.getCitationRefs());
+		checkCitation(getPathwayElement().getCitationRefs());
 		updateAnchorPositions();
 		updateCitationPosition();
 	}
@@ -659,12 +650,12 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	protected void destroy() {
 		super.destroy();
-		gdata.removeListener(this);
+		getPathwayElement().removeListener(this);
 		for (VElement child : getChildren()) {
 			child.destroy();
 		}
 
-		for (LinePoint p : gdata.getLinePoints()) {
+		for (LinePoint p : getPathwayElement().getLinePoints()) {
 			canvas.pointsMtoV.remove(p);
 		}
 		List<VAnchor> remove = new ArrayList<VAnchor>(anchors.values());
@@ -725,7 +716,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * @param l The line coordinate
 	 */
 	public Point2D vFromL(double l) {
-		Point2D m = getConnectorShape(gdata).fromLineCoordinate(l);
+		Point2D m = getConnectorShape(getPathwayElement()).fromLineCoordinate(l);
 		return new Point2D.Double(vFromM(m.getX()), vFromM(m.getY()));
 	}
 
@@ -735,14 +726,14 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 */
 	public double lFromV(Point2D v) {
 		Point2D m = new Point2D.Double(mFromV(v.getX()), mFromV(v.getY()));
-		return getConnectorShape(gdata).toLineCoordinate(m);
+		return getConnectorShape(getPathwayElement()).toLineCoordinate(m);
 	}
 
 	/**
 	 * Get the segment on which the given line coordinate lies
 	 */
 	public Segment getSegment(double lc) {
-		Segment[] segments = getConnectorShape(gdata).getSegments();
+		Segment[] segments = getConnectorShape(getPathwayElement()).getSegments();
 		double length = 0;
 		for (Segment s : segments) {
 			length += s.getMLength();
@@ -766,7 +757,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 */
 	@Override
 	public LineElement getPathwayElement() {
-		return gdata;
+		return getPathwayElement();
 	}
 
 	/**
@@ -782,11 +773,11 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * Returns the z-order from the model
 	 */
 	protected int getZOrder() {
-		return gdata.getZOrder();
+		return getPathwayElement().getZOrder();
 	}
 
 	protected Color getLineColor() {
-		Color linecolor = gdata.getLineColor();
+		Color linecolor = getPathwayElement().getLineColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
@@ -798,8 +789,8 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	protected void setLineStyle(Graphics2D g) {
-		LineStyleType ls = gdata.getLineStyle();
-		float lt = (float) vFromM(gdata.getLineWidth());
+		LineStyleType ls = getPathwayElement().getLineStyle();
+		float lt = (float) vFromM(getPathwayElement().getLineWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {
@@ -824,12 +815,12 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * points
 	 */
 	public ConnectorShape getConnectorShape(LineElement gdata) {
-		String type = gdata.getConnectorType().getName();
+		String type = getPathwayElement().getConnectorType().getName();
 
 		// Recreate the ConnectorShape when it's null or when the type
 		// doesn't match the implementing class
 		if (shape == null || !shape.getClass().equals(ConnectorShapeFactory.getImplementingClass(type))) {
-			shape = ConnectorShapeFactory.createConnectorShape(gdata.getConnectorType().getName());
+			shape = ConnectorShapeFactory.createConnectorShape(getPathwayElement().getConnectorType().getName());
 			shape.recalculateShape(this);
 		}
 		return shape;
@@ -943,18 +934,18 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	/** converts end point from LinePoint to Point2D */
 	public Point2D getEndPoint() {
-		return gdata.getEndLinePoint().toPoint2D();
+		return getPathwayElement().getEndLinePoint().toPoint2D();
 	}
 
 	/** converts start point from LinePoint to Point2D */
 	public Point2D getStartPoint() {
-		return gdata.getStartLinePoint().toPoint2D();
+		return getPathwayElement().getStartLinePoint().toPoint2D();
 	}
 
 	/** converts all points from LinePoint to Point2D */
 	public List<Point2D> getPoints() {
 		List<Point2D> pts = new ArrayList<Point2D>();
-		for (LinePoint p : gdata.getLinePoints()) {
+		for (LinePoint p : getPathwayElement().getLinePoints()) {
 			pts.add(p.toPoint2D());
 		}
 		return pts;
@@ -965,9 +956,9 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * if there isn't any.
 	 */
 	private LinkableTo getStartElement() {
-		PathwayModel parent = gdata.getPathwayModel();
+		PathwayModel parent = getPathwayElement().getPathwayModel();
 		if (parent != null) {
-			return gdata.getStartLinePoint().getElementRef();
+			return getPathwayElement().getStartLinePoint().getElementRef();
 		}
 		return null;
 	}
@@ -977,9 +968,9 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * if there isn't any.
 	 */
 	private LinkableTo getEndElement() {
-		PathwayModel parent = gdata.getPathwayModel();
+		PathwayModel parent = getPathwayElement().getPathwayModel();
 		if (parent != null) {
-			return gdata.getEndLinePoint().getElementRef();
+			return getPathwayElement().getEndLinePoint().getElementRef();
 		}
 		return null;
 	}
@@ -996,7 +987,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		LinkableTo e = getStartElement();
 		if (e != null) {
 			if (e instanceof ShapedElement) {
-				side = getSide(gdata.getStartLinePoint().getRelX(), gdata.getStartLinePoint().getRelY());
+				side = getSide(getPathwayElement().getStartLinePoint().getRelX(), getPathwayElement().getStartLinePoint().getRelY());
 			} else if (e instanceof Anchor) {
 				side = getAttachedLineDirection((Anchor) e);
 			}
@@ -1016,7 +1007,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 		LinkableTo e = getEndElement();
 		if (e != null) {
 			if (e instanceof ShapedElement) {
-				side = getSide(gdata.getEndLinePoint().getRelX(), gdata.getEndLinePoint().getRelY());
+				side = getSide(getPathwayElement().getEndLinePoint().getRelX(), getPathwayElement().getEndLinePoint().getRelY());
 			} else if (e instanceof Anchor) {
 				side = getAttachedLineDirection((Anchor) e);
 			}
@@ -1043,7 +1034,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	private ConnectorShape.Segment findAnchorSegment(LineElement attLine, double pos) {
-		ConnectorShape.Segment[] segments = getConnectorShape(gdata).getSegments();
+		ConnectorShape.Segment[] segments = getConnectorShape(getPathwayElement()).getSegments();
 		Double totLength = 0.0;
 		ConnectorShape.Segment attSeg = null;
 		for (ConnectorShape.Segment segment : segments) {
@@ -1109,19 +1100,19 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	}
 
 	public void adjustWayPointPreferences(WayPoint[] waypoints) {
-		List<LinePoint> LinePoints = gdata.getLinePoints();
+		List<LinePoint> LinePoints = getPathwayElement().getLinePoints();
 		for (int i = 0; i < waypoints.length; i++) {
 			WayPoint wp = waypoints[i];
 			LinePoint mp = LinePoints.get(i + 1);
 			if (mp.getXY().getX() != wp.getX() || mp.getXY().getY() != wp.getY()) {
-				gdata.dontFireEvents(1);
+				getPathwayElement().dontFireEvents(1);
 				mp.moveTo(wp.getX(), wp.getY());
 			}
 		}
 	}
 
 	public void resetWayPointPreferences() {
-		List<LinePoint> mps = gdata.getLinePoints();
+		List<LinePoint> mps = getPathwayElement().getLinePoints();
 		while (mps.size() > 2) {
 			mps.remove(mps.size() - 2);
 		}
@@ -1133,7 +1124,7 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	 * decide not to use them if they are invalid.
 	 */
 	public WayPoint[] getWayPointPreferences() {
-		List<LinePoint> pts = gdata.getLinePoints();
+		List<LinePoint> pts = getPathwayElement().getLinePoints();
 		WayPoint[] wps = new WayPoint[pts.size() - 2];
 		for (int i = 0; i < wps.length; i++) {
 			wps[i] = new WayPoint(pts.get(i + 1).toPoint2D());
@@ -1205,35 +1196,35 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 
 	/* -------------------Pathway Element----------------------------- */
 	public double getMStartX() {
-		return gdata.getStartLinePoint().getXY().getX();
+		return getPathwayElement().getStartLinePoint().getXY().getX();
 	}
 
 	public void setMStartX(double v) {
-		gdata.getStartLinePoint().getXY().setX(v);
+		getPathwayElement().getStartLinePoint().getXY().setX(v);
 	}
 
 	public double getMStartY() {
-		return gdata.getStartLinePoint().getXY().getY();
+		return getPathwayElement().getStartLinePoint().getXY().getY();
 	}
 
 	public void setMStartY(double v) {
-		gdata.getStartLinePoint().getXY().setY(v);
+		getPathwayElement().getStartLinePoint().getXY().setY(v);
 	}
 
 	public double getMEndX() {
-		return gdata.getEndLinePoint().getXY().getX();
+		return getPathwayElement().getEndLinePoint().getXY().getX();
 	}
 
 	public void setMEndX(double v) {
-		gdata.getEndLinePoint().getXY().setX(v);
+		getPathwayElement().getEndLinePoint().getXY().setX(v);
 	}
 
 	public double getMEndY() {
-		return gdata.getEndLinePoint().getXY().getY();
+		return getPathwayElement().getEndLinePoint().getXY().getY();
 	}
 
 	public void setMEndY(double v) {
-		gdata.getEndLinePoint().getXY().setY(v);
+		getPathwayElement().getEndLinePoint().getXY().setY(v);
 	}
 
 	/**
@@ -1292,21 +1283,21 @@ public class VLineElement extends VCitable implements Adjustable, ConnectorRestr
 	/* -------------------Conveniency methods?----------------------------- */
 
 	public ArrowHeadType getStartLineType() {
-		ArrowHeadType startLineType = gdata.getStartLinePoint().getArrowHead();
+		ArrowHeadType startLineType = getPathwayElement().getStartLinePoint().getArrowHead();
 		return startLineType == null ? ArrowHeadType.UNDIRECTED : startLineType;
 	}
 
 	public ArrowHeadType getEndLineType() {
-		ArrowHeadType endLineType = gdata.getEndLinePoint().getArrowHead();
+		ArrowHeadType endLineType = getPathwayElement().getEndLinePoint().getArrowHead();
 		return endLineType == null ? ArrowHeadType.UNDIRECTED : endLineType;
 	}
 
 	public void setStartLineType(ArrowHeadType value) {
-		gdata.getStartLinePoint().setArrowHead(value);
+		getPathwayElement().getStartLinePoint().setArrowHead(value);
 	}
 
 	public void setEndLineType(ArrowHeadType value) {
-		gdata.getEndLinePoint().setArrowHead(value);
+		getPathwayElement().getEndLinePoint().setArrowHead(value);
 	}
 
 //	}

@@ -16,9 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Label;
-import org.pathvisio.model.PathwayElement;
 
 /**
  * This class represents the view of a {@link Label} pathway element.
@@ -32,6 +30,16 @@ public class VLabel extends VShapedElement {
 	 */
 	public VLabel(VPathwayModel canvas, Label gdata) {
 		super(canvas, gdata);
+	}
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return
+	 */
+	@Override
+	public Label getPathwayElement() {
+		return getPathwayElement();
 	}
 
 	@Override

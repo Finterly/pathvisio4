@@ -52,32 +52,20 @@ import org.pathvisio.model.*;
  * 
  * @author unknown, finterly
  */
-public abstract class VShapedElement extends VCitable implements LinkProvider, Adjustable {
-
-	protected ShapedElement gdata = null; // TODO
-
-//	public GraphicsShapedElement(VPathwayModel canvas, PathwayElement o) { //TODO 
-//		super(canvas);
-//		o.addListener(this);
-//		gdata = o;
-//		checkCitation();
-//	}
+public abstract class VShapedElement extends VElementInfo implements LinkProvider, Adjustable, VLinkableTo {
 
 	public VShapedElement(VPathwayModel canvas, ShapedElement gdata) {
-		super(canvas);
-		this.gdata = gdata;
-		gdata.addListener(this);
-		checkCitation(gdata.getCitationRefs()); // TODO
+		super(canvas, gdata);
 	}
 
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
-	 * @return shape
+	 * @return 
 	 */
 	@Override
 	public ShapedElement getPathwayElement() {
-		return gdata;
+		return getPathwayElement();
 	}
 
 	public Point2D toAbsoluteCoordinate(Point2D p) {
@@ -122,16 +110,20 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	public Rectangle2D getRBounds() {
 		Rectangle2D bounds = getMBounds();
 		AffineTransform t = new AffineTransform();
-		t.rotate(gdata.getRotation(), gdata.getCenterXY().getX(), gdata.getCenterXY().getY());
+		t.rotate(getPathwayElement().getRotation(), getPathwayElement().getCenterXY().getX(),
+				getPathwayElement().getCenterXY().getY());
 		bounds = t.createTransformedShape(bounds).getBounds2D();
 		return bounds;
 	}
+	
+	
 
 	/**
 	 * Get the rectangular bounds of the object without rotation taken into account
 	 */
 	public Rectangle2D getMBounds() {
-		return new Rectangle2D.Double(getMLeft(), getMTop(), gdata.getWidth(), gdata.getHeight());
+		return new Rectangle2D.Double(getMLeft(), getMTop(), getPathwayElement().getWidth(),
+				getPathwayElement().getHeight());
 	}
 
 	/**
@@ -141,7 +133,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 * @return the center x-coordinate
 	 */
 	public double getVCenterX() {
-		return vFromM(gdata.getCenterXY().getX());
+		return vFromM(getPathwayElement().getCenterXY().getX());
 	}
 
 	/**
@@ -151,7 +143,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 * @return the center y-coordinate
 	 */
 	public double getVCenterY() {
-		return vFromM(gdata.getCenterXY().getY());
+		return vFromM(getPathwayElement().getCenterXY().getY());
 	}
 
 	/**
@@ -187,7 +179,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 * @return
 	 */
 	public double getVWidth() {
-		return vFromM(gdata.getWidth());
+		return vFromM(getPathwayElement().getWidth());
 	}
 
 	/**
@@ -199,30 +191,27 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 * @return
 	 */
 	public double getVHeight() {
-		return vFromM(gdata.getHeight());
+		return vFromM(getPathwayElement().getHeight());
 	}
 
 	/*----------------- Convenience methods from Model -----------------*/
 
-	
-
 	// startx for shapes TODO
 	public double getMLeft() {
-		return gdata.getCenterXY().getX() - gdata.getWidth() / 2;
+		return getPathwayElement().getCenterXY().getX() - getPathwayElement().getWidth() / 2;
 	}
 
 	// starty for shapes TODO
-		public double getMTop() {
-			return gdata.getCenterXY().getY() - gdata.getHeight() / 2;
-		}
-		
-	public void setMTop(double v) {
-		gdata.getCenterXY().setY(v + gdata.getHeight() /2);
+	public double getMTop() {
+		return getPathwayElement().getCenterXY().getY() - getPathwayElement().getHeight() / 2;
 	}
 
+	public void setMTop(double v) {
+		getPathwayElement().getCenterXY().setY(v + getPathwayElement().getHeight() / 2);
+	}
 
 	public void setMLeft(double v) {
-		gdata.getCenterXY().setX(v + gdata.getWidth() / 2);
+		getPathwayElement().getCenterXY().setX(v + getPathwayElement().getWidth() / 2);
 	}
 
 	/**
@@ -241,11 +230,11 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 */
 	public int getVFontStyle() {
 		int style = Font.PLAIN;
-		if (gdata.getFontName() != null) {
-			if (gdata.getFontWeight()) {
+		if (getPathwayElement().getFontName() != null) {
+			if (getPathwayElement().getFontWeight()) {
 				style |= Font.BOLD;
 			}
-			if (gdata.getFontStyle()) {
+			if (getPathwayElement().getFontStyle()) {
 				style |= Font.ITALIC;
 			}
 		}
@@ -255,12 +244,12 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	/**
 	 * Returns the z-order from the model
 	 */
-	protected int getZOrder() {
-		return gdata.getZOrder();
+	public int getZOrder() {
+		return getPathwayElement().getZOrder();
 	}
 
 	protected Color getBorderColor() {
-		Color borderColor = gdata.getBorderColor();
+		Color borderColor = getPathwayElement().getBorderColor();
 		/*
 		 * the selection is not colored red when in edit mode it is possible to see a
 		 * color change immediately
@@ -272,8 +261,8 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	}
 
 	protected void setBorderStyle(Graphics2D g) {
-		LineStyleType ls = gdata.getBorderStyle();
-		float lt = (float) vFromM(gdata.getBorderWidth());
+		LineStyleType ls = getPathwayElement().getBorderStyle();
+		float lt = (float) vFromM(getPathwayElement().getBorderWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {
@@ -308,11 +297,11 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 
 	protected void createHandles() {
 
-		if (gdata.getShapeType() != null && !gdata.getShapeType().isResizeable()
-				&& !gdata.getShapeType().isRotatable()) {
+		if (getPathwayElement().getShapeType() != null && !getPathwayElement().getShapeType().isResizeable()
+				&& !getPathwayElement().getShapeType().isRotatable()) {
 			return; // no resizing, no handles
-		} else if (gdata.getShapeType() != null && !gdata.getShapeType().isResizeable()
-				&& gdata.getShapeType().isRotatable()) {
+		} else if (getPathwayElement().getShapeType() != null && !getPathwayElement().getShapeType().isResizeable()
+				&& getPathwayElement().getShapeType().isRotatable()) {
 			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
 			handleR.setAngle(1);
 			handles = new Handle[] { handleR };
@@ -347,7 +336,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 			handleSE.setAngle(45);
 			handleSW.setAngle(135);
 			handleNW.setAngle(225);
-			if (!gdata.getShapeType().isRotatable()) {
+			if (!getPathwayElement().getShapeType().isRotatable()) {
 				// No rotation handle for these objects
 				handles = new Handle[] { handleN, handleNE, handleE, handleSE, handleS, handleSW, handleW, handleNW, };
 			} else {
@@ -368,18 +357,18 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 * @param r
 	 */
 	protected void setVScaleRectangle(Rectangle2D r) {
-		gdata.setWidth(mFromV(r.getWidth()));
-		gdata.setHeight(mFromV(r.getHeight()));
-		gdata.setMLeft(mFromV(r.getX()));
-		gdata.setMTop(mFromV(r.getY()));
+		getPathwayElement().setWidth(mFromV(r.getWidth()));
+		getPathwayElement().setHeight(mFromV(r.getHeight()));
+		getPathwayElement().setMLeft(mFromV(r.getX()));
+		getPathwayElement().setMTop(mFromV(r.getY()));
 	}
 
 	protected void vMoveBy(double vdx, double vdy) {
 		// both setM operations fire the exact same objectModifiedEvent, one should be
 		// enough
-		gdata.dontFireEvents(1);
-		gdata.setMLeft(getMLeft() + mFromV(vdx));
-		gdata.setMTop(getMTop() + mFromV(vdy));
+		getPathwayElement().dontFireEvents(1);
+		getPathwayElement().setMLeft(getMLeft() + mFromV(vdx));
+		getPathwayElement().setMTop(getMTop() + mFromV(vdy));
 	}
 
 	public Handle[] getHandles() {
@@ -394,7 +383,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 */
 	private Point mToInternal(Point p) {
 		Point pt = mRelativeToCenter(p);
-		Point pr = LinAlg.rotate(pt, gdata.getRotation());
+		Point pr = LinAlg.rotate(pt, getPathwayElement().getRotation());
 		return pr;
 	}
 
@@ -407,9 +396,9 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 */
 	private Point mToExternal(double x, double y) {
 		Point p = new Point(x, y);
-		Point pr = LinAlg.rotate(p, -gdata.getRotation());
-		pr.x += gdata.getCenterXY().getX();
-		pr.y += gdata.getCenterXY().getY();
+		Point pr = LinAlg.rotate(p, -getPathwayElement().getRotation());
+		pr.x += getPathwayElement().getCenterXY().getX();
+		pr.y += getPathwayElement().getCenterXY().getY();
 		return pr;
 	}
 
@@ -419,7 +408,8 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 * @param p
 	 */
 	private Point mRelativeToCenter(Point p) {
-		return p.subtract(new Point(gdata.getCenterXY().getX(), gdata.getCenterXY().getY()));
+		return p.subtract(
+				new Point(getPathwayElement().getCenterXY().getX(), getPathwayElement().getCenterXY().getY()));
 	}
 
 	/**
@@ -429,11 +419,11 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 */
 	public void setRotation(double angle) {
 		if (angle < 0)
-			gdata.setRotation(angle + Math.PI * 2);
+			getPathwayElement().setRotation(angle + Math.PI * 2);
 		else if (angle > Math.PI * 2)
-			gdata.setRotation(angle - Math.PI * 2);
+			getPathwayElement().setRotation(angle - Math.PI * 2);
 		else
-			gdata.setRotation(angle);
+			getPathwayElement().setRotation(angle);
 	}
 
 	public void adjustToHandle(Handle h, double vnewx, double vnewy) {
@@ -475,7 +465,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 			} else if (freedom == Freedom.NEGFREE) {
 				v = new Point(getVWidth(), -getVHeight());
 			}
-			Point yr = LinAlg.rotate(v, -gdata.getRotation());
+			Point yr = LinAlg.rotate(v, -getPathwayElement().getRotation());
 			Point prj = LinAlg.project(base, new Point(vnewx, vnewy), yr);
 			vnewx = prj.x;
 			vnewy = prj.y;
@@ -488,8 +478,8 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		double idy = 0;
 		double idw = 0;
 		double idh = 0;
-		double halfw = gdata.getWidth() / 2;
-		double halfh = gdata.getHeight() / 2;
+		double halfw = getPathwayElement().getWidth() / 2;
+		double halfh = getPathwayElement().getHeight() / 2;
 
 		if (h == handleN || h == handleNE || h == handleNW) {
 			idh = -(iPos.y + halfh);
@@ -509,8 +499,8 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		}
 		;
 
-		double neww = gdata.getWidth() + idw;
-		double newh = gdata.getHeight() + idh;
+		double neww = getPathwayElement().getWidth() + idw;
+		double newh = getPathwayElement().getHeight() + idh;
 
 		// In case object had negative width, switch handles
 		if (neww < 0) {
@@ -522,11 +512,11 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 			newh = -newh;
 		}
 
-		gdata.setWidth(neww);
-		gdata.setHeight(newh);
-		Point vcr = LinAlg.rotate(new Point(idx, idy), -gdata.getRotation());
-		gdata.getCenterXY().setX(gdata.getCenterXY().getX() + vcr.x);
-		gdata.getCenterXY().setY(gdata.getCenterXY().getY() + vcr.y);
+		getPathwayElement().setWidth(neww);
+		getPathwayElement().setHeight(newh);
+		Point vcr = LinAlg.rotate(new Point(idx, idy), -getPathwayElement().getRotation());
+		getPathwayElement().getCenterXY().setX(getPathwayElement().getCenterXY().getX() + vcr.x);
+		getPathwayElement().getCenterXY().setY(getPathwayElement().getCenterXY().getY() + vcr.y);
 
 	}
 
@@ -575,35 +565,36 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 */
 	protected void setHandleLocation() {
 		Point p;
-		if (gdata.getShapeType() == null || gdata.getShapeType().isResizeable()) {
+		if (getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType().isResizeable()) {
 
 			if (handleN != null) {
-				p = mToExternal(0, -gdata.getHeight() / 2);
+				p = mToExternal(0, -getPathwayElement().getHeight() / 2);
 				handleN.setMLocation(p.x, p.y);
-				p = mToExternal(gdata.getWidth() / 2, 0);
+				p = mToExternal(getPathwayElement().getWidth() / 2, 0);
 				handleE.setMLocation(p.x, p.y);
-				p = mToExternal(0, gdata.getHeight() / 2);
+				p = mToExternal(0, getPathwayElement().getHeight() / 2);
 				handleS.setMLocation(p.x, p.y);
-				p = mToExternal(-gdata.getWidth() / 2, 0);
+				p = mToExternal(-getPathwayElement().getWidth() / 2, 0);
 				handleW.setMLocation(p.x, p.y);
 			}
 
-			p = mToExternal(gdata.getWidth() / 2, -gdata.getHeight() / 2);
+			p = mToExternal(getPathwayElement().getWidth() / 2, -getPathwayElement().getHeight() / 2);
 			handleNE.setMLocation(p.x, p.y);
-			p = mToExternal(gdata.getWidth() / 2, gdata.getHeight() / 2);
+			p = mToExternal(getPathwayElement().getWidth() / 2, getPathwayElement().getHeight() / 2);
 			handleSE.setMLocation(p.x, p.y);
-			p = mToExternal(-gdata.getWidth() / 2, gdata.getHeight() / 2);
+			p = mToExternal(-getPathwayElement().getWidth() / 2, getPathwayElement().getHeight() / 2);
 			handleSW.setMLocation(p.x, p.y);
-			p = mToExternal(-gdata.getWidth() / 2, -gdata.getHeight() / 2);
+			p = mToExternal(-getPathwayElement().getWidth() / 2, -getPathwayElement().getHeight() / 2);
 			handleNW.setMLocation(p.x, p.y);
 		}
-		if ((gdata.getShapeType() == null || gdata.getShapeType().isRotatable()) && (handleR != null)) {
-			p = mToExternal(gdata.getWidth() / 2 + M_ROTATION_HANDLE_POSITION, 0);
+		if ((getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType().isRotatable())
+				&& (handleR != null)) {
+			p = mToExternal(getPathwayElement().getWidth() / 2 + M_ROTATION_HANDLE_POSITION, 0);
 			handleR.setMLocation(p.x, p.y);
 		}
 
 		for (Handle h : getHandles())
-			h.rotation = gdata.getRotation();
+			h.rotation = getPathwayElement().getRotation();
 	}
 
 	/**
@@ -640,7 +631,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	 */
 	protected Shape getShape(boolean rotate, boolean stroke) {
 		if (stroke) {
-			return getShape(rotate, (float) gdata.getBorderWidth());
+			return getShape(rotate, (float) getPathwayElement().getBorderWidth());
 		} else {
 			return getShape(rotate, 0);
 		}
@@ -660,24 +651,24 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	protected java.awt.Shape getShape(boolean rotate, float sw) {
 		double mx = getMLeft();
 		double my = getMTop();
-		double mw = gdata.getWidth();
-		double mh = gdata.getHeight();
-		double mcx = gdata.getCenterXY().getX();
-		double mcy = gdata.getCenterXY().getY();
+		double mw = getPathwayElement().getWidth();
+		double mh = getPathwayElement().getHeight();
+		double mcx = getPathwayElement().getCenterXY().getX();
+		double mcy = getPathwayElement().getCenterXY().getY();
 
 		java.awt.Shape s = null;
 
-		if (gdata.getShapeType() == null || gdata.getShapeType() == ShapeType.NONE) {
+		if (getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
-			s = gdata.getShapeType().getShape(mw, mh); // IShape....
+			s = getPathwayElement().getShapeType().getShape(mw, mh); // IShape....
 		}
 
 		AffineTransform t = new AffineTransform();
 		t.scale(canvas.getZoomFactor(), canvas.getZoomFactor());
 
 		if (rotate) {
-			t.rotate(gdata.getRotation(), mcx, mcy);
+			t.rotate(getPathwayElement().getRotation(), mcx, mcy);
 		}
 		t.translate(mx, my);
 		s = t.createTransformedShape(s);
@@ -685,9 +676,9 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		if (sw > 0)
 			if (mw * mh > 0) // Workaround, batik balks if the shape is zero sized.
 			{
-				if (gdata.getBorderStyle() == LineStyleType.DOUBLE) {
+				if (getPathwayElement().getBorderStyle() == LineStyleType.DOUBLE) {
 					// correction factor for composite stroke
-					sw = (float) (gdata.getBorderWidth() * 4);
+					sw = (float) (getPathwayElement().getBorderWidth() * 4);
 				}
 				Stroke stroke = new BasicStroke(sw);
 				s = stroke.createStrokedShape(s);
@@ -699,7 +690,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	public void gmmlObjectModified(PathwayElementEvent e) {
 //		if (listen) { //TODO??? 
 		markDirty(); // mark everything dirty
-		checkCitation(gdata.getCitationRefs());
+		checkCitation(getPathwayElement().getCitationRefs());
 		if (handles.length > 0)
 			setHandleLocation();
 	}
@@ -752,7 +743,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	protected void drawTextLabel(Graphics2D g) {
 		int margin = (int) vFromM(5);
 		Rectangle area = getVShape(true).getBounds();
-		String label = gdata.getTextLabel();
+		String label = getPathwayElement().getTextLabel();
 		if (label != null && !"".equals(label)) {
 			// Split by newline, to enable multi-line labels
 			String[] lines = label.split("\n");
@@ -760,7 +751,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 			FontMetrics fm = g.getFontMetrics();
 			int lh = fm.getHeight();
 			int yoffset = area.y + fm.getAscent();
-			switch (gdata.getVAlign()) {
+			switch (getPathwayElement().getVAlign()) {
 			case MIDDLE:
 				yoffset += (area.height - (lines.length * lh)) / 2;
 				break;
@@ -775,13 +766,13 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 				if (lines[i].equals(""))
 					continue; // Can't have attributed string with 0 length
 				AttributedString ats = getVAttributedString(lines[i]);
-				if (!gdata.getHref().equals("")) {
+				if (!getPathwayElement().getHref().equals("")) {
 					ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 				}
 				Rectangle2D tb = fm.getStringBounds(ats.getIterator(), 0, lines[i].length(), g);
 
 				int xoffset = area.x;
-				switch (gdata.getHAlign()) {
+				switch (getPathwayElement().getHAlign()) {
 				case CENTER:
 					xoffset += (int) (area.width / 2) - (int) (tb.getWidth() / 2);
 					break;
@@ -801,10 +792,10 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 
 	private AttributedString getVAttributedString(String text) {
 		AttributedString ats = new AttributedString(text);
-		if (gdata.getFontStrikethru()) {
+		if (getPathwayElement().getFontStrikethru()) {
 			ats.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
 		}
-		if (gdata.getFontDecoration()) {
+		if (getPathwayElement().getFontDecoration()) {
 			ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		}
 
@@ -813,27 +804,28 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	}
 
 	protected Font getVFont() {
-		String name = gdata.getFontName();
+		String name = getPathwayElement().getFontName();
 		int style = getVFontStyle();
-		return new Font(name, style, 12).deriveFont((float) vFromM(gdata.getFontSize()));
+		return new Font(name, style, 12).deriveFont((float) vFromM(getPathwayElement().getFontSize()));
 	}
 
 	protected void drawShape(Graphics2D g) {
-		Color fillcolor = gdata.getFillColor();
+		Color fillcolor = getPathwayElement().getFillColor();
 
 		if (!hasOutline())
 			return; // nothing to draw.
 
 		java.awt.Shape shape = getShape(true, false);
 
-		if (gdata.getShapeType() == ShapeType.BRACE || gdata.getShapeType() == ShapeType.ARC) {
+		if (getPathwayElement().getShapeType() == ShapeType.BRACE
+				|| getPathwayElement().getShapeType() == ShapeType.ARC) {
 			// don't fill arcs or braces
 			// TODO: this exception should disappear in the future,
 			// when we've made sure all pathways on wikipathways have
 			// transparent arcs and braces
 		} else {
 			// fill the rest
-			if (!gdata.isTransparent()) {
+			if (!getPathwayElement().isTransparent()) {
 				g.setColor(fillcolor);
 				g.fill(shape);
 			}
@@ -843,7 +835,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 	}
 
 	private boolean hasOutline() {
-		return (!(gdata.getShapeType() == null || gdata.getShapeType() == ShapeType.NONE));
+		return (!(getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType() == ShapeType.NONE));
 	}
 
 	/**
@@ -879,7 +871,7 @@ public abstract class VShapedElement extends VCitable implements LinkProvider, A
 		// first use getVBounds as a rough approximation
 		if (getVBounds().contains(point)) {
 			// if the shape is transparent, only check against the outline
-			if (gdata.isTransparent()) {
+			if (getPathwayElement().isTransparent()) {
 				return getVOutline().contains(point);
 			} else {
 				// otherwise check against the whole shape

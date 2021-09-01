@@ -40,7 +40,7 @@ import org.pathvisio.model.PathwayElement;
  * model.PathwayElement(ObjectType.INFOBOX). This confusion is rooted in
  * inconsistencies in GPML. This should be cleaned up one day.
  */
-public class VInfoBox extends VCitable {
+public class VInfoBox extends VElementInfo {
 
 	protected Pathway gdata = null;
 

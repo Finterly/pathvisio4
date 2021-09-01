@@ -35,7 +35,7 @@ import org.pathvisio.model.*;
  */
 public abstract class Graphics extends VElement implements PathwayElementListener {
 
-//	protected PathwayElement gdata = null;
+	protected PathwayElement gdata = null;
 
 	/**
 	 * List of children, everything that moves when this element is dragged.
@@ -43,10 +43,10 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 	 */
 	private List<VElement> children = new DebugList<VElement>();
 
-	public Graphics(VPathwayModel canvas) {
+	public Graphics(VPathwayModel canvas, PathwayElement gdata) {
 		super(canvas);
-//		o.addListener(this);
-//		gdata = o;
+		gdata.addListener(this);
+		this.gdata = gdata;
 	}
 
 	/**
@@ -54,7 +54,9 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 	 * 
 	 * @return
 	 */
-	public abstract PathwayElement getPathwayElement();
+	public PathwayElement getPathwayElement() {
+		return gdata;
+	}
 
 	public void markDirty() {
 		super.markDirty();
@@ -70,10 +72,9 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 //	public PathwayElement getPathwayElement() {
 //		return gdata;
 //	}
-	
+
 	// PathwayElement
 	public abstract Point2D toAbsoluteCoordinate(Point2D p);
-	
 
 	boolean listen = true;
 
