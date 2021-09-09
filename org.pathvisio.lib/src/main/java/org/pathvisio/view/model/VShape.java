@@ -17,7 +17,6 @@
 package org.pathvisio.view.model;
 
 import org.pathvisio.model.Shape;
-import org.pathvisio.model.State;
 
 /**
  * This class represents the view of a {@link Shape} PathwayElement.

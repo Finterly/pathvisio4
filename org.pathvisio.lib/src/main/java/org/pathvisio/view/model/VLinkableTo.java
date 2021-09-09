@@ -18,7 +18,9 @@ package org.pathvisio.view.model;
 
 import java.awt.geom.Point2D;
 
+import org.pathvisio.model.DataNode;
 import org.pathvisio.model.GraphLink.LinkableTo;
+import org.pathvisio.model.LineElement.LinePoint;
 
 
 /**

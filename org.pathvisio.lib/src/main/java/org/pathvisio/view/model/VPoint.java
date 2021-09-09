@@ -16,11 +16,10 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import org.pathvisio.model.LinePoint;
-
 import java.awt.geom.Point2D;
 
 import org.pathvisio.model.GraphLink.LinkableTo;
+import org.pathvisio.model.LineElement.LinePoint;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.LinAlg;
@@ -88,16 +87,16 @@ public class VPoint implements Adjustable {
 	}
 
 	protected double getVX() {
-		return canvas.vFromM(linePoint.getXY().getX());
+		return canvas.vFromM(linePoint.getX());
 	}
 
 	protected double getVY() {
-		return canvas.vFromM(linePoint.getXY().getY());
+		return canvas.vFromM(linePoint.getY());
 	}
 
 	protected void setVLocation(double vx, double vy) {
-		linePoint.getXY().setX(canvas.mFromV(vx));
-		linePoint.getXY().setY(canvas.mFromV(vy));
+		linePoint.setX(canvas.mFromV(vx));
+		linePoint.setY(canvas.mFromV(vy));
 	}
 
 	protected void vMoveBy(double dx, double dy) {
@@ -127,11 +126,11 @@ public class VPoint implements Adjustable {
 			// base is the static point the line rotates about.
 			// it is equal to the OTHER point, the one we're not moving.
 			if (p1 == this) {
-				basex = p2.getLinePoint().getXY().getX();
-				basey = p2.getLinePoint().getXY().getY();
+				basex = p2.getLinePoint().getX();
+				basey = p2.getLinePoint().getY();
 			} else {
-				basex = p1.getLinePoint().getXY().getX();
-				basey = p1.getLinePoint().getXY().getY();
+				basex = p1.getLinePoint().getX();
+				basey = p1.getLinePoint().getY();
 			}
 			// calculate rotation and round it off
 			double rotation = Math.atan2(basey - mcy, basex - mcx);
@@ -143,8 +142,8 @@ public class VPoint implements Adjustable {
 			mcy = prj.y;
 		}
 
-		linePoint.getXY().setX(mcx);
-		linePoint.getXY().setY(mcy);
+		linePoint.setX(mcx);
+		linePoint.setY(mcy);
 	}
 
 	protected Handle getHandle() {
@@ -201,16 +200,16 @@ public class VPoint implements Adjustable {
 
 	// TODO
 	public Point2D toAbsoluteCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() + linePoint.getXY().getX(), p.getY() + linePoint.getXY().getY());
+		return new Point2D.Double(p.getX() + linePoint.getX(), p.getY() + linePoint.getY());
 	}
 
 	// TODO
 	public Point2D toRelativeCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() - linePoint.getXY().getX(), p.getY() - linePoint.getXY().getY());
+		return new Point2D.Double(p.getX() - linePoint.getX(), p.getY() - linePoint.getY());
 	}
 
 	public Point2D toPoint2D(LinePoint linePoint) {
-		return new Point2D.Double(linePoint.getXY().getX(), linePoint.getXY().getY());
+		return new Point2D.Double(linePoint.getX(), linePoint.getY());
 	}
 
 }

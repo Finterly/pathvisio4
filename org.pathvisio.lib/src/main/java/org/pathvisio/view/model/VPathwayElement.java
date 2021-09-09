@@ -17,12 +17,12 @@
 package org.pathvisio.view.model;
 
 import java.awt.geom.Point2D;
-
 import java.util.List;
 
-import org.pathvisio.model.ShapedElement;
 import org.pathvisio.model.ref.CitationRef;
-import org.pathvisio.model.ref.ElementInfo;
+import org.pathvisio.model.ref.PathwayElement;
+
+import com.sun.xml.bind.v2.model.core.ElementInfo;
 
 /**
  * This class is a parent class for all graphics which can have a
@@ -32,11 +32,11 @@ import org.pathvisio.model.ref.ElementInfo;
  * 
  * @author finterly
  */
-public abstract class VElementInfo extends Graphics {
+public abstract class VPathwayElement extends Graphics {
 
 	private VCitation vCitation;
 
-	public VElementInfo(VPathwayModel canvas, ElementInfo gdata) {
+	public VPathwayElement(VPathwayModel canvas, PathwayElement gdata) {
 		super(canvas, gdata);
 		checkCitation(); // TODO
 	}
@@ -47,7 +47,7 @@ public abstract class VElementInfo extends Graphics {
 	 * @return gdata
 	 */
 	@Override
-	public ElementInfo getPathwayElement() {
+	public PathwayElement getPathwayElement() {
 		return getPathwayElement();
 	}
 
@@ -86,7 +86,7 @@ public abstract class VElementInfo extends Graphics {
 		}
 	}
 
-	protected void destroy(ElementInfo gdata) {
+	protected void destroy(PathwayElement gdata) {
 		super.destroy();
 		gdata.removeListener(this);
 		for (VElement child : getChildren()) {

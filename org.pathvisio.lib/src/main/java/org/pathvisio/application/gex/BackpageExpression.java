@@ -20,12 +20,12 @@ import java.util.List;
 
 import org.bridgedb.IDMapperException;
 import org.bridgedb.Xref;
-import org.pathvisio.model.PathwayElement;
 import org.pathvisio.data.DataException;
 import org.pathvisio.data.IRow;
 import org.pathvisio.data.ISample;
 import org.pathvisio.gui.BackpageTextProvider.BackpageHook;
 import org.pathvisio.gui.DataPaneTextProvider.DataHook;
+import org.pathvisio.model.ref.PathwayElement;
 
 /**
  * Shows data uploaded for each DataNode/Interaction present in the pathway

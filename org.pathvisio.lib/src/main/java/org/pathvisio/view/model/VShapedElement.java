@@ -31,6 +31,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.AttributedString;
 
+import org.pathvisio.events.PathwayElementEvent;
+import org.pathvisio.model.DataNode;
+import org.pathvisio.model.Group;
+import org.pathvisio.model.Label;
+import org.pathvisio.model.ShapedElement;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.type.ShapeType;
@@ -38,11 +43,9 @@ import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.LinAlg;
-import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.LinAlg.Point;
+import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.model.Handle.Freedom;
-import org.pathvisio.events.PathwayElementEvent;
-import org.pathvisio.model.*;
 
 /**
  * This {@link Graphics} class represents the view of {@link ShapedElement}
@@ -52,7 +55,7 @@ import org.pathvisio.model.*;
  * 
  * @author unknown, finterly
  */
-public abstract class VShapedElement extends VElementInfo implements LinkProvider, Adjustable, VLinkableTo {
+public abstract class VShapedElement extends VPathwayElement implements LinkProvider, Adjustable, VLinkableTo {
 
 	public VShapedElement(VPathwayModel canvas, ShapedElement gdata) {
 		super(canvas, gdata);
@@ -61,7 +64,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
-	 * @return 
+	 * @return
 	 */
 	@Override
 	public ShapedElement getPathwayElement() {
@@ -71,7 +74,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	public Point2D toAbsoluteCoordinate(Point2D p) {
 		double x = p.getX();
 		double y = p.getY();
-		Rectangle2D bounds = getMBounds();
+		Rectangle2D bounds = getPathwayElement().getRotatedBounds();
 		// Scale
 		if (bounds.getWidth() != 0)
 			x *= bounds.getWidth() / 2;
@@ -89,10 +92,10 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
 	 *          corner, and 0,0 meaning the center.
 	 */
-	public Point2D toRelativeCoordinate(Point2D mp) {
+	public Point2D toRelativeCoordinate(Point2D mp) { //TODO 
 		double relX = mp.getX();
 		double relY = mp.getY();
-		Rectangle2D bounds = getRBounds();
+		Rectangle2D bounds = getPathwayElement().getRotatedBounds();
 		// Translate
 		relX -= bounds.getCenterX();
 		relY -= bounds.getCenterY();
@@ -105,35 +108,13 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	}
 
 	/**
-	 * Get the rectangular bounds of the object after rotation is applied
-	 */
-	public Rectangle2D getRBounds() {
-		Rectangle2D bounds = getMBounds();
-		AffineTransform t = new AffineTransform();
-		t.rotate(getPathwayElement().getRotation(), getPathwayElement().getCenterXY().getX(),
-				getPathwayElement().getCenterXY().getY());
-		bounds = t.createTransformedShape(bounds).getBounds2D();
-		return bounds;
-	}
-	
-	
-
-	/**
-	 * Get the rectangular bounds of the object without rotation taken into account
-	 */
-	public Rectangle2D getMBounds() {
-		return new Rectangle2D.Double(getMLeft(), getMTop(), getPathwayElement().getWidth(),
-				getPathwayElement().getHeight());
-	}
-
-	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
 	 * current zoom factor
 	 * 
 	 * @return the center x-coordinate
 	 */
 	public double getVCenterX() {
-		return vFromM(getPathwayElement().getCenterXY().getX());
+		return vFromM(getPathwayElement().getCenterX());
 	}
 
 	/**
@@ -143,7 +124,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	 * @return the center y-coordinate
 	 */
 	public double getVCenterY() {
-		return vFromM(getPathwayElement().getCenterXY().getY());
+		return vFromM(getPathwayElement().getCenterY());
 	}
 
 	/**
@@ -155,7 +136,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	 * @return
 	 */
 	public double getVLeft() {
-		return vFromM(getMLeft());
+		return vFromM(getPathwayElement().getLeft());
 	}
 
 	/**
@@ -167,7 +148,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	 * @return
 	 */
 	public double getVTop() {
-		return vFromM(getMTop());
+		return vFromM(getPathwayElement().getTop());
 	}
 
 	/**
@@ -196,22 +177,12 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 
 	/*----------------- Convenience methods from Model -----------------*/
 
-	// startx for shapes TODO
-	public double getMLeft() {
-		return getPathwayElement().getCenterXY().getX() - getPathwayElement().getWidth() / 2;
-	}
-
-	// starty for shapes TODO
-	public double getMTop() {
-		return getPathwayElement().getCenterXY().getY() - getPathwayElement().getHeight() / 2;
-	}
-
 	public void setMTop(double v) {
-		getPathwayElement().getCenterXY().setY(v + getPathwayElement().getHeight() / 2);
+		getPathwayElement().setCenterY(v + getPathwayElement().getHeight() / 2);
 	}
 
 	public void setMLeft(double v) {
-		getPathwayElement().getCenterXY().setX(v + getPathwayElement().getWidth() / 2);
+		getPathwayElement().setCenterX(v + getPathwayElement().getWidth() / 2);
 	}
 
 	/**
@@ -244,6 +215,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	/**
 	 * Returns the z-order from the model
 	 */
+	@Override
 	public int getZOrder() {
 		return getPathwayElement().getZOrder();
 	}
@@ -273,10 +245,9 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 		}
 	}
 
-	/*
-	 * ----------------------------- Rotation METHODS
-	 * -------------------------------------
-	 */
+	// ================================================================================
+	// Rotation Methods
+	// ================================================================================
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0;
 
@@ -359,16 +330,16 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	protected void setVScaleRectangle(Rectangle2D r) {
 		getPathwayElement().setWidth(mFromV(r.getWidth()));
 		getPathwayElement().setHeight(mFromV(r.getHeight()));
-		getPathwayElement().setMLeft(mFromV(r.getX()));
-		getPathwayElement().setMTop(mFromV(r.getY()));
+		getPathwayElement().setLeft(mFromV(r.getX()));
+		getPathwayElement().setTop(mFromV(r.getY()));
 	}
 
 	protected void vMoveBy(double vdx, double vdy) {
 		// both setM operations fire the exact same objectModifiedEvent, one should be
 		// enough
 		getPathwayElement().dontFireEvents(1);
-		getPathwayElement().setMLeft(getMLeft() + mFromV(vdx));
-		getPathwayElement().setMTop(getMTop() + mFromV(vdy));
+		getPathwayElement().setLeft(getPathwayElement().getLeft() + mFromV(vdx));
+		getPathwayElement().setTop(getPathwayElement().getTop() + mFromV(vdy));
 	}
 
 	public Handle[] getHandles() {
@@ -397,8 +368,8 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	private Point mToExternal(double x, double y) {
 		Point p = new Point(x, y);
 		Point pr = LinAlg.rotate(p, -getPathwayElement().getRotation());
-		pr.x += getPathwayElement().getCenterXY().getX();
-		pr.y += getPathwayElement().getCenterXY().getY();
+		pr.x += getPathwayElement().getCenterX();
+		pr.y += getPathwayElement().getCenterY();
 		return pr;
 	}
 
@@ -408,8 +379,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	 * @param p
 	 */
 	private Point mRelativeToCenter(Point p) {
-		return p.subtract(
-				new Point(getPathwayElement().getCenterXY().getX(), getPathwayElement().getCenterXY().getY()));
+		return p.subtract(new Point(getPathwayElement().getCenterX(), getPathwayElement().getCenterY()));
 	}
 
 	/**
@@ -515,8 +485,8 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 		getPathwayElement().setWidth(neww);
 		getPathwayElement().setHeight(newh);
 		Point vcr = LinAlg.rotate(new Point(idx, idy), -getPathwayElement().getRotation());
-		getPathwayElement().getCenterXY().setX(getPathwayElement().getCenterXY().getX() + vcr.x);
-		getPathwayElement().getCenterXY().setY(getPathwayElement().getCenterXY().getY() + vcr.y);
+		getPathwayElement().setCenterX(getPathwayElement().getCenterX() + vcr.x);
+		getPathwayElement().setCenterY(getPathwayElement().getCenterY() + vcr.y);
 
 	}
 
@@ -648,15 +618,15 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	 * @parameter sw the width of the stroke to include
 	 * @return
 	 */
-	protected java.awt.Shape getShape(boolean rotate, float sw) {
-		double mx = getMLeft();
-		double my = getMTop();
+	protected Shape getShape(boolean rotate, float sw) {
+		double mx = getPathwayElement().getLeft();
+		double my = getPathwayElement().getTop();
 		double mw = getPathwayElement().getWidth();
 		double mh = getPathwayElement().getHeight();
-		double mcx = getPathwayElement().getCenterXY().getX();
-		double mcy = getPathwayElement().getCenterXY().getY();
+		double mcx = getPathwayElement().getCenterX();
+		double mcy = getPathwayElement().getCenterY();
 
-		java.awt.Shape s = null;
+		Shape s = null;
 
 		if (getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
@@ -690,7 +660,7 @@ public abstract class VShapedElement extends VElementInfo implements LinkProvide
 	public void gmmlObjectModified(PathwayElementEvent e) {
 //		if (listen) { //TODO??? 
 		markDirty(); // mark everything dirty
-		checkCitation(getPathwayElement().getCitationRefs());
+		checkCitation();
 		if (handles.length > 0)
 			setHandleLocation();
 	}

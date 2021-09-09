@@ -44,19 +44,30 @@ import javax.swing.Timer;
 
 import org.pathvisio.controller.Engine;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.type.*;
-//import org.pathvisio.model.Pathway.StatusFlagEvent;
-import org.pathvisio.model.*;
-import org.pathvisio.model.GraphLink.LinkableFrom;
-import org.pathvisio.model.GraphLink.LinkableTo;
-import org.pathvisio.model.PathwayModel.StatusFlagEvent;
-import org.pathvisio.model.PathwayModel.StatusFlagListener;
-import org.pathvisio.model.ref.ElementInfo;
 import org.pathvisio.events.PathwayEvent;
 import org.pathvisio.events.PathwayListener;
+//import org.pathvisio.model.Pathway.StatusFlagEvent;
+import org.pathvisio.model.DataNode;
+import org.pathvisio.model.DataNode.State;
+import org.pathvisio.model.GraphLink.LinkableFrom;
+import org.pathvisio.model.GraphLink.LinkableTo;
+import org.pathvisio.model.GraphicalLine;
+import org.pathvisio.model.Group;
+import org.pathvisio.model.Interaction;
+import org.pathvisio.model.Label;
+import org.pathvisio.model.LineElement;
+import org.pathvisio.model.LineElement.Anchor;
+import org.pathvisio.model.LineElement.LinePoint;
+import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.PathwayModel.StatusFlagEvent;
+import org.pathvisio.model.PathwayObject;
+import org.pathvisio.model.Shape;
+import org.pathvisio.model.ShapedElement;
+import org.pathvisio.model.ref.PathwayElement;
+import org.pathvisio.model.type.GroupType;
+import org.pathvisio.util.Utils;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.util.Utils;
 import org.pathvisio.view.KeyEvent;
 import org.pathvisio.view.LayoutType;
 import org.pathvisio.view.MouseEvent;
@@ -65,11 +76,12 @@ import org.pathvisio.view.UndoAction;
 import org.pathvisio.view.UndoManager;
 import org.pathvisio.view.VElementMouseEvent;
 import org.pathvisio.view.VElementMouseListener;
-import org.pathvisio.view.model.Handle.Freedom;
 import org.pathvisio.view.model.SelectionBox.SelectionListener;
 import org.pathvisio.view.model.VPathwayEvent.VPathwayEventType;
 import org.pathvisio.view.model.ViewActions.KeyMoveAction;
 import org.pathvisio.view.model.ViewActions.TextFormattingAction;
+
+import com.sun.xml.bind.v2.model.core.ElementInfo;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
@@ -632,7 +644,7 @@ public class VPathwayModel implements PathwayListener {
 	 * @return
 	 */
 	private boolean isAnotherLineLinked(String elementRef, LineElement currLine) {
-		for (PathwayElement element : getPathwayModel().getPathwayElements()) { // TODO maybe make line
+		for (PathwayObject element : getPathwayModel().getPathwayObjects()) { // TODO maybe make line
 			if (element instanceof LineElement) {
 				if (element.equals(currLine)) {
 					continue;
@@ -892,7 +904,7 @@ public class VPathwayModel implements PathwayListener {
 			// if it was a click, give object the initial size.
 			else if (newObject != null && Math.abs(vDragStart.x - e.getX()) <= MIN_DRAG_LENGTH
 					&& Math.abs(vDragStart.y - e.getY()) <= MIN_DRAG_LENGTH) {
-				newObject.setInitialSize(); // TODO
+				DefaultTemplates.setInitialSize(newObject); // TODO
 			}
 			newObject = null;
 			setNewTemplate(null);
@@ -1621,7 +1633,7 @@ public class VPathwayModel implements PathwayListener {
 		if (graphId1 == null && (graphId2 == null)) {
 			return;
 		}
-		for (PathwayElement element : getPathwayModel().getPathwayElements()) {
+		for (PathwayObject element : getPathwayModel().getPathwayObjects()) {
 			if (element instanceof LineElement) {
 				for (LinePoint point : ((LineElement) element).getLinePoints()) {
 					String linkableToId = ((LinePoint) point).getElementRef().getElementId();
@@ -1638,7 +1650,7 @@ public class VPathwayModel implements PathwayListener {
 		if (graphId1 == null && (graphId2 == null)) {
 			return;
 		}
-		for (PathwayElement element : getPathwayModel().getPathwayElements()) {
+		for (PathwayObject element : getPathwayModel().getPathwayObjects()) {
 			if (element instanceof LineElement) {
 				for (Anchor anchor : ((LineElement) element).getAnchors()) {
 					if (anchor.getElementId() != null
@@ -1995,16 +2007,16 @@ public class VPathwayModel implements PathwayListener {
 	 * 
 	 * TODO was Graphics, but VElementInfo includes VShapedElement and VLineElement
 	 */
-	public void moveGraphicsUp(List<VElementInfo> gs) {
+	public void moveGraphicsUp(List<VPathwayElement> gs) {
 		// TODO: Doesn't really work very well with multiple selections
-		for (VElementInfo g : gs) {
+		for (VPathwayElement g : gs) {
 			// make sure there is enough space between g and the next
 			autoRenumberZOrder();
 
 			int order = g.getPathwayElement().getZOrder();
-			VElementInfo nextGraphics = null;
+			VPathwayElement nextGraphics = null;
 			int nextZ = order;
-			for (VElementInfo i : getOverlappingGraphics(g)) {
+			for (VPathwayElement i : getOverlappingGraphics(g)) {
 				int iorder = i.getPathwayElement().getZOrder();
 				if (nextGraphics == null && iorder > nextZ) {
 					nextZ = iorder;
@@ -2023,10 +2035,10 @@ public class VPathwayModel implements PathwayListener {
 	 * elements, so that we can freely move items in between
 	 */
 	private void autoRenumberZOrder() {
-		List<VElementInfo> elts = new ArrayList<VElementInfo>();
+		List<VPathwayElement> elts = new ArrayList<VPathwayElement>();
 		for (VElement vp : drawingObjects) {
-			if (vp instanceof VElementInfo) {
-				elts.add((VElementInfo) vp);
+			if (vp instanceof VPathwayElement) {
+				elts.add((VPathwayElement) vp);
 			}
 		}
 		if (elts.size() < 2)
@@ -2037,7 +2049,7 @@ public class VPathwayModel implements PathwayListener {
 
 		int waterLevel = elts.get(0).getPathwayElement().getZOrder();
 		for (int i = 1; i < elts.size(); ++i) {
-			VElementInfo curr = elts.get(i);
+			VPathwayElement curr = elts.get(i);
 			if (curr.getPathwayElement().getZOrder() - waterLevel < spacing) {
 				curr.getPathwayElement().setZOrder(waterLevel + spacing);
 			}
@@ -2049,16 +2061,16 @@ public class VPathwayModel implements PathwayListener {
 	 * Looks for overlapping graphics with a lower z-order and moves g on under
 	 * that.
 	 */
-	public void moveGraphicsDown(List<VElementInfo> gs) {
+	public void moveGraphicsDown(List<VPathwayElement> gs) {
 		// TODO: Doesn't really work very well with multiple selections
-		for (VElementInfo g : gs) {
+		for (VPathwayElement g : gs) {
 			// make sure there is enough space between g and the previous
 			autoRenumberZOrder();
 
 			int order = g.getPathwayElement().getZOrder();
-			VElementInfo nextGraphics = null;
+			VPathwayElement nextGraphics = null;
 			int nextZ = order;
-			for (VElementInfo i : getOverlappingGraphics(g)) {
+			for (VPathwayElement i : getOverlappingGraphics(g)) {
 				int iorder = i.getPathwayElement().getZOrder();
 				if (nextGraphics == null && iorder < nextZ) {
 					nextZ = iorder;
@@ -2077,13 +2089,13 @@ public class VPathwayModel implements PathwayListener {
 	 * bounding rectangles is used, so the returned list is only an approximation
 	 * for rounded shapes.
 	 */
-	public List<VElementInfo> getOverlappingGraphics(VElementInfo g) { // TODO sure V ELementInfo of Graphics???
-		List<VElementInfo> result = new ArrayList<VElementInfo>();
+	public List<VPathwayElement> getOverlappingGraphics(VPathwayElement g) { // TODO sure V ELementInfo of Graphics???
+		List<VPathwayElement> result = new ArrayList<VPathwayElement>();
 		Rectangle2D r1 = g.getVBounds();
 
 		for (VElement ve : drawingObjects) {
-			if (ve instanceof VElementInfo && ve != g) {
-				VElementInfo i = (VElementInfo) ve;
+			if (ve instanceof VPathwayElement && ve != g) {
+				VPathwayElement i = (VPathwayElement) ve;
 				if (r1.intersects(ve.getVBounds())) {
 					result.add(i);
 				}
@@ -2436,7 +2448,7 @@ public class VPathwayModel implements PathwayListener {
 
 	/** sorts Graphics by ZOrder */
 	public static class ZComparator implements Comparator<Graphics> {
-		public int compare(VElementInfo g1, VElementInfo g2) {
+		public int compare(VPathwayElement g1, VPathwayElement g2) {
 			return g1.getPathwayElement().getZOrder() - g2.getPathwayElement().getZOrder();
 		}
 	}
@@ -2549,9 +2561,9 @@ public class VPathwayModel implements PathwayListener {
 					.contains(((LinkableFrom) ((VState) o).getPathwayElement()).getElementRef().getElementId()))
 				continue;
 
-			if (o instanceof VElementInfo) {
+			if (o instanceof VPathwayElement) {
 				// skip if parent group is also in selection
-				if (groupIds.contains(((VElementInfo) o).getPathwayElement().getGroupRef()))
+				if (groupIds.contains(((VPathwayElement) o).getPathwayElement().getGroupRef()))
 					continue;
 
 				o.vMoveBy(vdx, vdy);

@@ -22,13 +22,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.model.State;
+import org.pathvisio.model.DataNode.State;
 import org.pathvisio.model.type.LineStyleType;
-import org.pathvisio.events.PathwayElementListener;
-import org.pathvisio.model.Group;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.Shape;
-import org.pathvisio.model.ShapedElement;
 
 /**
  * This class represents the view of a {@link State} PathwayElement.
@@ -77,8 +72,8 @@ public class VState extends VShapedElement {
 	}
 
 	protected void setBorderStyle(Graphics2D g) {
-		LineStyleType ls = gdata.getBorderStyle();
-		float lt = (float) vFromM(gdata.getBorderWidth());
+		LineStyleType ls = getPathwayElement().getBorderStyle();
+		float lt = (float) vFromM(getPathwayElement().getBorderWidth());
 		if (ls == LineStyleType.SOLID) {
 			g.setStroke(new BasicStroke(lt));
 		} else if (ls == LineStyleType.DASHED) {
@@ -97,11 +92,12 @@ public class VState extends VShapedElement {
 	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
 	 *          corner, and 0,0 meaning the center.
 	 */
+	@Override 
 	protected Point2D toRelativeCoordinate(Point2D mp) {
 		double relX = mp.getX();
 		double relY = mp.getY();
 		// get bounds of parent data node
-		Rectangle2D bounds = getRBounds(((State) gdata).getDataNode()); // TODO of dataNode
+		Rectangle2D bounds = getPathwayElement().getDataNode().getRotatedBounds(); // TODO of dataNode
 		// Translate
 		relX -= bounds.getCenterX();
 		relY -= bounds.getCenterY();

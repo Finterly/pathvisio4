@@ -23,11 +23,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 
-import org.pathvisio.model.ref.CitationRef;
 import org.pathvisio.model.ref.Pathway;
-import org.pathvisio.model.PathwayElement;
 
 /**
  * 
@@ -40,7 +37,7 @@ import org.pathvisio.model.PathwayElement;
  * model.PathwayElement(ObjectType.INFOBOX). This confusion is rooted in
  * inconsistencies in GPML. This should be cleaned up one day.
  */
-public class VInfoBox extends VElementInfo {
+public class VInfoBox extends VPathwayElement {
 
 	protected Pathway gdata = null;
 
@@ -67,11 +64,9 @@ public class VInfoBox extends VElementInfo {
 	int sizeY = 1; // Real size is calculated on first call to draw()
 
 	public VInfoBox(VPathwayModel canvas, Pathway gdata) {
-		super(canvas);
+		super(canvas, gdata);
 		canvas.setMappInfo(this);
 		gdata.addListener(this); //TODO 
-		this.gdata = gdata;
-		checkCitation(gdata.getCitationRefs());
 	}
 
 	@Override
@@ -149,7 +144,7 @@ public class VInfoBox extends VElementInfo {
 	}
 
 	/**
-	 * Previous implementaiton doesn't actually allow infobox to move...
+	 * Previous implementation doesn't actually allow infobox to move...
 	 */
 	protected Shape getVShape(boolean rotate) {
 		double vLeft = vFromM(getMLeft()); // gdata.getMLeft
@@ -171,5 +166,12 @@ public class VInfoBox extends VElementInfo {
 	@Override
 	protected int getZOrder() {
 		return 0x0000; // default z-order for Infobox TODO
+	}
+
+	// HERE is yeah...
+	@Override
+	public Point2D toAbsoluteCoordinate(Point2D p) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

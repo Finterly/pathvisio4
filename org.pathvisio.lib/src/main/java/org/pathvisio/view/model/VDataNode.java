@@ -18,10 +18,7 @@ package org.pathvisio.view.model;
 
 import java.awt.Color;
 
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.State;
 import org.pathvisio.model.DataNode;
-import org.pathvisio.model.LineElement;
 
 /**
  * This class implements a {@link DataNode} and provides methods to resize and

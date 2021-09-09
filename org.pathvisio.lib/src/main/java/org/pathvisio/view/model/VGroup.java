@@ -27,19 +27,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Group;
+import org.pathvisio.model.ref.PathwayElement;
 import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.GroupPainter;
 import org.pathvisio.view.GroupPainterRegistry;
 import org.pathvisio.view.VElementMouseEvent;
 import org.pathvisio.view.VElementMouseListener;
-import org.pathvisio.model.DataNode;
-import org.pathvisio.model.Group;
-import org.pathvisio.model.LineElement;
 
 /**
- * This represents the view of a PathwayElement with ObjectType.GROUP. This can
- * be drawn as a shaded area, or the group can be invisible.
+ * This represents the view of a {@link Group} PathwayElement. This can be drawn
+ * as a shaded area, or the group can be invisible.
  *
  * Also contains the getGroupGraphics method to quickly access all Graphics'
  * that are in this group.
@@ -233,9 +231,9 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	protected Shape getVShape(boolean rotate) {
 		Rectangle2D mb = null;
 		if (rotate) {
-			mb = getRBounds();
+			mb = getPathwayElement().getRotatedBounds();
 		} else {
-			mb = getMBounds();
+			mb = getPathwayElement().getBounds();
 		}
 		return canvas.vFromM(mb);
 	}
@@ -277,9 +275,4 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 		linkAnchorDelegate = delegate;
 	}
 
-	@Override
-	protected int getZOrder() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

@@ -24,7 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.ref.PathwayElement;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.VElementMouseEvent;
@@ -50,7 +50,7 @@ public class VCitation extends VElement implements VElementMouseListener {
 	 * @param refPosition The position to place the references, relative to the parent
 	 *                  Graphics
 	 */
-	public VCitation(VPathwayModel canvas, VElementInfo parent, Point2D refPosition) {
+	public VCitation(VPathwayModel canvas, VPathwayElement parent, Point2D refPosition) {
 		super(canvas);
 		this.parent = parent;
 		this.refPosition = refPosition;

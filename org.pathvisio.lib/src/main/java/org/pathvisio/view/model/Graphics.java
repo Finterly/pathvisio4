@@ -27,15 +27,17 @@ import java.util.List;
 import org.pathvisio.debug.DebugList;
 import org.pathvisio.events.PathwayElementEvent;
 import org.pathvisio.events.PathwayElementListener;
-import org.pathvisio.model.*;
+import org.pathvisio.model.PathwayObject;
 
 /**
  * This class is a parent class for all graphics that can be added to a
  * VPathway.
+ * 
+ * TODO rename to VPathwayObject??? 
  */
 public abstract class Graphics extends VElement implements PathwayElementListener {
 
-	protected PathwayElement gdata = null;
+	protected PathwayObject gdata = null;
 
 	/**
 	 * List of children, everything that moves when this element is dragged.
@@ -43,7 +45,7 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 	 */
 	private List<VElement> children = new DebugList<VElement>();
 
-	public Graphics(VPathwayModel canvas, PathwayElement gdata) {
+	public Graphics(VPathwayModel canvas, PathwayObject gdata) {
 		super(canvas);
 		gdata.addListener(this);
 		this.gdata = gdata;
@@ -54,7 +56,7 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 	 * 
 	 * @return
 	 */
-	public PathwayElement getPathwayElement() {
+	public PathwayObject getPathwayElement() {
 		return gdata;
 	}
 

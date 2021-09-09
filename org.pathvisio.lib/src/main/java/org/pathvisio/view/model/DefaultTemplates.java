@@ -22,23 +22,24 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.pathvisio.core.util.Resources;
+import org.pathvisio.model.DataNode;
+import org.pathvisio.model.DataNode.State;
+import org.pathvisio.model.GraphicalLine;
+import org.pathvisio.model.Interaction;
+import org.pathvisio.model.Label;
+import org.pathvisio.model.LineElement;
+import org.pathvisio.model.LineElement.Anchor;
+import org.pathvisio.model.LineElement.LinePoint;
+import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.PathwayObject;
+import org.pathvisio.model.ref.PathwayElement;
+import org.pathvisio.model.type.AnchorShapeType;
+import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.type.ConnectorType;
 import org.pathvisio.model.type.DataNodeType;
 import org.pathvisio.model.type.HAlignType;
 import org.pathvisio.model.type.LineStyleType;
-import org.pathvisio.model.PathwayModel;
-import org.pathvisio.model.graphics.Coordinate;
-import org.pathvisio.model.type.AnchorShapeType;
-import org.pathvisio.model.type.ArrowHeadType;
-import org.pathvisio.model.State;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.core.util.Resources;
-import org.pathvisio.model.Anchor;
-import org.pathvisio.model.DataNode;
-import org.pathvisio.model.GraphicalLine;
-import org.pathvisio.model.Interaction;
-import org.pathvisio.model.Label;
-import org.pathvisio.model.LinePoint;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.model.type.StateType;
 import org.pathvisio.model.type.VAlignType;
@@ -94,6 +95,50 @@ public abstract class DefaultTemplates {
 	public static final int Z_ORDER_DEFAULT = 0x0000; // default order of uninteresting elements.
 
 	/**
+	 * This sets the object to a suitable default size.
+	 *
+	 * This method is intended to be called right after the object is placed on the
+	 * drawing with a click.
+	 */
+	public static void setInitialSize(PathwayObject o) {
+		if (o.getClass() == org.pathvisio.model.Shape.class) {
+			ShapeType type = ((org.pathvisio.model.Shape) o).getShapeType();
+			if (type.equals(ShapeType.BRACE)) {
+				((org.pathvisio.model.Shape) o).setWidth(BRACE_WIDTH);
+				((org.pathvisio.model.Shape) o).setHeight(BRACE_HEIGHT);
+			} else if (type.equals(ShapeType.MITOCHONDRIA) || type.equals(ShapeType.CELL)
+					|| type.equals(ShapeType.NUCLEUS) || type.equals(ShapeType.ORGANELLE)) {
+				((org.pathvisio.model.Shape) o).setWidth(CELLCOMP_LENGTH_2);
+				((org.pathvisio.model.Shape) o).setHeight(CELLCOMP_LENGTH_1);
+			} else if (type.equals(ShapeType.SARCOPLASMIC_RETICULUM) || type.equals(ShapeType.ENDOPLASMIC_RETICULUM)
+					|| type.equals(ShapeType.GOLGI_APPARATUS)) {
+				((org.pathvisio.model.Shape) o).setWidth(CELLCOMP_LENGTH_1);
+				((org.pathvisio.model.Shape) o).setHeight(CELLCOMP_LENGTH_2);
+			} else {
+				((org.pathvisio.model.Shape) o).setWidth(SHAPE_SIZE);
+				((org.pathvisio.model.Shape) o).setHeight(SHAPE_SIZE);
+			}
+		} else if (o.getClass() == DataNode.class) {
+			((DataNode) o).setWidth(DATANODE_WIDTH);
+			((DataNode) o).setHeight(DATANODE_HEIGHT);
+
+		} else if (o.getClass() == State.class) {
+			((State) o).setWidth(STATE_SIZE);
+			((State) o).setHeight(STATE_SIZE);
+
+		} else if (o.getClass() == Label.class) {
+			((Label) o).setWidth(LABEL_WIDTH);
+			((Label) o).setHeight(LABEL_HEIGHT);
+		} else if (o instanceof LineElement) {
+			((LineElement) o).getEndLinePoint().setX(((LineElement) o).getStartLinePoint().getX() + LINE_LENGTH);
+			((LineElement) o).getEndLinePoint().setY(((LineElement) o).getStartLinePoint().getX() + LINE_LENGTH);
+		} else {
+			//nothing 
+		}
+	}
+
+
+	/**
 	 * Abstract base for templates that only add a single PathwayElement to a
 	 * Pathway
 	 */
@@ -101,7 +146,7 @@ public abstract class DefaultTemplates {
 		PathwayElement lastAdded;
 
 		protected void addElement(PathwayElement e, PathwayModel p) {
-			p.addPathwayElement(e);
+			p.addPathwayObject(e); //TODO not exactly correct
 			lastAdded = e;
 		}
 
@@ -140,7 +185,8 @@ public abstract class DefaultTemplates {
 			// instantiate a label
 			Label e = new Label("Label");
 			// rect props
-			e.setCenterXY(new Coordinate(mx, my));
+			e.setCenterX(mx);
+			e.setCenterY(my);
 			e.setWidth(LABEL_WIDTH);
 			e.setHeight(LABEL_HEIGHT);
 			// font props: default fontName, fontStyle, fontDecoration, fontStrikeThru,
@@ -193,7 +239,8 @@ public abstract class DefaultTemplates {
 				shapeType = ShapeType.NONE; // TODO rounded rectangle?
 			}
 			// rect props
-			e.setCenterXY(new Coordinate(mx, my));
+			e.setCenterX(mx);
+			e.setCenterY(my);
 			e.setWidth(DATANODE_WIDTH);
 			e.setHeight(DATANODE_HEIGHT);
 			// font props: default fontName, fontStyle, fontDecoration, fontStrikeThru,
@@ -243,8 +290,7 @@ public abstract class DefaultTemplates {
 			// instantiate a shape pathway element
 			org.pathvisio.model.Shape e = new org.pathvisio.model.Shape();
 			// rect props
-			double width = getInitialSize(shapeType)[0];
-			double height = getInitialSize(shapeType)[1];
+			setInitialSize(e);
 			LineStyleType borderStyleType = getInitialBorderStyle(shapeType);
 			Color color;
 			double borderWidth;
@@ -255,9 +301,6 @@ public abstract class DefaultTemplates {
 				color = COLOR_DEFAULT;
 				borderWidth = LINEWIDTH;
 			}
-			e.setCenterXY(new Coordinate(mx, my));
-			e.setWidth(width);
-			e.setHeight(height);
 			// font props: default fontName, fontWeight, fontStyle, fontDecoration,
 			// fontStrikethru,
 			// fontSize, hAlign, vAlign
@@ -283,20 +326,6 @@ public abstract class DefaultTemplates {
 
 		public String getName() {
 			return shapeType.toString();
-		}
-
-		public double[] getInitialSize(ShapeType type) {
-			if (type.equals(ShapeType.BRACE)) {
-				return new double[] { BRACE_WIDTH, BRACE_HEIGHT };
-			} else if (type.equals(ShapeType.MITOCHONDRIA) || type.equals(ShapeType.CELL)
-					|| type.equals(ShapeType.NUCLEUS) || type.equals(ShapeType.ORGANELLE)) {
-				return new double[] { CELLCOMP_LENGTH_2, CELLCOMP_LENGTH_1 };
-			} else if (type.equals(ShapeType.SARCOPLASMIC_RETICULUM) || type.equals(ShapeType.ENDOPLASMIC_RETICULUM)
-					|| type.equals(ShapeType.GOLGI_APPARATUS)) {
-				return new double[] { CELLCOMP_LENGTH_1, CELLCOMP_LENGTH_2 };
-			} else {
-				return new double[] { SHAPE_SIZE, SHAPE_SIZE };
-			}
 		}
 
 		public LineStyleType getInitialBorderStyle(ShapeType type) {
@@ -334,17 +363,15 @@ public abstract class DefaultTemplates {
 		public Interaction[] addElements(PathwayModel p, double mx, double my) {
 			// instantiates an interaction
 			Interaction e = new Interaction();
-			LinePoint startLinePoint = new LinePoint(startType, new Coordinate(mx, my));
-			LinePoint endLinePoint = new LinePoint(endType, new Coordinate(mx, my));
+			LinePoint startLinePoint = e.addLinePoint(startType, mx, my);
+			LinePoint endLinePoint = e.addLinePoint(endType, mx, my);
 			// line style props: default lineColor, lineWidth
 			e.setLineStyle(lineStyle);
 			e.setConnectorType(connectorType);
 			e.addLinePoint(startLinePoint);
 			e.addLinePoint(endLinePoint);
 
-			// TODO set initial size????
-//			e.getEndLinePoint().getXY().setX(e.getStartLinePoint().getXY().getX() + LINE_LENGTH);
-//			e.getEndLinePoint().getXY().setY(e.getStartLinePoint().getXY().getY() + LINE_LENGTH);
+			setInitialSize(e);
 
 			p.addInteraction(e);
 			lastAdded = e;
@@ -380,24 +407,21 @@ public abstract class DefaultTemplates {
 			this.name = name;
 		}
 
-		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
+		public GraphicalLine[] addElements(PathwayModel p, double mx, double my) {
 			// instantiates a graphical line
 			GraphicalLine e = new GraphicalLine();
-			LinePoint startLinePoint = new LinePoint(startType, new Coordinate(mx, my));
-			LinePoint endLinePoint = new LinePoint(endType, new Coordinate(mx, my));
+			LinePoint startLinePoint = e.addLinePoint(startType, mx, my);
+			LinePoint endLinePoint = e.addLinePoint(endType, mx, my);
 			// line style pops: default lineColor, lineWidth
 			e.setLineStyle(lineStyle);
 			e.setConnectorType(connectorType);
 			e.addLinePoint(startLinePoint);
 			e.addLinePoint(endLinePoint);
-
-			// TODO set initial size????
-//			e.getEndLinePoint().getXY().setX(e.getStartLinePoint().getXY().getX() + LINE_LENGTH);
-//			e.getEndLinePoint().getXY().setY(e.getStartLinePoint().getXY().getY() + LINE_LENGTH);
+			setInitialSize(e);
 
 			p.addGraphicalLine(e);
 			lastAdded = e;
-			return new PathwayElement[] { e };
+			return new GraphicalLine[] { e };
 		}
 
 		public VElement getDragElement(VPathwayModel vp) {
@@ -522,7 +546,7 @@ public abstract class DefaultTemplates {
 			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_MODIFICATION);
 
 			// instantiates a state
-			State e = new State("P", StateType.PROTEIN_MODIFICATION, 1.0, 1.0);
+			State e = lastEndNode.addState("P", StateType.PROTEIN_MODIFICATION, 1.0, 1.0);
 			// rect props
 			e.setWidth(STATE_SIZE);
 			e.setHeight(STATE_SIZE);
@@ -533,7 +557,7 @@ public abstract class DefaultTemplates {
 			e.setShapeType(ShapeType.OVAL);
 			e.setZOrder(Z_ORDER_STATE);
 			// add state to datanode
-			lastEndNode.addState(e);
+			
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine };
 		}
 
@@ -570,8 +594,7 @@ public abstract class DefaultTemplates {
 			lastEndNode.setTextLabel("Product");
 
 			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
-			Anchor anchor = new Anchor(0.5, AnchorShapeType.SQUARE); // TODO Square default?
-			lastLine.addAnchor(anchor);
+			Anchor anchor = lastLine.addAnchor(0.5, AnchorShapeType.SQUARE);
 
 			InteractionTemplate lnt = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
@@ -623,8 +646,7 @@ public abstract class DefaultTemplates {
 			lastEndNode.setTextLabel("Metabolite 2");
 			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
 
-			Anchor anchor = new Anchor(0.5, AnchorShapeType.SQUARE);
-			lastLine.addAnchor(anchor);
+			Anchor anchor = lastLine.addAnchor(0.5, AnchorShapeType.SQUARE);
 
 			InteractionTemplate lnt = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
@@ -642,8 +664,7 @@ public abstract class DefaultTemplates {
 			lastReverseLine.getEndLinePoint().linkTo(lastStartNode, 1, 0.5);
 			lastReverseLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
 
-			Anchor anchor2 = new Anchor(0.5, AnchorShapeType.SQUARE);
-			lastReverseLine.addAnchor(anchor2);
+			Anchor anchor2 = lastReverseLine.addAnchor(0.5, AnchorShapeType.SQUARE);
 
 			InteractionTemplate lnt2 = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
