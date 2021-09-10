@@ -158,58 +158,66 @@ public class VPoint implements Adjustable {
 		return 0;
 	}
 
-	/*------------------------------------MPOINT METHODS ----------------------------------*/
+	// ================================================================================
+	// MPOINT METHODS: Point Link Methods
+	// ================================================================================
 
-	private VLinkableTo pathwayElement;
 
-	public VLinkableTo getVLinkableTo() {
-		return pathwayElement;
-	}
+	private boolean relativeSet; // TODO
 
-	public void setVLinkableTo(VLinkableTo pathwayElement) {
-		this.pathwayElement = pathwayElement;
-	}
-
-	/**
-	 * Find out if this point is linked to an object. Returns true if a elementRef
-	 * exists and is not an empty string
-	 */
-	public boolean isLinked() {
-		LinkableTo ref = linePoint.getElementRef();
-		return ref != null;
-	}
-
-	/**
-	 * Link to an object. Current absolute coordinates will be converted to relative
-	 * coordinates based on the object to link to. //TODO ?????
-	 */
-	public void linkTo(VLinkableTo pathwayElement) {
-		setVLinkableTo(pathwayElement); // TODO
-		Point2D rel = pathwayElement.toRelativeCoordinate(linePoint.toPoint2D()); // TODO??? idc.toRelativeCoordinate?
-		linkTo(pathwayElement, rel.getX(), rel.getY());
-	}
-
-	/**
-	 * Link to an object using the given relative coordinates //TODO ?????
-	 */
-	public void linkTo(VLinkableTo pathwayElement, double relX, double relY) {
-		linePoint.setElementRef(pathwayElement.getPathwayElement());
-		linePoint.setRelX(relX);
-		linePoint.setRelY(relY);
+	// TODO
+	public Point2D toPoint2D() {
+		return new Point2D.Double(getX(), getY());
 	}
 
 	// TODO
 	public Point2D toAbsoluteCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() + linePoint.getX(), p.getY() + linePoint.getY());
+		return new Point2D.Double(p.getX() + getX(), p.getY() + getY());
 	}
 
 	// TODO
 	public Point2D toRelativeCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() - linePoint.getX(), p.getY() - linePoint.getY());
+		return new Point2D.Double(p.getX() - getX(), p.getY() - getY());
+	}
+	
+	private Point2D getAbsolute() {
+		return linePoint.getElementRef().toAbsoluteCoordinate(new Point2D.Double(getRelX(), getRelY()));
+		//TODO was getGraphIdContainer().toAbsoluteCoordinate(new Point2D.Double(getRelX(), getRelY()));
 	}
 
-	public Point2D toPoint2D(LinePoint linePoint) {
-		return new Point2D.Double(linePoint.getX(), linePoint.getY());
+	/**
+	 * Link to an object. Current absolute coordinates will be converted to relative
+	 * coordinates based on the object to link to. TODO
+	 * 
+	 * @param pathwayElement the linkableTo pathway element to link to.
+	 */
+	public void linkTo(LinkableTo pathwayElement) {
+		// Point2D rel = pathwayElement.toRelativeCoordinate(toPoint2D());
+		linkTo(pathwayElement, rel.getX(), rel.getY());
+	}
+
+	/**
+	 * Link to an object using the given relative coordinates TODO
+	 */
+	public void linkTo(LinkableTo pathwayElement, double relX, double relY) {
+		setElementRef(pathwayElement);
+		setRelXY(relX, relY);
+	}
+
+	/**
+	 * note that this may be called any number of times when this point is already
+	 * unlinked
+	 */
+	public void unlink2() {
+		if (linePoint.getElementRef() != null) {
+			if (linePoint.getPathwayModel() != null) {
+				 Point2D abs = getAbsolute();
+				 linePoint.moveTo(abs.getX(), abs.getY());
+			}
+			// relativeSet = false;
+			linePoint.setElementRef(null);
+			fireObjectModifiedEvent(PathwayElementEvent.createCoordinatePropertyEvent(this));
+		}
 	}
 
 }
