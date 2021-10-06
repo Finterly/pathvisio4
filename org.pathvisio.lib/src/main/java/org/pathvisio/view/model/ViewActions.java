@@ -20,7 +20,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,29 +38,29 @@ import org.pathvisio.controller.ApplicationEvent;
 import org.pathvisio.controller.Engine;
 import org.pathvisio.controller.Engine.ApplicationEventListener;
 import org.pathvisio.core.util.Resources;
-import org.pathvisio.util.Utils;
-import org.pathvisio.model.type.AnchorShapeType;
-import org.pathvisio.model.type.GroupType;
-import org.pathvisio.model.Anchor;
 import org.pathvisio.model.DataNode;
-import org.pathvisio.model.GraphLink.LinkableTo;
+import org.pathvisio.model.DataNode.State;
 import org.pathvisio.model.GraphicalLine;
-import org.pathvisio.model.Group;
 import org.pathvisio.model.Interaction;
 import org.pathvisio.model.Label;
 import org.pathvisio.model.LineElement;
-import org.pathvisio.model.State;
+import org.pathvisio.model.LineElement.LinePoint;
 //import org.pathvisio.core.model.ObjectType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.Shape;
 import org.pathvisio.model.ShapedElement;
-import org.pathvisio.model.LinePoint;
+import org.pathvisio.model.connector.ConnectorShape;
+import org.pathvisio.model.connector.FreeConnectorShape;
+import org.pathvisio.model.type.AnchorShapeType;
+import org.pathvisio.model.type.ArrowHeadType;
+import org.pathvisio.model.type.GroupType;
 import org.pathvisio.model.type.ShapeType;
+import org.pathvisio.util.Utils;
+import org.pathvisio.view.UndoManager;
+import org.pathvisio.view.UndoManagerEvent;
+import org.pathvisio.view.UndoManagerListener;
 import org.pathvisio.view.model.SelectionBox.SelectionEvent;
 import org.pathvisio.view.model.SelectionBox.SelectionListener;
-import org.pathvisio.view.UndoManagerListener;
-import org.pathvisio.view.connector.ConnectorShape;
-import org.pathvisio.view.connector.FreeConnectorShape;
 
 //import static org.pathvisio.model.ObjectType.STATE;
 
@@ -491,7 +490,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 				VElement ve = e.selection.iterator().next();
 				if (ve instanceof VLineElement) {
 					// TODO....
-					ConnectorShape s = ((VLineElement) ve).getConnectorShape(((VLineElement) ve).getPathwayElement());
+					ConnectorShape s = ((VLineElement) ve).getPathwayElement().getConnectorShape();
 					enable = s instanceof FreeConnectorShape;
 				} else {
 					enable = false;
@@ -506,13 +505,13 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 				Graphics g = selection.get(0);
 				if (g instanceof VLineElement) {
 					VLineElement l = (VLineElement) g;
-					ConnectorShape s = l.getConnectorShape(l.getPathwayElement()); // TODO...
+					ConnectorShape s = l.getPathwayElement().getConnectorShape(); // TODO...
 					if (s instanceof FreeConnectorShape) {
 						vPathwayModel.getUndoManager().newAction("" + getValue(NAME));
 						if (add) {
 							addWaypoint((FreeConnectorShape) s, (LineElement) l.getPathwayElement());
 						} else {
-							removeWaypoint((MLine) l.getPathwayElement());
+							removeWaypoint((LineElement) l.getPathwayElement());
 						}
 					}
 				}
@@ -551,7 +550,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 			double mc2 = s.toLineCoordinate(mp2.toPoint2D());
 			double c = mc2 + (mc - mc2) / 2.0; // Add new waypoint on center of last segment
 			Point2D p = s.fromLineCoordinate(c);
-			newPoints.add(i, l.new LinePoint(p.getX(), p.getY()));
+			newPoints.add(i, l.new LinePoint(ArrowHeadType.UNDIRECTED, p.getX(), p.getY()));
 			l.setLinePoints(newPoints);
 		}
 	}
@@ -587,7 +586,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 				for (Graphics g : selection) {
 					if (g instanceof VLineElement) {
 						VLineElement l = (VLineElement) g;
-						l.getPathwayElement().addAnchor(new Anchor(0.4, AnchorShapeType.SQUARE)); // TODO
+						l.getPathwayElement().addAnchor(0.4, AnchorShapeType.SQUARE); // TODO
 					}
 				}
 			}
@@ -608,12 +607,11 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 				for (Graphics g : selection) {
 					if (g instanceof VDataNode) {
 						VDataNode gp = (VDataNode) g;
-						State elt = new State(null, null, 1.0, 1.0);
+						// adds state to datanode, to pathway model, and assigns elementId
+						State elt = gp.getPathwayElement().addState(null, null, 1.0, 1.0);
 						elt.setWidth(STATE_SIZE);
 						elt.setHeight(STATE_SIZE);
 						elt.setShapeType(ShapeType.OVAL);
-						// adds state to datanode, to pathway model, and assigns elementId
-						((DataNode) gp.getPathwayElement()).addState(elt);
 						// engine.getActivePathway().add(elt); TODO not needed since already added in
 						// chain event...?
 					}

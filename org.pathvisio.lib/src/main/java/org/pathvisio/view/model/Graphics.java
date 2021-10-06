@@ -19,7 +19,6 @@ package org.pathvisio.view.model;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Area;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
@@ -33,7 +32,7 @@ import org.pathvisio.model.PathwayObject;
  * This class is a parent class for all graphics that can be added to a
  * VPathway.
  * 
- * TODO rename to VPathwayObject??? 
+ * TODO rename to VPathwayObject???
  */
 public abstract class Graphics extends VElement implements PathwayElementListener {
 
@@ -65,18 +64,6 @@ public abstract class Graphics extends VElement implements PathwayElementListene
 		for (VElement child : children)
 			child.markDirty();
 	}
-
-//	/**
-//	 * Gets the model representation (PathwayElement) of this class
-//	 * 
-//	 * @return
-//	 */
-//	public PathwayElement getPathwayElement() {
-//		return gdata;
-//	}
-
-	// PathwayElement
-	public abstract Point2D toAbsoluteCoordinate(Point2D p);
 
 	boolean listen = true;
 

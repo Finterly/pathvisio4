@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import java.awt.geom.Point2D;
-
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LineElement.LinePoint;
@@ -32,22 +30,11 @@ import org.pathvisio.model.LineElement.LinePoint;
  * @author finterly
  */
 public interface VLinkableTo {
-
-	abstract Point2D toAbsoluteCoordinate(Point2D p);
-
-	/**
-	 * @param mp a point in absolute model coordinates
-	 * @returns the same point relative to the bounding box of this pathway element:
-	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
-	 *          corner, and 0,0 meaning the center.
-	 */
-	abstract Point2D toRelativeCoordinate(Point2D mp);
 	
 	abstract int getZOrder();
 	
 	abstract LinkableTo getPathwayElement(); 
 	
-	//from VElement 
 	public VPathwayModel getDrawing();
 
 }

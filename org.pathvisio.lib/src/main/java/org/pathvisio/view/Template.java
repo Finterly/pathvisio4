@@ -18,8 +18,9 @@ package org.pathvisio.view;
 
 import java.net.URL;
 
+import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
-import org.pathvisio.model.ref.PathwayElement;
+import org.pathvisio.model.PathwayObject;
 import org.pathvisio.view.model.VElement;
 import org.pathvisio.view.model.VPathwayModel;
 
@@ -38,7 +39,7 @@ public interface Template {
 	 * @param my	The y coordinate of the base point
 	 * @return A list with the elements that where added by the template
 	 */
-	PathwayElement[] addElements(PathwayModel p, double mx, double my);
+	PathwayObject[] addElements(PathwayModel p, double mx, double my);
 
 	/**
 	 * Get the element that will be used to drag the template after

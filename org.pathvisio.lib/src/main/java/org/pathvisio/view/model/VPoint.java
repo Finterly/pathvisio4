@@ -16,9 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import java.awt.geom.Point2D;
-
-import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LineElement.LinePoint;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
@@ -83,7 +80,7 @@ public class VPoint implements Adjustable {
 	}
 
 	protected void unlink() {
-		linePoint.setElementRef(null);
+		linePoint.unlink();
 	}
 
 	protected double getVX() {
@@ -158,66 +155,5 @@ public class VPoint implements Adjustable {
 		return 0;
 	}
 
-	// ================================================================================
-	// MPOINT METHODS: Point Link Methods
-	// ================================================================================
-
-
-	private boolean relativeSet; // TODO
-
-	// TODO
-	public Point2D toPoint2D() {
-		return new Point2D.Double(getX(), getY());
-	}
-
-	// TODO
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() + getX(), p.getY() + getY());
-	}
-
-	// TODO
-	public Point2D toRelativeCoordinate(Point2D p) {
-		return new Point2D.Double(p.getX() - getX(), p.getY() - getY());
-	}
-	
-	private Point2D getAbsolute() {
-		return linePoint.getElementRef().toAbsoluteCoordinate(new Point2D.Double(getRelX(), getRelY()));
-		//TODO was getGraphIdContainer().toAbsoluteCoordinate(new Point2D.Double(getRelX(), getRelY()));
-	}
-
-	/**
-	 * Link to an object. Current absolute coordinates will be converted to relative
-	 * coordinates based on the object to link to. TODO
-	 * 
-	 * @param pathwayElement the linkableTo pathway element to link to.
-	 */
-	public void linkTo(LinkableTo pathwayElement) {
-		// Point2D rel = pathwayElement.toRelativeCoordinate(toPoint2D());
-		linkTo(pathwayElement, rel.getX(), rel.getY());
-	}
-
-	/**
-	 * Link to an object using the given relative coordinates TODO
-	 */
-	public void linkTo(LinkableTo pathwayElement, double relX, double relY) {
-		setElementRef(pathwayElement);
-		setRelXY(relX, relY);
-	}
-
-	/**
-	 * note that this may be called any number of times when this point is already
-	 * unlinked
-	 */
-	public void unlink2() {
-		if (linePoint.getElementRef() != null) {
-			if (linePoint.getPathwayModel() != null) {
-				 Point2D abs = getAbsolute();
-				 linePoint.moveTo(abs.getX(), abs.getY());
-			}
-			// relativeSet = false;
-			linePoint.setElementRef(null);
-			fireObjectModifiedEvent(PathwayElementEvent.createCoordinatePropertyEvent(this));
-		}
-	}
 
 }

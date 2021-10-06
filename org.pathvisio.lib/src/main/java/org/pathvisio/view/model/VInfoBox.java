@@ -24,7 +24,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.model.ref.Pathway;
+import org.pathvisio.model.Pathway;
 
 /**
  * 
@@ -56,7 +56,7 @@ public class VInfoBox extends VPathwayElement {
 	}
 
 	// Elements not stored in gpml
-	String fontName = "Times New Roman"; // TODO 
+	String fontName = "Times New Roman"; // TODO
 	boolean fontWeight = false;
 	static final double M_INITIAL_FONTSIZE = 12.0;
 
@@ -66,7 +66,7 @@ public class VInfoBox extends VPathwayElement {
 	public VInfoBox(VPathwayModel canvas, Pathway gdata) {
 		super(canvas, gdata);
 		canvas.setMappInfo(this);
-		gdata.addListener(this); //TODO 
+		gdata.addListener(this); // TODO
 	}
 
 	@Override
@@ -168,10 +168,4 @@ public class VInfoBox extends VPathwayElement {
 		return 0x0000; // default z-order for Infobox TODO
 	}
 
-	// HERE is yeah...
-	@Override
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

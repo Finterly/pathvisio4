@@ -41,7 +41,6 @@ import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.LinAlg;
 import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.view.ShapeRegistry;
@@ -71,41 +70,6 @@ public abstract class VShapedElement extends VPathwayElement implements LinkProv
 		return getPathwayElement();
 	}
 
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		double x = p.getX();
-		double y = p.getY();
-		Rectangle2D bounds = getPathwayElement().getRotatedBounds();
-		// Scale
-		if (bounds.getWidth() != 0)
-			x *= bounds.getWidth() / 2;
-		if (bounds.getHeight() != 0)
-			y *= bounds.getHeight() / 2;
-		// Translate
-		x += bounds.getCenterX();
-		y += bounds.getCenterY();
-		return new Point2D.Double(x, y);
-	}
-
-	/**
-	 * @param mp a point in absolute model coordinates
-	 * @returns the same point relative to the bounding box of this pathway element:
-	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
-	 *          corner, and 0,0 meaning the center.
-	 */
-	public Point2D toRelativeCoordinate(Point2D mp) { //TODO 
-		double relX = mp.getX();
-		double relY = mp.getY();
-		Rectangle2D bounds = getPathwayElement().getRotatedBounds();
-		// Translate
-		relX -= bounds.getCenterX();
-		relY -= bounds.getCenterY();
-		// Scalebounds.getCenterX();
-		if (relX != 0 && bounds.getWidth() != 0)
-			relX /= bounds.getWidth() / 2;
-		if (relY != 0 && bounds.getHeight() != 0)
-			relY /= bounds.getHeight() / 2;
-		return new Point2D.Double(relX, relY);
-	}
 
 	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
@@ -176,14 +140,6 @@ public abstract class VShapedElement extends VPathwayElement implements LinkProv
 	}
 
 	/*----------------- Convenience methods from Model -----------------*/
-
-	public void setMTop(double v) {
-		getPathwayElement().setCenterY(v + getPathwayElement().getHeight() / 2);
-	}
-
-	public void setMLeft(double v) {
-		getPathwayElement().setCenterX(v + getPathwayElement().getWidth() / 2);
-	}
 
 	/**
 	 * Get the rectangle that represents the bounds of the shape's direct

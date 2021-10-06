@@ -21,7 +21,7 @@ import org.pathvisio.model.Shape;
 /**
  * This class represents the view of a {@link Shape} PathwayElement.
  *
- * @author unknown, finterly
+ * @author unknown,finterly
  */
 public class VShape extends VShapedElement {
 
@@ -43,5 +43,6 @@ public class VShape extends VShapedElement {
 	public Shape getPathwayElement() {
 		return getPathwayElement();
 	}
+
 
 }

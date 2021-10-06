@@ -26,6 +26,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 
 import org.pathvisio.model.GraphLink.LinkableFrom;
+import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LineElement.Anchor;
 import org.pathvisio.model.LineElement.LinePoint;
 import org.pathvisio.model.type.AnchorShapeType;
@@ -38,7 +39,7 @@ import org.pathvisio.view.ShapeRegistry;
  * It is stuck to a Line and can move one-dimensionally across it. It has a
  * handle so the user can drag it.
  */
-public class VAnchor extends VElement implements LinkProvider, Adjustable {
+public class VAnchor extends VElement implements VLinkableTo, LinkProvider, Adjustable {
 
 	private Anchor anchor;
 	private VLineElement vLine;
@@ -47,9 +48,9 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable {
 	private double mx = Double.NaN;
 	private double my = Double.NaN;
 
-	public VAnchor(Anchor mAnchor, VLineElement parent) {
+	public VAnchor(Anchor anchor, VLineElement parent) {
 		super(parent.getDrawing());
-		this.anchor = mAnchor;
+		this.anchor = anchor;
 		this.vLine = parent;
 		updatePosition();
 	}
@@ -199,8 +200,15 @@ public class VAnchor extends VElement implements LinkProvider, Adjustable {
 	/**
 	 * Returns the zorder of the parent line
 	 */
-	protected int getZOrder() {
+	public int getZOrder() {
 		return vLine.getPathwayElement().getZOrder() + 1;
 	}
+
+	@Override
+	public LinkableTo getPathwayElement() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }

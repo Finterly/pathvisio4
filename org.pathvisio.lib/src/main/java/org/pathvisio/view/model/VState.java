@@ -20,7 +20,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.DataNode.State;
 import org.pathvisio.model.type.LineStyleType;
@@ -84,34 +83,10 @@ public class VState extends VShapedElement {
 		}
 	}
 
-	/**
-	 * Return relative coordinates for the state.
-	 * 
-	 * @param mp a point in absolute model coordinates
-	 * @returns the same point relative to the bounding box of this pathway element:
-	 *          -1,-1 meaning the top-left corner, 1,1 meaning the bottom right
-	 *          corner, and 0,0 meaning the center.
-	 */
-	@Override 
-	protected Point2D toRelativeCoordinate(Point2D mp) {
-		double relX = mp.getX();
-		double relY = mp.getY();
-		// get bounds of parent data node
-		Rectangle2D bounds = getPathwayElement().getDataNode().getRotatedBounds(); // TODO of dataNode
-		// Translate
-		relX -= bounds.getCenterX();
-		relY -= bounds.getCenterY();
-		// Scalebounds.getCenterX();
-		if (relX != 0 && bounds.getWidth() != 0)
-			relX /= bounds.getWidth() / 2;
-		if (relY != 0 && bounds.getHeight() != 0)
-			relY /= bounds.getHeight() / 2;
-		return new Point2D.Double(relX, relY);
-	}
 
 	protected void vMoveBy(double vdx, double vdy) {
 		Point2D mNewPos = new Point2D.Double(mFromV(getVCenterX() + vdx), mFromV(getVCenterY() + vdy));
-		Point2D newRel = toRelativeCoordinate(mNewPos);
+		Point2D newRel = getPathwayElement().getDataNode().toRelativeCoordinate(mNewPos);
 		double x = newRel.getX();
 		double y = newRel.getY();
 		if (x > 1)
@@ -130,4 +105,5 @@ public class VState extends VShapedElement {
 	public void destroy() {
 		super.destroy();
 	}
+
 }

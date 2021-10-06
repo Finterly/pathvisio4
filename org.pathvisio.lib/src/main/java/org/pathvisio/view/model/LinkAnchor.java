@@ -20,23 +20,19 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.apache.batik.gvt.TextNode.Anchor;
 import org.pathvisio.model.GraphLink.LinkableFrom;
 import org.pathvisio.model.GraphLink.LinkableTo;
-import org.pathvisio.model.LineElement;
-import org.pathvisio.model.LinePoint;
-import org.pathvisio.model.PathwayElement;
 
 /**
  * A LinkAnchor is a small round target on a Shape or Line that appears only
  * when you drag a line end around. If the line end is near a LinkAnchor, the
- * line end {@link LinkableFrom} "connects" to the Shape or Line
- * {@link LinkableTo}.
+ * line end "connects" to the Shape or Line anchor.
+ * 
+ * @author unknown, finterly
  */
 public class LinkAnchor extends VElement {
 	static final double DRAW_RADIUS = 5;
@@ -44,20 +40,20 @@ public class LinkAnchor extends VElement {
 	static final int HINT_STROKE_SIZE = 10;
 
 	double relX, relY;
-	LinkableTo pathwayElement;
+	LinkableTo linkableTo;
 	VLinkableTo parent;
 
-	// new LinkAnchor(VPathwayModel, VAnchor, mAnchor, 0, 0);
-	public LinkAnchor(VPathwayModel canvas, VLinkableTo parent, LinkableTo pathwayElement, double relX, double relY) {
+	public LinkAnchor(VPathwayModel canvas, VLinkableTo parent, LinkableTo elementRef, double relX, double relY) {
 		super(canvas);
+		this.parent = parent;
+		this.linkableTo = elementRef;
 		this.relX = relX;
 		this.relY = relY;
-		this.pathwayElement = pathwayElement;
-		this.parent = parent;
 	}
+	
 
 	public Shape getMatchArea() {
-		Point2D abs = parent.toAbsoluteCoordinate(new Point2D.Double(relX, relY));
+		Point2D abs = linkableTo.toAbsoluteCoordinate(new Point2D.Double(relX, relY));
 		return canvas.vFromM(new Ellipse2D.Double(abs.getX() - MATCH_RADIUS, abs.getY() - MATCH_RADIUS,
 				MATCH_RADIUS * 2, MATCH_RADIUS * 2));
 	}
@@ -67,7 +63,7 @@ public class LinkAnchor extends VElement {
 	}
 
 	private Shape getShape(boolean includeHighlight) {
-		Point2D abs = toAbsoluteCoordinate(getPosition());
+		Point2D abs = linkableTo.toAbsoluteCoordinate(getPosition());
 		Shape s = canvas.vFromM(new Ellipse2D.Double(abs.getX() - DRAW_RADIUS, abs.getY() - DRAW_RADIUS,
 				DRAW_RADIUS * 2, DRAW_RADIUS * 2));
 		if (drawHighlight && includeHighlight) {
@@ -113,33 +109,24 @@ public class LinkAnchor extends VElement {
 	}
 
 	public LinkableTo getLinkableTo() {
-		return pathwayElement;
+		return linkableTo;
 	}
 
-	/**
-	 * Links the 
-	 * @param ref
-	 */
 	public void link(LinkableFrom ref) {
-		ref.linkTo(pathwayElement, relX, relY);
+		ref.linkTo(linkableTo, relX, relY);
 	}
 
-	/**
-	 * If true, link anchor is visually highlighted.
-	 */
 	private boolean drawHighlight;
 
 	/**
-	 * Highlights the link anchor to show that it is being linked to.
+	 * Display a visual hint to show that this is the anchor that is being linked
+	 * to.
 	 */
 	public void highlight() {
 		drawHighlight = true;
 		markDirty();
 	}
 
-	/**
-	 * Removes highlight of the link anchor to show that is is not being linked to.
-	 */
 	public void unhighlight() {
 		drawHighlight = false;
 		markDirty();

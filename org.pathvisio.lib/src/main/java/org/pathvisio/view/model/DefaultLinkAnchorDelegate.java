@@ -14,13 +14,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
-import org.pathvisio.view.model.Graphics;
-import org.pathvisio.view.model.LinkAnchor;
-import org.pathvisio.view.model.VGroup;
-import org.pathvisio.view.model.VLinkableTo;
-import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.model.Group;
+import org.pathvisio.view.AbstractLinkAnchorDelegate;
 
 /**
  * Utility class for creating and destroying LinkAnchors around a rectangular
@@ -41,8 +38,8 @@ public class DefaultLinkAnchorDelegate extends AbstractLinkAnchorDelegate {
 	private static final int MIN_SIZE_LA = 25;
 
 	public void showLinkAnchors() {
-		//disAllowLinks? TODO 
-		if (parent instanceof VGroup && parent.getPathwayElement().getGroupStyle().isDisallowLinks()) {
+		// disAllowLinks? TODO
+		if (parent instanceof VGroup && ((Group) parent.getPathwayElement()).getType().isDisallowLinks()) {
 			return;
 		}
 		// Number of link anchors depends on the size of the object

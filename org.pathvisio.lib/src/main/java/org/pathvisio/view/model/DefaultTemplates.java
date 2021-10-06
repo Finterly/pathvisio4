@@ -18,8 +18,10 @@ package org.pathvisio.view.model;
 
 import java.awt.Color;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.pathvisio.core.util.Resources;
@@ -31,9 +33,9 @@ import org.pathvisio.model.Label;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LineElement.Anchor;
 import org.pathvisio.model.LineElement.LinePoint;
+import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.PathwayObject;
-import org.pathvisio.model.ref.PathwayElement;
 import org.pathvisio.model.type.AnchorShapeType;
 import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.type.ConnectorType;
@@ -146,7 +148,7 @@ public abstract class DefaultTemplates {
 		PathwayElement lastAdded;
 
 		protected void addElement(PathwayElement e, PathwayModel p) {
-			p.addPathwayObject(e); //TODO not exactly correct
+			p.add(e); //TODO not exactly correct
 			lastAdded = e;
 		}
 
@@ -363,13 +365,13 @@ public abstract class DefaultTemplates {
 		public Interaction[] addElements(PathwayModel p, double mx, double my) {
 			// instantiates an interaction
 			Interaction e = new Interaction();
-			LinePoint startLinePoint = e.addLinePoint(startType, mx, my);
-			LinePoint endLinePoint = e.addLinePoint(endType, mx, my);
+			List <LinePoint> points = new ArrayList<LinePoint>();
+			points.add(e.new LinePoint (startType, mx, my));
+			points.add(e.new LinePoint (endType, mx, my));
+			e.setLinePoints(points);
 			// line style props: default lineColor, lineWidth
 			e.setLineStyle(lineStyle);
 			e.setConnectorType(connectorType);
-			e.addLinePoint(startLinePoint);
-			e.addLinePoint(endLinePoint);
 
 			setInitialSize(e);
 
@@ -410,13 +412,13 @@ public abstract class DefaultTemplates {
 		public GraphicalLine[] addElements(PathwayModel p, double mx, double my) {
 			// instantiates a graphical line
 			GraphicalLine e = new GraphicalLine();
-			LinePoint startLinePoint = e.addLinePoint(startType, mx, my);
-			LinePoint endLinePoint = e.addLinePoint(endType, mx, my);
+			List <LinePoint> points = new ArrayList<LinePoint>();
+			points.add(e.new LinePoint (startType, mx, my));
+			points.add(e.new LinePoint (endType, mx, my));
+			e.setLinePoints(points);
 			// line style pops: default lineColor, lineWidth
 			e.setLineStyle(lineStyle);
 			e.setConnectorType(connectorType);
-			e.addLinePoint(startLinePoint);
-			e.addLinePoint(endLinePoint);
 			setInitialSize(e);
 
 			p.addGraphicalLine(e);

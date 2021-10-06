@@ -58,12 +58,12 @@ import org.pathvisio.model.Label;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LineElement.Anchor;
 import org.pathvisio.model.LineElement.LinePoint;
+import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
 import org.pathvisio.model.PathwayModel.StatusFlagEvent;
 import org.pathvisio.model.PathwayObject;
 import org.pathvisio.model.Shape;
 import org.pathvisio.model.ShapedElement;
-import org.pathvisio.model.ref.PathwayElement;
 import org.pathvisio.model.type.GroupType;
 import org.pathvisio.util.Utils;
 import org.pathvisio.util.preferences.GlobalPreference;
@@ -88,8 +88,8 @@ import com.sun.xml.bind.v2.model.core.ElementInfo;
  * the drawing and can be visualized. The class also provides methods for mouse
  * and key event handling.
  *
- * It's necessary to call {@link PreferenceManager.init()} before you can instantiate
- * this class.
+ * It's necessary to call {@link PreferenceManager.init()} before you can
+ * instantiate this class.
  */
 public class VPathwayModel implements PathwayListener {
 
@@ -623,7 +623,8 @@ public class VPathwayModel implements PathwayListener {
 				break;
 			}
 		}
-		if (idc == null && vPoint.isLinked()) { // TODO make sure links update from model to view to model...
+		// TODO make sure links update from model to view to model...
+		if (idc == null && vPoint.getPathwayElement().getElementRef() != null) {
 			String elementRef = vPoint.getLinePoint().getElementRef().getElementId();
 			vPoint.getLinePoint().unlink();
 			if (currentLinkAnchor != null) {
@@ -2216,7 +2217,7 @@ public class VPathwayModel implements PathwayListener {
 			p.setGroupId(idmap.get(gid));
 		}
 		// update graphref
-		String y = p.getStartGraphRef();
+		LinkableTo y = ((LineElement) p).getStartElementRef();
 		if (y != null) {
 			if (idmap.containsKey(y)) {
 				p.setStartGraphRef(idmap.get(y));

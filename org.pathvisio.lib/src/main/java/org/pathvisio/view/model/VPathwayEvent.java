@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
+import org.pathvisio.view.MouseEvent;
+
 /**
  * event sent by VPathway upon modification of one or more VPathwayElements.
  */

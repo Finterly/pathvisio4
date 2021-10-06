@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.pathvisio.model.Group;
-import org.pathvisio.model.ref.PathwayElement;
-import org.pathvisio.view.DefaultLinkAnchorDelegate;
 import org.pathvisio.view.GroupPainter;
 import org.pathvisio.view.GroupPainterRegistry;
 import org.pathvisio.view.VElementMouseEvent;
@@ -67,16 +65,16 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	 *
 	 * @return HashMap<String, String>
 	 */
-	protected Map<String, String> getIdRefPairs() {
+	protected Map<String, Group> getIdRefPairs() {
 		// idRefPairs<id, ref>
-		Map<String, String> idRefPairs = new HashMap<String, String>();
+		Map<String, Group> idRefPairs = new HashMap<String, Group>();
 
 		// Populate hash map of id-ref pairs for all groups
 		for (VPathwayElement vpe : canvas.getDrawingObjects()) {
-			if (vpe instanceof Graphics && vpe instanceof Group) {
-				PathwayElement pe = ((Graphics) vpe).getPathwayElement();
+			if (vpe instanceof Graphics && vpe instanceof VGroup) {
+				Group pe = (Group) vpe.getPathwayElement();
 				if (pe.getGroupRef() != null) {
-					idRefPairs.put(pe.getGroupId(), pe.getGroupRef());
+					idRefPairs.put(pe.getElementId(), pe.getGroupRef());
 				}
 			}
 		}
@@ -90,9 +88,9 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	 * @return ArrayList<String>
 	 */
 	protected List<String> getRefList() {
-		Map<String, String> idRefPairs = this.getIdRefPairs();
+		Map<String, Group> idRefPairs = this.getIdRefPairs();
 		List<String> refList = new ArrayList<String>();
-		String thisId = this.getPathwayElement().getGroupId();
+		String thisId = this.getPathwayElement().getElementId();
 		refList.add(thisId);
 		boolean hit = true;
 
@@ -149,9 +147,9 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 		for (VElement vpe : canvas.getDrawingObjects()) {
 			if (vpe instanceof Graphics && vpe != this) {
 				Graphics vpeg = (Graphics) vpe;
-				Group pe = vpeg.getPathwayElement();
-				String ref = pe.getGroupRef();
-				if (ref != null && ref.equals(getPathwayElement().getGroupId())) {
+				Group pe = (Group) vpeg.getPathwayElement();
+				Group ref = pe.getGroupRef();
+				if (ref != null && ref.equals(getPathwayElement().getElementId())) {
 					gg.add(vpeg);
 				}
 			}

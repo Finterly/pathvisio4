@@ -19,8 +19,8 @@ package org.pathvisio.view.model;
 import java.awt.geom.Point2D;
 import java.util.List;
 
-import org.pathvisio.model.ref.CitationRef;
-import org.pathvisio.model.ref.PathwayElement;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayElement.CitationRef;
 
 import com.sun.xml.bind.v2.model.core.ElementInfo;
 
