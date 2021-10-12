@@ -53,6 +53,7 @@ import org.pathvisio.model.GraphLink.LinkableFrom;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.GraphicalLine;
 import org.pathvisio.model.Group;
+import org.pathvisio.model.Groupable;
 import org.pathvisio.model.Interaction;
 import org.pathvisio.model.Label;
 import org.pathvisio.model.LineElement;
@@ -80,8 +81,6 @@ import org.pathvisio.view.model.SelectionBox.SelectionListener;
 import org.pathvisio.view.model.VPathwayEvent.VPathwayEventType;
 import org.pathvisio.view.model.ViewActions.KeyMoveAction;
 import org.pathvisio.view.model.ViewActions.TextFormattingAction;
-
-import com.sun.xml.bind.v2.model.core.ElementInfo;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
@@ -1366,16 +1365,19 @@ public class VPathwayModel implements PathwayListener {
 		// groupSelection will be set to true if we are going to add / expand a group,
 		// false if we're going to remove a group.
 		boolean groupSelection = false;
-		Set<Group> groupRefList = new HashSet<Group>();
+		Set<String> groupRefList = new HashSet<String>();
 
 		/**
 		 * Check group status of current selection
 		 */
 		for (Graphics g : selection) {
-			PathwayElement pe = g.getPathwayElement();
-			Group ref = ((ElementInfo) pe).getGroupRef();
+			PathwayObject pe = g.getPathwayElement();
+			String ref = null;
+			if (pe instanceof Groupable) {
+				ref = ((Groupable) pe).getGroupRef().getElementId();
+			}
 			// If not a group
-			if (!(pe instanceof Group)) {
+			if (pe.getClass() != Group.class) {
 				// and not a member of a group
 				if (ref == null) {
 					// then selection needs to be grouped
@@ -1386,7 +1388,8 @@ public class VPathwayModel implements PathwayListener {
 					// recursively get all parent group references.
 					while (ref != null) {
 						groupRefList.add(ref);
-						ref = ref.getGroupRef(); // TODO???? for nested group
+						Group refGroup = (Group) data.getPathwayObject(ref);
+						ref = refGroup.getGroupRef().getElementId();
 					}
 				}
 			}
@@ -1396,10 +1399,12 @@ public class VPathwayModel implements PathwayListener {
 		if (groupRefList.size() > 1) {
 			groupSelection = true;
 		}
+
 		// In all cases, any old groups in selection should be dissolved.
-		for (Group ref : groupRefList) {
-			if (ref != null)
-				data.removeGroup(ref);
+		for (String id : groupRefList) {
+			PathwayElement e = (PathwayElement) data.getPathwayObject(id);
+			if (e != null)
+				data.remove(e);
 		}
 		// If selection was defined as a single group, then we're done.
 		// clear the selection from view
@@ -1407,23 +1412,24 @@ public class VPathwayModel implements PathwayListener {
 			clearSelection();
 		}
 		// Otherwise, a new group will be formed, replacing any former groups.
-		// No more nested or overlapping groups! TODO??? Do we wanted any nested
-		// groups????
+		// No more nested or overlapping groups!
 		else {
-			Group group = new Group(GroupType.GROUP); // TODO GROUP SIZE?????
-			data.addGroup(group);
+			// Form new group with all selected elementsselectPathwayObjects
+			Group group = new Group(GroupType.GROUP); // TODO default?
+			data.add(group);
 			for (Graphics g : selection) {
-				PathwayElement pe = g.getPathwayElement();
-				if (pe instanceof ElementInfo)
-					((ElementInfo) pe).setGroupRefTo(group);
+				PathwayElement pe = (PathwayElement) g.getPathwayElement();
+				if (pe instanceof Groupable) {
+					((Groupable) pe).setGroupRefTo(group);
+				}
 			}
 			// Select new group in view
-			Graphics vg = getPathwayElementView(group);
+			VGroup vg = (VGroup) getPathwayElementView(group);
 			if (vg != null) {
 				clearSelection();
 				selectObject(vg);
 			}
-			return (VGroup) vg;
+			return vg;
 		}
 		return null;
 	}
@@ -2178,6 +2184,11 @@ public class VPathwayModel implements PathwayListener {
 			generatePasteId(id, data.getElementIds(), idmap, newids);
 			// generatePasteId(groupId, data.getGroupIds(), idmap, newids);TODO
 
+			// For a data node, also process the state ids
+			if (o.getClass() == DataNode.class) {
+				for (State st : ((DataNode) o).getStates())
+					generatePasteId(st.getElementId(), data.getElementIds(), idmap, newids);
+			}
 			// For a line, also process the point ids
 			if (o.getClass() == Interaction.class || o.getClass() == GraphicalLine.class) {
 				for (LinePoint mp : ((LineElement) o).getLinePoints())

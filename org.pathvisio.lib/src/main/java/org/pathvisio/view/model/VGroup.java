@@ -23,13 +23,10 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.pathvisio.model.Group;
 import org.pathvisio.view.GroupPainter;
-import org.pathvisio.view.GroupPainterRegistry;
 import org.pathvisio.view.VElementMouseEvent;
 import org.pathvisio.view.VElementMouseListener;
 
@@ -60,56 +57,56 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 		return getPathwayElement();
 	}
 
-	/**
-	 * Generates current id-ref pairs from all current groups
-	 *
-	 * @return HashMap<String, String>
-	 */
-	protected Map<String, Group> getIdRefPairs() {
-		// idRefPairs<id, ref>
-		Map<String, Group> idRefPairs = new HashMap<String, Group>();
-
-		// Populate hash map of id-ref pairs for all groups
-		for (VPathwayElement vpe : canvas.getDrawingObjects()) {
-			if (vpe instanceof Graphics && vpe instanceof VGroup) {
-				Group pe = (Group) vpe.getPathwayElement();
-				if (pe.getGroupRef() != null) {
-					idRefPairs.put(pe.getElementId(), pe.getGroupRef());
-				}
-			}
-		}
-
-		return idRefPairs;
-	}
-
-	/**
-	 * Generates list of group references nested under this group
-	 *
-	 * @return ArrayList<String>
-	 */
-	protected List<String> getRefList() {
-		Map<String, Group> idRefPairs = this.getIdRefPairs();
-		List<String> refList = new ArrayList<String>();
-		String thisId = this.getPathwayElement().getElementId();
-		refList.add(thisId);
-		boolean hit = true;
-
-		while (hit) {
-			hit = false;
-			// search for hits in hash map; add to refList
-			for (String id : idRefPairs.keySet()) {
-				if (refList.contains(idRefPairs.get(id))) {
-					refList.add(id);
-					hit = true;
-				}
-			}
-			// remove hits from hash map
-			for (int i = 0; i < refList.size(); i++) {
-				idRefPairs.remove(refList.get(i));
-			}
-		}
-		return refList;
-	}
+//	/**
+//	 * Generates current id-ref pairs from all current groups
+//	 *
+//	 * @return HashMap<String, String> TODO not used anywhere...
+//	 */
+//	protected Map<String, String> getIdRefPairs() {
+//		// idRefPairs<id, ref>
+//		Map<String, String> idRefPairs = new HashMap<String, String>();
+//
+//		// Populate hash map of id-ref pairs for all groups
+//		for (VPathwayElement vpe : canvas.getDrawingObjects()) {
+//			if (vpe instanceof Graphics && vpe instanceof Group) {
+//				PathwayElement pe = ((Graphics) vpe).getPathwayElement();
+//				if (pe.getGroupRef() != null) {
+//					idRefPairs.put(pe.getGroupId(), pe.getGroupRef());
+//				}
+//			}
+//		}
+//
+//		return idRefPairs;
+//	}
+//
+//	/**
+//	 * Generates list of group references nested under this group
+//	 *
+//	 * @return ArrayList<String> TODO not used anywhere...
+//	 */
+//	protected List<String> getRefList() {
+//		Map<String, Group> idRefPairs = this.getIdRefPairs();
+//		List<String> refList = new ArrayList<String>();
+//		String thisId = this.getPathwayElement().getElementId();
+//		refList.add(thisId);
+//		boolean hit = true;
+//
+//		while (hit) {
+//			hit = false;
+//			// search for hits in hash map; add to refList
+//			for (String id : idRefPairs.keySet()) {
+//				if (refList.contains(idRefPairs.get(id))) {
+//					refList.add(id);
+//					hit = true;
+//				}
+//			}
+//			// remove hits from hash map
+//			for (int i = 0; i < refList.size(); i++) {
+//				idRefPairs.remove(refList.get(i));
+//			}
+//		}
+//		return refList;
+//	}
 
 	/**
 	 * Determines whether the area defined by the grouped elements contains the

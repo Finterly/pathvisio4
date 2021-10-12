@@ -39,6 +39,7 @@ import org.pathvisio.model.ShapedElement;
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.model.type.ShapeType;
+import org.pathvisio.util.ColorUtils;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.LinAlg;
@@ -54,7 +55,8 @@ import org.pathvisio.view.model.Handle.Freedom;
  * 
  * @author unknown, finterly
  */
-public abstract class VShapedElement extends VPathwayElement implements LinkProvider, Adjustable, VLinkableTo {
+public abstract class VShapedElement extends VPathwayElement
+		implements LinkProvider, Adjustable, VLinkableTo, VGroupable {
 
 	public VShapedElement(VPathwayModel canvas, ShapedElement gdata) {
 		super(canvas, gdata);
@@ -69,7 +71,6 @@ public abstract class VShapedElement extends VPathwayElement implements LinkProv
 	public ShapedElement getPathwayElement() {
 		return getPathwayElement();
 	}
-
 
 	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
@@ -692,8 +693,10 @@ public abstract class VShapedElement extends VPathwayElement implements LinkProv
 				if (lines[i].equals(""))
 					continue; // Can't have attributed string with 0 length
 				AttributedString ats = getVAttributedString(lines[i]);
-				if (!getPathwayElement().getHref().equals("")) {
-					ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+				if (getPathwayElement().getClass() == Label.class) {
+					if (!((Label) getPathwayElement()).getHref().equals("")) {
+						ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+					}
 				}
 				Rectangle2D tb = fm.getStringBounds(ats.getIterator(), 0, lines[i].length(), g);
 
@@ -751,7 +754,7 @@ public abstract class VShapedElement extends VPathwayElement implements LinkProv
 			// transparent arcs and braces
 		} else {
 			// fill the rest
-			if (!getPathwayElement().isTransparent()) {
+			if (!ColorUtils.isTransparent(getPathwayElement().getFillColor())) {
 				g.setColor(fillcolor);
 				g.fill(shape);
 			}
@@ -797,7 +800,7 @@ public abstract class VShapedElement extends VPathwayElement implements LinkProv
 		// first use getVBounds as a rough approximation
 		if (getVBounds().contains(point)) {
 			// if the shape is transparent, only check against the outline
-			if (getPathwayElement().isTransparent()) {
+			if (ColorUtils.isTransparent(getPathwayElement().getFillColor())) {
 				return getVOutline().contains(point);
 			} else {
 				// otherwise check against the whole shape

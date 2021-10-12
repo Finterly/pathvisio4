@@ -60,7 +60,7 @@ import org.pathvisio.view.ShapeRegistry;
  * @see ConnectorShape
  * @see org.pathvisio.view.connector.ConnectorShapeFactory
  */
-public class VLineElement extends VPathwayElement implements Adjustable { // TODO
+public class VLineElement extends VPathwayElement implements Adjustable, VGroupable { // TODO
 																			// ConnectorRestrictions
 	private List<VPoint> points;
 	private Map<Anchor, VAnchor> anchors = new HashMap<Anchor, VAnchor>();

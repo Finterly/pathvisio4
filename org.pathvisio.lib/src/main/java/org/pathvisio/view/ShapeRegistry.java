@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.pathvisio.core.modeltemp.AbstractShape;
 import org.pathvisio.core.modeltemp.IShape;
+import org.pathvisio.view.model.shape.GenMAPPShapes;
 
 /**
    The Shape registry stores all arrow heads and shapes

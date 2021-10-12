@@ -39,11 +39,25 @@ import org.pathvisio.model.Pathway;
  */
 public class VInfoBox extends VPathwayElement {
 
-	protected Pathway gdata = null;
-
 	static final int V_SPACING = 5;
 	static final int H_SPACING = 10;
 	static final int INITIAL_SIZE = 200;
+
+	public VInfoBox(VPathwayModel canvas, Pathway gdata) {
+		super(canvas, gdata);
+		canvas.setMappInfo(this);
+		gdata.addListener(this); // TODO
+	}
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return
+	 */
+	@Override
+	public Pathway getPathwayElement() {
+		return getPathwayElement();
+	}
 
 	// TODO
 	public double getMLeft() {
@@ -62,12 +76,6 @@ public class VInfoBox extends VPathwayElement {
 
 	int sizeX = 1;
 	int sizeY = 1; // Real size is calculated on first call to draw()
-
-	public VInfoBox(VPathwayModel canvas, Pathway gdata) {
-		super(canvas, gdata);
-		canvas.setMappInfo(this);
-		gdata.addListener(this); // TODO
-	}
 
 	@Override
 	protected VCitation createCitation() {
@@ -98,7 +106,8 @@ public class VInfoBox extends VPathwayElement {
 
 		// Draw Name, Organism, Data-Source, Version, Author, Maintained-by, Email,
 		// Availability and last modified
-		String[][] text = new String[][] { { "Title: ", gdata.getTitle() }, { "Organism: ", gdata.getOrganism() },
+		String[][] text = new String[][] { { "Title: ", getPathwayElement().getTitle() },
+				{ "Organism: ", getPathwayElement().getOrganism() },
 //				{"Maintained by: ", gdata.getMaintainer()}, //TODO 
 //				{"Email: ", gdata.getEmail()},
 //				{"Availability: ", gdata.getCopyright()},

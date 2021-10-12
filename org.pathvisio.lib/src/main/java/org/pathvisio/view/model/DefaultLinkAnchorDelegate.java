@@ -17,6 +17,7 @@
 package org.pathvisio.view.model;
 
 import org.pathvisio.model.Group;
+import org.pathvisio.model.ShapedElement;
 import org.pathvisio.view.AbstractLinkAnchorDelegate;
 
 /**
@@ -42,18 +43,15 @@ public class DefaultLinkAnchorDelegate extends AbstractLinkAnchorDelegate {
 		if (parent instanceof VGroup && ((Group) parent.getPathwayElement()).getType().isDisallowLinks()) {
 			return;
 		}
-		// Number of link anchors depends on the size of the object
-		// If the width/height is large enough, there will be three link anchors per
-		// side,
-		// Otherwise there will be only one link anchor per side
-		String anchorsCnt = parent.getPathwayElement().getDynamicProperty("NumberOfAnchors");
+		// one link anchor per side. if large enough 3 link anchors per side.
 		int numAnchors = 3;
-		if (anchorsCnt != null) {
-			numAnchors = Integer.parseInt(anchorsCnt);
+		int numH = 1;
+		int numV = 1;
+		// more anchors if linkableTo is a shapedElement of a certain size
+		if (parent.getPathwayElement() instanceof ShapedElement) {
+			numH = ((ShapedElement) parent.getPathwayElement()).getWidth() < MIN_SIZE_LA ? 1 : numAnchors;
+			numV = ((ShapedElement) parent.getPathwayElement()).getHeight() < MIN_SIZE_LA ? 1 : numAnchors;
 		}
-		int numH = parent.getPathwayElement().getWidth() < MIN_SIZE_LA ? 1 : numAnchors;
-		int numV = parent.getPathwayElement().getHeight() < MIN_SIZE_LA ? 1 : numAnchors;
-
 		if (numH != numLinkanchorsH || numV != numLinkanchorsV) {
 			linkAnchors.clear();
 			double deltaH = 2.0 / (numH + 1);
