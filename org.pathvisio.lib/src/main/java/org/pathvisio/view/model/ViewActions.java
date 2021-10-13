@@ -56,7 +56,6 @@ import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.type.GroupType;
 import org.pathvisio.model.type.ShapeType;
 import org.pathvisio.util.Utils;
-import org.pathvisio.view.UndoManager;
 import org.pathvisio.view.UndoManagerEvent;
 import org.pathvisio.view.UndoManagerListener;
 import org.pathvisio.view.model.SelectionBox.SelectionEvent;

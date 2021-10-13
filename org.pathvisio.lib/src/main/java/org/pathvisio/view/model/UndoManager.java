@@ -14,13 +14,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.pathvisio.controller.Engine;
 import org.pathvisio.model.PathwayModel;
+import org.pathvisio.view.UndoManagerEvent;
+import org.pathvisio.view.UndoManagerListener;
 
 /** Manages a stack of undo actions */
 public class UndoManager

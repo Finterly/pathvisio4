@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model;
 
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
