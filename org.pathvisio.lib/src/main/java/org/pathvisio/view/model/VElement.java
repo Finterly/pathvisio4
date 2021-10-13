@@ -20,11 +20,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.model.LineElement;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 
@@ -350,8 +348,6 @@ public abstract class VElement implements Comparable<VElement> {
 			// not simply "a - b" because of the risk of integer overflows
 			return a < b ? -1 : 1;
 	}
-	
-
 
 	/**
 	 * Converts view coordinates to model coordinates.
@@ -385,7 +381,7 @@ public abstract class VElement implements Comparable<VElement> {
 	/**
 	 * Returns true if to remove, false otherwise.
 	 * 
-	 * @return removeMe
+	 * @return removeMe, true if to remove, false otherwise.
 	 */
 	boolean toBeRemoved() {
 		return removeMe;

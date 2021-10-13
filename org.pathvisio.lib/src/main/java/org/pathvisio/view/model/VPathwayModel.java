@@ -91,7 +91,7 @@ import org.pathvisio.view.model.ViewActions.TextFormattingAction;
 public class VPathwayModel implements PathwayListener {
 
 	// ================================================================================
-	// Static Variables and Flags
+	// Selection and Flag Variables
 	// ================================================================================
 	private static final double FUZZY_SIZE = 8; // fuzz-factor around mouse cursor
 	static final int ZORDER_SELECTIONBOX = Integer.MAX_VALUE;
@@ -103,13 +103,14 @@ public class VPathwayModel implements PathwayListener {
 	private boolean stateCtrl = false;
 	private boolean stateEntered = false;
 	private VElement lastEnteredElement = null;
-	private boolean selectionEnabled = true;
-	private PathwayModel temporaryCopy = null;
+
 	SelectionBox selection;
+	private boolean selectionEnabled = true;
+
 	private boolean editMode = true;
 
 	// ================================================================================
-	// Static Variables and Flags Methods
+	// Selection and Flags Methods
 	// ===============================================================================
 	/**
 	 * Returns true if snap to anchors is enabled
@@ -142,9 +143,96 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Checks if this drawing is in edit mode
+	 * Select the given object.
+	 * 
+	 * @param o the vElement.
+	 */
+	public void selectObject(VElement o) {
+		clearSelection();
+		selection.addToSelection(o);
+	}
+
+	/**
+	 * Select all objects of the given class
 	 *
-	 * @return false if in edit mode, true if not
+	 * @param c the class of the objects to be selected. For example: DataNode,
+	 *          Line, etc. May be null, in which case everything is selected.
+	 */
+	void selectObjects(Class<?> c) {
+		clearSelection();
+		selection.startSelecting();
+		for (VElement vpe : getDrawingObjects()) {
+			if (c == null || c.isInstance(vpe)) {
+				selection.addToSelection(vpe);
+			}
+
+		}
+		selection.stopSelecting();
+	}
+
+	public void selectObjectsByObjectType(Class subclass) {
+		clearSelection();
+		selection.startSelecting();
+		if (subclass == DataNode.class) {
+			for (DataNode pe : getPathwayModel().getDataNodes()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Interaction.class) {
+			for (Interaction pe : getPathwayModel().getInteractions()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == GraphicalLine.class) {
+			for (GraphicalLine pe : getPathwayModel().getGraphicalLines()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Label.class) {
+			for (Label pe : getPathwayModel().getLabels()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Shape.class) {
+			for (Shape pe : getPathwayModel().getShapes()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		} else if (subclass == Group.class) {
+			for (Group pe : getPathwayModel().getGroups()) {
+				selection.addToSelection(getPathwayElementView(pe));
+			}
+		}
+		// TODO???? Citations, Annotations... other???
+		selection.stopSelecting();
+	}
+
+	/**
+	 * select all objects of the pathway.
+	 */
+	void selectAll() {
+		selectObjects(null);
+	}
+
+	/**
+	 * Deselect all elements on the drawing and resets the selectionbox.
+	 */
+	public void clearSelection() {
+		clearSelection(0, 0);
+	}
+
+	/**
+	 * Deselect all elements on the drawing and resets the selectionbox to the given
+	 * coordinates Equivalent to {@link SelectionBox#reset(double, double))}
+	 * 
+	 * @param x the x coordinate to reset to.
+	 * @param y the y coordinate to reset to.
+	 */
+	private void clearSelection(double x, double y) {
+		for (VElement e : drawingObjects)
+			e.deselect();
+		selection.reset(x, y);
+	}
+
+	/**
+	 * Checks if this drawing is in edit mode.
+	 *
+	 * @return true if in edit mode, false otherwise. //TODO
 	 */
 	public boolean isEditMode() {
 		return editMode;
@@ -220,7 +308,7 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Returns the optional gui-specific wrapper for this VPathwayModel.
 	 * 
-	 * @return parent the ptional gui-specific wrapper.
+	 * @return parent the optional gui-specific wrapper.
 	 */
 	public VPathwayWrapper getWrapper() {
 		return parent;
@@ -263,7 +351,7 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// Variables and Methods
+	// Template and Add Variables and Methods
 	// ================================================================================
 	/**
 	 * Temporary array of elements to be added to the pathway model by
@@ -271,11 +359,6 @@ public class VPathwayModel implements PathwayListener {
 	 * {@link addObject}
 	 */
 	private List<VElement> toAdd = new ArrayList<VElement>();
-
-	/**
-	 * The {@link VElement} that is pressed, last mouseDown event.
-	 */
-	private VElement pressedObject = null;
 
 	/**
 	 * The template that provides the new graphics type that has to be added next
@@ -304,10 +387,6 @@ public class VPathwayModel implements PathwayListener {
 			}
 		}
 		toAdd.clear();
-	}
-
-	public void setPressedObject(VElement o) {
-		pressedObject = o;
 	}
 
 	/**
@@ -347,6 +426,8 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Used by undo manager.
+	 * 
+	 * @param originalState the original state.
 	 */
 	public void replacePathway(PathwayModel originalState) {
 		boolean changed = data.hasChanged();
@@ -374,10 +455,89 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// Map Model to View Methods
+	// Draw Methods
 	// ================================================================================
 	/**
+	 * Paints all components in the drawing. This method is called automatically in
+	 * the painting process. This method will draw opaquely, meaning it will erase
+	 * the background.
+	 * 
+	 * @param g2d the graphics device to draw on. The method will not draw outside
+	 *            the clipping area.
+	 */
+	public void draw(Graphics2D g2d) {
+		addScheduled();
+		cleanUp();
+
+		try {
+			// save original, non-clipped, to pass on to VPathwayEvent
+			Graphics2D g2dFull = (Graphics2D) g2d.create();
+
+			// we only redraw the part within the clipping area.
+			Rectangle area = g2d.getClipBounds();
+			if (area == null) {
+				Dimension size = parent == null ? new Dimension(getVWidth(), getVHeight())
+						: parent.getViewRect().getSize(); // Draw the visible area
+				area = new Rectangle(0, 0, size.width, size.height);
+			}
+
+			// erase the background
+			g2d.setColor(java.awt.Color.WHITE);
+			g2d.fillRect(area.x, area.y, area.width, area.height);
+
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+
+			g2d.clip(area);
+			g2d.setColor(java.awt.Color.BLACK);
+			Collections.sort(drawingObjects);
+			cleanUp();
+			for (VElement o : drawingObjects) {
+				if (o.vIntersects(area)) {
+					if (checkDrawAllowed(o)) {
+						o.draw((Graphics2D) g2d.create());
+						fireVPathwayEvent(new VPathwayEvent(this, o, (Graphics2D) g2dFull.create(),
+								VPathwayEventType.ELEMENT_DRAWN));
+					}
+				}
+			}
+		} catch (ConcurrentModificationException ex) {
+			// guard against messing up repaint event completely
+			Logger.log.error("Concurrent modification", ex);
+		}
+	}
+
+	boolean checkDrawAllowed(VElement o) {
+		if (isEditMode()) {
+			return true;
+		} else {
+			return !(o instanceof Handle || (o == selection && !isDragging));
+		}
+	}
+
+	// ================================================================================
+	// Map Model to View Methods
+	// ================================================================================
+	Map<LinePoint, VPoint> pointsMtoV = new HashMap<LinePoint, VPoint>();
+
+	protected VPoint getPoint(LinePoint linePoint) {
+		return pointsMtoV.get(linePoint);
+	}
+
+	public VPoint newPoint(LinePoint linePoint, VLineElement line) {
+		VPoint p = pointsMtoV.get(linePoint);
+		if (p == null) {
+			p = new VPoint(this, linePoint, line);
+			pointsMtoV.put(linePoint, p);
+		}
+		return p;
+	}
+
+	/**
 	 * Maps the contents of a {@link PathwayModel} to this VPathwayModel
+	 * 
+	 * @param aData the pathway model.
 	 */
 	public void fromModel(PathwayModel aData) {
 		Logger.log.trace("Create view structure");
@@ -519,121 +679,6 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// LinePoint to VPoint Methods
-	// ================================================================================
-	Map<LinePoint, VPoint> pointsMtoV = new HashMap<LinePoint, VPoint>();
-
-	protected VPoint getPoint(LinePoint linePoint) {
-		return pointsMtoV.get(linePoint);
-	}
-
-	public VPoint newPoint(LinePoint linePoint, VLineElement line) {
-		VPoint p = pointsMtoV.get(linePoint);
-		if (p == null) {
-			p = new VPoint(this, linePoint, line);
-			pointsMtoV.put(linePoint, p);
-		}
-		return p;
-	}
-
-	// ================================================================================
-	// Zoom Methods
-	// ================================================================================
-	private double zoomFactor = 1.0;
-
-	/**
-	 * Get the current zoomfactor used. 1 means 100%, 1 gpml unit = 1 pixel 2 means
-	 * 200%, 0.5 gpml unit = 1 pixel
-	 *
-	 * To distinguish between model coordinates and view coordinates, we prefix all
-	 * coordinates with either v or m (or V or M). For example:
-	 *
-	 * mTop = gdata.getMTop(); vTop = GeneProduct.getVTop();
-	 *
-	 * Calculations done on M's and V's should always match. The only way to convert
-	 * is to use the functions mFromV and vFromM.
-	 *
-	 * Correct: mRight = mLeft + mWidth; Wrong: mLeft += vDx; Fixed: mLeft +=
-	 * mFromV(vDx);
-	 *
-	 * @return the current zoomfactor
-	 */
-	public double getZoomFactor() {
-		return zoomFactor;
-	}
-
-	/**
-	 * same as getZoomFactor, but in %
-	 *
-	 * @return
-	 */
-	public double getPctZoom() {
-		return zoomFactor * 100;
-	}
-
-	/**
-	 * Sets the drawings zoom in percent
-	 *
-	 * @param pctZoomFactor zoomfactor in percent
-	 * @see #getFitZoomFactor() for fitting the pathway inside the viewport.
-	 */
-	public void setPctZoom(double pctZoomFactor) {
-		zoomFactor = pctZoomFactor / 100.0;
-		for (VElement vpe : drawingObjects) {
-			vpe.zoomChanged();
-		}
-		if (parent != null)
-			parent.resized();
-	}
-
-	/**
-	 * @param pctZoomFactor
-	 */
-	public void centeredZoom(double pctZoomFactor) {
-		if (parent != null) {
-			Rectangle vr = parent.getViewRect();
-
-			double mx = mFromV(vr.getCenterX());
-			double my = mFromV(vr.getCenterY());
-			Logger.log.info("center: " + mx + ", " + my);
-			setPctZoom(pctZoomFactor);
-			parent.scrollCenterTo((int) vFromM(mx), (int) vFromM(my));
-		} else
-			setPctZoom(pctZoomFactor);
-	}
-
-	/**
-	 * @param pctZoomFactor
-	 * @param cursor
-	 */
-	public void zoomToCursor(double pctZoomFactor, Point cursor) {
-		if (parent == null)
-			return;
-		// offset between mouse and center of the viewport
-		double vDeltax = cursor.getX() - parent.getViewRect().getCenterX();
-		double vDeltay = cursor.getY() - parent.getViewRect().getCenterY();
-		// model coordinates where the mouse is pointing at
-		double mx = mFromV(cursor.getX());
-		double my = mFromV(cursor.getY());
-		// adjust zoom
-		setPctZoom(pctZoomFactor);
-		// put mx, my back under the mouse
-		parent.scrollCenterTo((int) (vFromM(mx) - vDeltax), (int) (vFromM(my) - vDeltay));
-	}
-
-	/**
-	 * Calculate the zoom factor that would make the pathway fit in the viewport.
-	 */
-	public double getFitZoomFactor() {
-		double result;
-		Dimension drawingSize = new Dimension(getVWidth(), getVHeight());
-		Dimension viewportSize = getWrapper().getViewRect().getSize();
-		result = (int) Math.min(getPctZoom() * (double) viewportSize.width / drawingSize.width,
-				getPctZoom() * (double) viewportSize.height / drawingSize.height);
-		return result;
-	}
-
-	// ================================================================================
 	// Link Methods
 	// ================================================================================
 	private LinkAnchor currentLinkAnchor;
@@ -754,11 +799,20 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// Mouse Move Methods
+	// Mouse Event Variables and Methods
 	// ================================================================================
+
+	/**
+	 * The {@link VElement} that is pressed, last mouseDown event.
+	 */
+	private VElement pressedObject = null;
 	private int vPreviousX;
 	private int vPreviousY;
 	private boolean isDragging;
+
+	public void setPressedObject(VElement o) {
+		pressedObject = o;
+	}
 
 	/**
 	 * handles mouse movement
@@ -837,11 +891,16 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// Hover Methods
+	// Mouse Event Variables and Methods: HOVER
 	// ================================================================================
 	private Set<VElement> lastMouseOver = new HashSet<VElement>();
 	private HoverManager hoverManager = new HoverManager();
 
+	/**
+	 * This class is for managing hover. TODO
+	 * 
+	 * @author unknown
+	 */
 	private class HoverManager implements ActionListener {
 		static final int DELAY = 1000; // tooltip delay in ms
 		boolean tooltipDisplayed = false;
@@ -902,14 +961,6 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * @param o
-	 */
-	public void selectObject(VElement o) {
-		clearSelection();
-		selection.addToSelection(o);
-	}
-
-	/**
 	 * Opens href of a Label with ctrl + click.
 	 * 
 	 * @param e the mouse event.
@@ -927,10 +978,15 @@ public class VPathwayModel implements PathwayListener {
 		return false;
 	}
 
+	// ================================================================================
+	// Mouse Event Variables and Methods: MOUSEDOWN/UP
+	// ================================================================================
+	private PathwayModel temporaryCopy = null;
+
 	/**
 	 * Handles mouse Pressed input
 	 * 
-	 * @param e the mouse event. 
+	 * @param e the mouse event.
 	 */
 	public void mouseDown(MouseEvent e) {
 		VElement vpe = getObjectAt(e.getLocation());
@@ -958,6 +1014,8 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Handles mouse Released input
+	 * 
+	 * @param e the mouse event.
 	 */
 	public void mouseUp(MouseEvent e) {
 		if (isDragging) {
@@ -998,7 +1056,9 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Handles mouse entered input
+	 * Handles mouse entered input.
+	 * 
+	 * @param e the mouse event.
 	 */
 	public void mouseDoubleClick(MouseEvent e) {
 		VElement o = getObjectAt(e.getLocation());
@@ -1009,84 +1069,6 @@ public class VPathwayModel implements PathwayListener {
 			}
 			fireVPathwayEvent(new VPathwayEvent(this, o, VPathwayEventType.ELEMENT_DOUBLE_CLICKED));
 		}
-	}
-
-	// ================================================================================
-	// Draw Methods
-	// ================================================================================
-	/**
-	 * Paints all components in the drawing. This method is called automatically in
-	 * the painting process. This method will draw opaquely, meaning it will erase
-	 * the background.
-	 * 
-	 * @param g2d the graphics device to draw on. The method will not draw outside
-	 *            the clipping area.
-	 */
-	public void draw(Graphics2D g2d) {
-		addScheduled();
-		cleanUp();
-
-		try {
-			// save original, non-clipped, to pass on to VPathwayEvent
-			Graphics2D g2dFull = (Graphics2D) g2d.create();
-
-			// we only redraw the part within the clipping area.
-			Rectangle area = g2d.getClipBounds();
-			if (area == null) {
-				Dimension size = parent == null ? new Dimension(getVWidth(), getVHeight())
-						: parent.getViewRect().getSize(); // Draw the visible area
-				area = new Rectangle(0, 0, size.width, size.height);
-			}
-
-			// erase the background
-			g2d.setColor(java.awt.Color.WHITE);
-			g2d.fillRect(area.x, area.y, area.width, area.height);
-
-			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-
-			g2d.clip(area);
-			g2d.setColor(java.awt.Color.BLACK);
-			Collections.sort(drawingObjects);
-			cleanUp();
-			for (VElement o : drawingObjects) {
-				if (o.vIntersects(area)) {
-					if (checkDrawAllowed(o)) {
-						o.draw((Graphics2D) g2d.create());
-						fireVPathwayEvent(new VPathwayEvent(this, o, (Graphics2D) g2dFull.create(),
-								VPathwayEventType.ELEMENT_DRAWN));
-					}
-				}
-			}
-		} catch (ConcurrentModificationException ex) {
-			// guard against messing up repaint event completely
-			Logger.log.error("Concurrent modification", ex);
-		}
-	}
-
-	boolean checkDrawAllowed(VElement o) {
-		if (isEditMode())
-			return true;
-		else
-			return !(o instanceof Handle || (o == selection && !isDragging));
-	}
-
-	/**
-	 * deselect all elements on the drawing and resets the selectionbox.
-	 */
-	public void clearSelection() {
-		clearSelection(0, 0);
-	}
-
-	/**
-	 * deselect all elements on the drawing and resets the selectionbox to the given
-	 * coordinates Equivalent to {@link SelectionBox#reset(double, double))}
-	 */
-	private void clearSelection(double x, double y) {
-		for (VElement e : drawingObjects)
-			e.deselect();
-		selection.reset(x, y);
 	}
 
 	static final int MULTI_SELECT_MASK = MouseEvent.M_SHIFT
@@ -1132,7 +1114,7 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Resets highlighting, unhighlights all GmmlDrawingObjects
+	 * Resets highlighting, unhighlights all drawing object.
 	 */
 	public void resetHighlight() {
 		for (VElement o : drawingObjects)
@@ -1143,10 +1125,10 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Called by MouseDown, when we're in editting mode and we're not adding new
+	 * Called by MouseDown, when we're in editing mode and we're not adding new
 	 * objects prepares for dragging the object
 	 * 
-	 * @param pressedObject
+	 * @param e the mouse event.
 	 */
 	private void editObject(MouseEvent e) {
 		// if we clicked on an object
@@ -1180,9 +1162,9 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Find the object at a particular location on the drawing
 	 *
-	 * if you want to get more than one,
+	 * if you want to get more than one, @see #getObjectsAt(Point2D)
 	 *
-	 * @see #getObjectsAt(Point2D)
+	 * @param p2d the location.
 	 */
 	public VElement getObjectAt(Point2D p2d) {
 		int zmax = Integer.MIN_VALUE;
@@ -1212,9 +1194,7 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Find all objects at a particular location on the drawing
 	 *
-	 * if you only need the top object,
-	 *
-	 * @see #getObjectAt(Point2D)
+	 * if you only need the top object, @see #getObjectAt(Point2D)
 	 */
 	public List<VElement> getObjectsAt(Point2D p2d) {
 		List<VElement> result = new ArrayList<VElement>();
@@ -1229,8 +1209,8 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Returns a list of all possible {@link LinkProvider} for the given point.
 	 * 
-	 * @param p
-	 * @return
+	 * @param p2d the given point. 
+	 * @return the list of link providers. 
 	 */
 	private List<LinkProvider> getLinkProvidersAt(Point2D p2d) {
 		List<LinkProvider> result = new ArrayList<LinkProvider>();
@@ -1271,7 +1251,7 @@ public class VPathwayModel implements PathwayListener {
 		} else
 		// Shift or Ctrl not pressed
 		{
-			// If pressedobject is not selectionbox:
+			// If pressed object is not selectionbox:
 			// Clear current selection and select pressed object
 			if (!(pressedObject instanceof SelectionBox)) {
 				clearSelection();
@@ -1293,17 +1273,8 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// Drag Variables and Methods
+	// Mouse Event Variables and Methods: DRAG
 	// ================================================================================
-	/**
-	 * pathvisio distinguishes between placing objects with a click or with a drag.
-	 * If you don't move the cursor in between the mousedown and mouseup event, the
-	 * object is placed with a default initial size.
-	 *
-	 * vDragStart is used to determine the mousemovement during the click.
-	 */
-	private Point vDragStart;
-
 	/**
 	 * dragUndoState determines what should be done when you release the mouse
 	 * button after dragging an object.
@@ -1319,6 +1290,15 @@ public class VPathwayModel implements PathwayListener {
 	private static final int DRAG_UNDO_NOT_RECORDING = 0;
 	private static final int DRAG_UNDO_CHANGE_START = 1;
 	private static final int DRAG_UNDO_CHANGED = 2;
+
+	/**
+	 * pathvisio distinguishes between placing objects with a click or with a drag.
+	 * If you don't move the cursor in between the mousedown and mouseup event, the
+	 * object is placed with a default initial size.
+	 *
+	 * vDragStart is used to determine the mousemovement during the click.
+	 */
+	private Point vDragStart;
 
 	private int dragUndoState = DRAG_UNDO_NOT_RECORDING;
 
@@ -1376,63 +1356,6 @@ public class VPathwayModel implements PathwayListener {
 
 	public void mouseExit(MouseEvent e) {
 		hoverManager.stop();
-	}
-
-	/**
-	 * Select all objects of the given class
-	 *
-	 * @param c The class of the objects to be selected. For example: DataNode,
-	 *          Line, etc. May be null, in which case everything is selected.
-	 */
-	void selectObjects(Class<?> c) {
-		clearSelection();
-		selection.startSelecting();
-		for (VElement vpe : getDrawingObjects()) {
-			if (c == null || c.isInstance(vpe)) {
-				selection.addToSelection(vpe);
-			}
-
-		}
-		selection.stopSelecting();
-	}
-
-	public void selectObjectsByObjectType(Class subclass) {
-		clearSelection();
-		selection.startSelecting();
-		if (subclass == DataNode.class) {
-			for (DataNode pe : getPathwayModel().getDataNodes()) {
-				selection.addToSelection(getPathwayElementView(pe));
-			}
-		} else if (subclass == Interaction.class) {
-			for (Interaction pe : getPathwayModel().getInteractions()) {
-				selection.addToSelection(getPathwayElementView(pe));
-			}
-		} else if (subclass == GraphicalLine.class) {
-			for (GraphicalLine pe : getPathwayModel().getGraphicalLines()) {
-				selection.addToSelection(getPathwayElementView(pe));
-			}
-		} else if (subclass == Label.class) {
-			for (Label pe : getPathwayModel().getLabels()) {
-				selection.addToSelection(getPathwayElementView(pe));
-			}
-		} else if (subclass == Shape.class) {
-			for (Shape pe : getPathwayModel().getShapes()) {
-				selection.addToSelection(getPathwayElementView(pe));
-			}
-		} else if (subclass == Group.class) {
-			for (Group pe : getPathwayModel().getGroups()) {
-				selection.addToSelection(getPathwayElementView(pe));
-			}
-		}
-		// TODO???? Citations, Annotations... other???
-		selection.stopSelecting();
-	}
-
-	/**
-	 * select all objects of the pathway.
-	 */
-	void selectAll() {
-		selectObjects(null);
 	}
 
 	/**
@@ -1759,6 +1682,9 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	// ================================================================================
+	// Size and Scale Methods
+	// ================================================================================
 	/**
 	 * Calculate the board size. Calls {@link VElement#getVBounds()} for every
 	 * element and adds all results together to obtain the board size
@@ -1772,22 +1698,183 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Makes a copy of all PathwayElements in current selection, and puts them in
-	 * the global clipboard.
+	 * Get width of entire PathwayModel view (taking into account zoom)
 	 */
-	public void copyToClipboard() {
-		List<PathwayElement> result = new ArrayList<PathwayElement>();
-		for (VElement g : drawingObjects) {
-			if (g.isSelected() && g instanceof Graphics && !(g instanceof SelectionBox)) {
-				result.add(((DataNode) ((Graphics) g).getPathwayElement()).copy());
+	public int getVWidth() {
+		return data == null ? 0 : (int) vFromM(data.getPathway().getBoardWidth());
+	}
+
+	/**
+	 * Get height of entire PathwayModel view (taking into account zoom)
+	 */
+	public int getVHeight() {
+		return data == null ? 0 : (int) vFromM(data.getPathway().getBoardHeight());
+	}
+
+	/**
+	 * Scales a set of objects by max width
+	 */
+	private void scaleWidth(List<Graphics> gs) {
+		double maxW = 0;
+		Graphics gMax = null;
+		for (Graphics g : gs) {
+			Rectangle2D r = g.getVShape(true).getBounds2D();
+			double w = Math.abs(r.getWidth());
+			if (w > maxW) {
+				gMax = g;
+				maxW = w;
 			}
 		}
-		if (result.size() > 0) {
-			if (parent != null)
-				parent.copyToClipboard(getPathwayModel(), result);
+		for (Graphics g : gs) {
+			if (g == gMax)
+				continue;
+
+			Rectangle2D r = g.getVShape(true).getBounds2D();
+			double oldWidth = r.getWidth();
+			if (oldWidth < 0) {
+				r.setRect(r.getX(), r.getY(), -(maxW), r.getHeight());
+				g.setVScaleRectangle(r);
+				g.vMoveBy((oldWidth + maxW) / 2, 0);
+			} else {
+				r.setRect(r.getX(), r.getY(), maxW, r.getHeight());
+				g.setVScaleRectangle(r);
+				g.vMoveBy((oldWidth - maxW) / 2, 0);
+			}
 		}
 	}
 
+	/**
+	 * Scales selected objects by max height
+	 */
+	private void scaleHeight(List<Graphics> gs) {
+		double maxH = 0;
+		Graphics gMax = null;
+		for (Graphics g : gs) {
+			Rectangle2D r = g.getVShape(true).getBounds2D();
+			double h = Math.abs(r.getHeight());
+			if (h > maxH) {
+				gMax = g;
+				maxH = h;
+			}
+		}
+		for (Graphics g : gs) {
+			if (g == gMax)
+				continue;
+
+			Rectangle2D r = g.getVShape(true).getBounds2D();
+			double oldHeight = r.getHeight();
+			if (oldHeight < 0) {
+				r.setRect(r.getX(), r.getY(), r.getWidth(), -(maxH));
+				g.setVScaleRectangle(r);
+				g.vMoveBy(0, (maxH + oldHeight) / 2);
+			} else {
+				r.setRect(r.getX(), r.getY(), r.getWidth(), maxH);
+				g.setVScaleRectangle(r);
+				g.vMoveBy(0, (oldHeight - maxH) / 2);
+			}
+		}
+	}
+
+	// ================================================================================
+	// Zoom Methods
+	// ================================================================================
+	private double zoomFactor = 1.0;
+
+	/**
+	 * Get the current zoomfactor used. 1 means 100%, 1 gpml unit = 1 pixel 2 means
+	 * 200%, 0.5 gpml unit = 1 pixel
+	 *
+	 * To distinguish between model coordinates and view coordinates, we prefix all
+	 * coordinates with either v or m (or V or M). For example:
+	 *
+	 * mTop = gdata.getMTop(); vTop = GeneProduct.getVTop();
+	 *
+	 * Calculations done on M's and V's should always match. The only way to convert
+	 * is to use the functions mFromV and vFromM.
+	 *
+	 * Correct: mRight = mLeft + mWidth; Wrong: mLeft += vDx; Fixed: mLeft +=
+	 * mFromV(vDx);
+	 *
+	 * @return the current zoomfactor
+	 */
+	public double getZoomFactor() {
+		return zoomFactor;
+	}
+
+	/**
+	 * same as getZoomFactor, but in %
+	 *
+	 * @return
+	 */
+	public double getPctZoom() {
+		return zoomFactor * 100;
+	}
+
+	/**
+	 * Sets the drawings zoom in percent
+	 *
+	 * @param pctZoomFactor zoomfactor in percent
+	 * @see #getFitZoomFactor() for fitting the pathway inside the viewport.
+	 */
+	public void setPctZoom(double pctZoomFactor) {
+		zoomFactor = pctZoomFactor / 100.0;
+		for (VElement vpe : drawingObjects) {
+			vpe.zoomChanged();
+		}
+		if (parent != null)
+			parent.resized();
+	}
+
+	/**
+	 * @param pctZoomFactor
+	 */
+	public void centeredZoom(double pctZoomFactor) {
+		if (parent != null) {
+			Rectangle vr = parent.getViewRect();
+
+			double mx = mFromV(vr.getCenterX());
+			double my = mFromV(vr.getCenterY());
+			Logger.log.info("center: " + mx + ", " + my);
+			setPctZoom(pctZoomFactor);
+			parent.scrollCenterTo((int) vFromM(mx), (int) vFromM(my));
+		} else
+			setPctZoom(pctZoomFactor);
+	}
+
+	/**
+	 * @param pctZoomFactor
+	 * @param cursor
+	 */
+	public void zoomToCursor(double pctZoomFactor, Point cursor) {
+		if (parent == null)
+			return;
+		// offset between mouse and center of the viewport
+		double vDeltax = cursor.getX() - parent.getViewRect().getCenterX();
+		double vDeltay = cursor.getY() - parent.getViewRect().getCenterY();
+		// model coordinates where the mouse is pointing at
+		double mx = mFromV(cursor.getX());
+		double my = mFromV(cursor.getY());
+		// adjust zoom
+		setPctZoom(pctZoomFactor);
+		// put mx, my back under the mouse
+		parent.scrollCenterTo((int) (vFromM(mx) - vDeltax), (int) (vFromM(my) - vDeltay));
+	}
+
+	/**
+	 * Calculate the zoom factor that would make the pathway fit in the viewport.
+	 */
+	public double getFitZoomFactor() {
+		double result;
+		Dimension drawingSize = new Dimension(getVWidth(), getVHeight());
+		Dimension viewportSize = getWrapper().getViewRect().getSize();
+		result = (int) Math.min(getPctZoom() * (double) viewportSize.width / drawingSize.width,
+				getPctZoom() * (double) viewportSize.height / drawingSize.height);
+		return result;
+	}
+
+	// ================================================================================
+	// Alignment and Layout Methods
+	// ================================================================================
 	/**
 	 * Handles aligning layoutTypes ALIGN_*
 	 */
@@ -1945,71 +2032,9 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Scales a set of objects by max width
-	 */
-	private void scaleWidth(List<Graphics> gs) {
-		double maxW = 0;
-		Graphics gMax = null;
-		for (Graphics g : gs) {
-			Rectangle2D r = g.getVShape(true).getBounds2D();
-			double w = Math.abs(r.getWidth());
-			if (w > maxW) {
-				gMax = g;
-				maxW = w;
-			}
-		}
-		for (Graphics g : gs) {
-			if (g == gMax)
-				continue;
-
-			Rectangle2D r = g.getVShape(true).getBounds2D();
-			double oldWidth = r.getWidth();
-			if (oldWidth < 0) {
-				r.setRect(r.getX(), r.getY(), -(maxW), r.getHeight());
-				g.setVScaleRectangle(r);
-				g.vMoveBy((oldWidth + maxW) / 2, 0);
-			} else {
-				r.setRect(r.getX(), r.getY(), maxW, r.getHeight());
-				g.setVScaleRectangle(r);
-				g.vMoveBy((oldWidth - maxW) / 2, 0);
-			}
-		}
-	}
-
-	/**
-	 * Scales selected objects by max height
-	 */
-	private void scaleHeight(List<Graphics> gs) {
-		double maxH = 0;
-		Graphics gMax = null;
-		for (Graphics g : gs) {
-			Rectangle2D r = g.getVShape(true).getBounds2D();
-			double h = Math.abs(r.getHeight());
-			if (h > maxH) {
-				gMax = g;
-				maxH = h;
-			}
-		}
-		for (Graphics g : gs) {
-			if (g == gMax)
-				continue;
-
-			Rectangle2D r = g.getVShape(true).getBounds2D();
-			double oldHeight = r.getHeight();
-			if (oldHeight < 0) {
-				r.setRect(r.getX(), r.getY(), r.getWidth(), -(maxH));
-				g.setVScaleRectangle(r);
-				g.vMoveBy(0, (maxH + oldHeight) / 2);
-			} else {
-				r.setRect(r.getX(), r.getY(), r.getWidth(), maxH);
-				g.setVScaleRectangle(r);
-				g.vMoveBy(0, (oldHeight - maxH) / 2);
-			}
-		}
-	}
-
-	/**
-	 * Move a set of graphics to the top in the z-order stack
+	 * Moves a set of graphics to the top in the z-order stack.
+	 *
+	 * @param gs the set of graphics to move.
 	 */
 	public void moveGraphicsTop(List<Graphics> gs) {
 		Collections.sort(gs, new ZComparator());
@@ -2024,8 +2049,14 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	// ================================================================================
+	// Z-Order Methods
+	// ================================================================================
 	/**
 	 * Returns the highest z-order of all pathway model objects with z-order.
+	 * 
+	 * @param pathwayModel the pathway model.
+	 * @return the highest z-order of all pathway model objects.
 	 */
 	public int getMaxZOrder(PathwayModel pathwayModel) {
 		List<PathwayElement> dataObjects = pathwayModel.getPathwayElements();
@@ -2103,6 +2134,8 @@ public class VPathwayModel implements PathwayListener {
 	 * that.
 	 * 
 	 * TODO was Graphics, but VElementInfo includes VShapedElement and VLineElement
+	 * 
+	 * @param gs the list of VPathwayElements.
 	 */
 	public void moveGraphicsUp(List<VPathwayElement> gs) {
 		// TODO: Doesn't really work very well with multiple selections
@@ -2201,6 +2234,9 @@ public class VPathwayModel implements PathwayListener {
 		return result;
 	}
 
+	// ================================================================================
+	// Helper Selection Methods
+	// ================================================================================
 	/**
 	 * Get all elements of the class Graphics that are currently selected
 	 *
@@ -2289,67 +2325,33 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
-	public void paste(List<PathwayElement> elements) {
-		paste(elements, 0, 0);
+	// ================================================================================
+	// Copy and Paste Methods
+	// ================================================================================
+	/**
+	 * Makes a copy of all PathwayElements in current selection, and puts them in
+	 * the global clipboard.
+	 */
+	public void copyToClipboard() {
+		List<PathwayElement> result = new ArrayList<PathwayElement>();
+		for (VElement g : drawingObjects) {
+			if (g.isSelected() && g instanceof Graphics && !(g instanceof SelectionBox)) {
+				result.add(((DataNode) ((Graphics) g).getPathwayElement()).copy());
+			}
+		}
+		if (result.size() > 0) {
+			if (parent != null)
+				parent.copyToClipboard(getPathwayModel(), result);
+		}
 	}
 
 	/**
-	 * Updates all id's and references of a single PathwayElement, using the
-	 * provided idMap.
-	 *
-	 * This will - replace groupId of elements - replace graphId of elements,
-	 * anchors and points - replace graphRefs if it's in the map, otherwise set to
-	 * null - replace groupRegs if it's in the map, otherwise set to null
+	 * Pastes
+	 * 
+	 * @param elements
 	 */
-	private void replaceIdsAndRefs(PathwayElement p, Map<String, String> idmap) {
-		// set new unique id
-		if (p.getElementId() != null) {
-			p.setElementId(idmap.get(p.getElementId()));
-		}
-		for (LinePoint mp : ((LineElement) p).getLinePoints()) {
-			mp.setElementId(idmap.get(mp.getElementId()));
-		}
-		for (Anchor ma : ((LineElement) p).getAnchors()) {
-			ma.setElementId(idmap.get(ma.getElementId()));
-		}
-		// set new group id
-		String gid = p.getGroupId();
-		if (gid != null) {
-			p.setGroupId(idmap.get(gid));
-		}
-		// update graphref
-		LinkableTo y = ((LineElement) p).getStartElementRef();
-		if (y != null) {
-			if (idmap.containsKey(y)) {
-				p.setStartGraphRef(idmap.get(y));
-			} else {
-				p.setStartGraphRef(null);
-			}
-		}
-		y = p.getEndGraphRef();
-		if (y != null) {
-			if (idmap.containsKey(y)) {
-				p.setEndGraphRef(idmap.get(y));
-			} else {
-				p.setEndGraphRef(null);
-			}
-		}
-		y = p.getGraphRef();
-		if (y != null) {
-			if (idmap.containsKey(y)) {
-				p.setGraphRef(idmap.get(y));
-			}
-			// If the ref points to an item outside the selection, keep using original!
-		}
-		// update groupref
-		String groupRef = p.getGroupRef();
-		if (groupRef != null) {
-			if (idmap.containsKey(groupRef)) {
-				p.setGroupRefTo(idmap.get(groupRef));
-			} else {
-				p.setGroupRefTo(null);
-			}
-		}
+	public void paste(List<PathwayElement> elements) {
+		paste(elements, 0, 0);
 	}
 
 	public void paste(List<PathwayElement> elements, double xShift, double yShift) {
@@ -2420,7 +2422,9 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * paste from clip board at the current cursor position
+	 * Paste from clip board at the current cursor position.
+	 * 
+	 * @param cursorPosition the current cursor position.
 	 */
 	public void positionPasteFromClipboard(Point cursorPosition) {
 		if (isEditMode()) {
@@ -2429,6 +2433,72 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	/**
+	 * Updates all id's and references of a single PathwayElement, using the
+	 * provided idMap.
+	 * <p>
+	 * This will
+	 * <ol>
+	 * <li>Replace groupId of elements
+	 * <li>Replace graphId of elements, anchors and points
+	 * <li>Replace graphRefs if it's in the map, otherwise set to null
+	 * <li>Replace groupRegs if it's in the map, otherwise set to null
+	 * </ol>
+	 */
+	private void replaceIdsAndRefs(PathwayElement p, Map<String, String> idmap) {
+		// set new unique id
+		if (p.getElementId() != null) {
+			p.setElementId(idmap.get(p.getElementId()));
+		}
+		for (LinePoint mp : ((LineElement) p).getLinePoints()) {
+			mp.setElementId(idmap.get(mp.getElementId()));
+		}
+		for (Anchor ma : ((LineElement) p).getAnchors()) {
+			ma.setElementId(idmap.get(ma.getElementId()));
+		}
+		// set new group id
+		String gid = p.getGroupId();
+		if (gid != null) {
+			p.setGroupId(idmap.get(gid));
+		}
+		// update graphref
+		LinkableTo y = ((LineElement) p).getStartElementRef();
+		if (y != null) {
+			if (idmap.containsKey(y)) {
+				p.setStartGraphRef(idmap.get(y));
+			} else {
+				p.setStartGraphRef(null);
+			}
+		}
+		y = p.getEndGraphRef();
+		if (y != null) {
+			if (idmap.containsKey(y)) {
+				p.setEndGraphRef(idmap.get(y));
+			} else {
+				p.setEndGraphRef(null);
+			}
+		}
+		y = p.getGraphRef();
+		if (y != null) {
+			if (idmap.containsKey(y)) {
+				p.setGraphRef(idmap.get(y));
+			}
+			// If the ref points to an item outside the selection, keep using original!
+		}
+		// update groupref
+		String groupRef = p.getGroupRef();
+		if (groupRef != null) {
+			if (idmap.containsKey(groupRef)) {
+				p.setGroupRefTo(idmap.get(groupRef));
+			} else {
+				p.setGroupRefTo(null);
+			}
+		}
+	}
+
+	// ================================================================================
+	// Listener Methods
+	// ================================================================================
 	private List<VPathwayListener> listeners = new ArrayList<VPathwayListener>();
 
 	public void addVPathwayListener(VPathwayListener l) {
@@ -2483,8 +2553,13 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	// ================================================================================
+	// Helper Methods
+	// ================================================================================
+	private AffineTransform vFromM = new AffineTransform();
+
 	/**
-	 * helper method to convert view {@link VCoordinate} to model {@link Coordinate}
+	 * Helper method to convert view {@link VCoordinate} to model {@link Coordinate}
 	 * accounting for canvas zoomFactor.
 	 * 
 	 * @param vCoordinate the view coordinate.
@@ -2503,25 +2578,9 @@ public class VPathwayModel implements PathwayListener {
 		return mCoordinate * zoomFactor;
 	}
 
-	private AffineTransform vFromM = new AffineTransform();
-
 	public java.awt.Shape vFromM(java.awt.Shape s) {
 		vFromM.setToScale(zoomFactor, zoomFactor);
 		return vFromM.createTransformedShape(s);
-	}
-
-	/**
-	 * Get width of entire PathwayModel view (taking into account zoom)
-	 */
-	public int getVWidth() {
-		return data == null ? 0 : (int) vFromM(data.getPathway().getBoardWidth());
-	}
-
-	/**
-	 * Get height of entire PathwayModel view (taking into account zoom)
-	 */
-	public int getVHeight() {
-		return data == null ? 0 : (int) vFromM(data.getPathway().getBoardHeight());
 	}
 
 	/** sorts graphics by VCenterY */
@@ -2548,8 +2607,17 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
-	/** sorts Graphics by ZOrder */
+	/**
+	 * This class sorts Graphics by ZOrder.
+	 * 
+	 * @author unknown
+	 */
 	public static class ZComparator implements Comparator<Graphics> {
+		/**
+		 * @param g1
+		 * @param g2
+		 * @return
+		 */
 		public int compare(VPathwayElement g1, VPathwayElement g2) {
 			return g1.getPathwayElement().getZOrder() - g2.getPathwayElement().getZOrder();
 		}
@@ -2586,10 +2654,13 @@ public class VPathwayModel implements PathwayListener {
 		undoManager.undo();
 	}
 
+	// ================================================================================
+	// Clean-Up and Destroy Methods
+	// ================================================================================
 	private boolean disposed = false;
 
 	/**
-	 * free all resources (such as listeners) held by this class. Owners of this
+	 * Frees all resources (such as listeners) held by this class. Owners of this
 	 * class must explicitly dispose of it to clean up.
 	 */
 	public void dispose() {
@@ -2598,13 +2669,15 @@ public class VPathwayModel implements PathwayListener {
 			elt.destroy();
 		}
 		cleanUp();
-		if (data != null)
+		if (data != null) {
 			data.removeListener(this);
+		}
 		listeners.clear();
 		selection.getListeners().clear();
 		viewActions = null;
-		if (parent != null)
+		if (parent != null) {
 			parent.dispose();
+		}
 		parent = null; // disconnect from VPathwaySwing
 		undoManager.dispose();
 		undoManager = null;
@@ -2612,6 +2685,9 @@ public class VPathwayModel implements PathwayListener {
 		disposed = true;
 	}
 
+	/**
+	 * 
+	 */
 	private void cleanUp() {
 		for (Iterator<VElement> i = drawingObjects.iterator(); i.hasNext();) {
 			VElement elt = i.next();
@@ -2621,6 +2697,9 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	// ================================================================================
+	// Move Methods
+	// ================================================================================
 	/**
 	 * Move multiple elements together (either a group or a selection).
 	 * <p>
@@ -2638,25 +2717,25 @@ public class VPathwayModel implements PathwayListener {
 			if (o instanceof Graphics) {
 				PathwayElement elt = ((Graphics) o).getPathwayElement();
 				String id = elt.getElementId();
-				if (id != null)
+				if (id != null) {
 					eltIds.add(id);
+				}
 				String groupId = elt.getGroupId();
 				if (elt.getObjectType() == ObjectType.GROUP && groupId != null)
 					groupIds.add(id);
 			}
 		}
-
 		for (VElement o : toMove) {
 			// skip if parent of state is also in selection.
 			if (o instanceof VState && eltIds
-					.contains(((LinkableFrom) ((VState) o).getPathwayElement()).getElementRef().getElementId()))
+					.contains(((LinkableFrom) ((VState) o).getPathwayElement()).getElementRef().getElementId())) {
 				continue;
-
+			}
 			if (o instanceof VPathwayElement) {
 				// skip if parent group is also in selection
-				if (groupIds.contains(((VPathwayElement) o).getPathwayElement().getGroupRef()))
+				if (groupIds.contains(((VPathwayElement) o).getPathwayElement().getGroupRef())) {
 					continue;
-
+				}
 				o.vMoveBy(vdx, vdy);
 			}
 		}
