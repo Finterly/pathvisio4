@@ -16,13 +16,9 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
 import org.pathvisio.model.DataNode.State;
-import org.pathvisio.model.type.LineStyleType;
 
 /**
  * This class represents the view of a {@link State} PathwayElement.
@@ -31,12 +27,13 @@ import org.pathvisio.model.type.LineStyleType;
  */
 public class VState extends VShapedElement {
 
-	public static final String ROTATION_KEY = "org.pathvisio.core.StateRotation";
+	private VDataNode vDataNode;
 
-	public VState(VPathwayModel canvas, State gdata) {
+	public VState(VPathwayModel canvas, State gdata, VDataNode vDataNode) {
 		super(canvas, gdata);
+		this.vDataNode = vDataNode;
 	}
-	
+
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
@@ -46,43 +43,6 @@ public class VState extends VShapedElement {
 	public State getPathwayElement() {
 		return getPathwayElement();
 	}
-
-	public void doDraw(Graphics2D g) {
-		g.setColor(getBorderColor());
-		setBorderStyle(g);
-		drawShape(g);
-
-		g.setFont(getVFont());
-		drawTextLabel(g);
-
-		drawHighlight(g);
-	}
-
-	protected Color getBorderColor(State gdata) {
-		Color borderColor = gdata.getBorderColor();
-		/*
-		 * the selection is not colored red when in edit mode it is possible to see a
-		 * color change immediately
-		 */
-		if (isSelected() && !canvas.isEditMode()) {
-			borderColor = selectColor;
-		}
-		return borderColor;
-	}
-
-	protected void setBorderStyle(Graphics2D g) {
-		LineStyleType ls = getPathwayElement().getBorderStyle();
-		float lt = (float) vFromM(getPathwayElement().getBorderWidth());
-		if (ls == LineStyleType.SOLID) {
-			g.setStroke(new BasicStroke(lt));
-		} else if (ls == LineStyleType.DASHED) {
-			g.setStroke(
-					new BasicStroke(lt, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10, new float[] { 4, 4 }, 0));
-		} else if (ls == LineStyleType.DOUBLE) {
-			g.setStroke(new CompositeStroke(new BasicStroke(lt * 2), new BasicStroke(lt)));
-		}
-	}
-
 
 	protected void vMoveBy(double vdx, double vdy) {
 		Point2D mNewPos = new Point2D.Double(mFromV(getVCenterX() + vdx), mFromV(getVCenterY() + vdy));
@@ -99,11 +59,6 @@ public class VState extends VShapedElement {
 			y = -1;
 		((State) gdata).setRelX(x);
 		((State) gdata).setRelY(y);
-	}
-
-	@Override
-	public void destroy() {
-		super.destroy();
 	}
 
 }

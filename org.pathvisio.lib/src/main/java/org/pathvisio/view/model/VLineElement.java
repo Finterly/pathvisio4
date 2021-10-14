@@ -61,7 +61,7 @@ import org.pathvisio.view.ShapeRegistry;
  * @see org.pathvisio.view.connector.ConnectorShapeFactory
  */
 public class VLineElement extends VPathwayElement implements Adjustable, VGroupable { // TODO
-																			// ConnectorRestrictions
+	// ConnectorRestrictions
 	private List<VPoint> points;
 	private Map<Anchor, VAnchor> anchors = new HashMap<Anchor, VAnchor>();
 	List<Handle> segmentHandles = new ArrayList<Handle>();
@@ -506,26 +506,70 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 		return points.get(points.size() - 1);
 	}
 
+	/**
+	 * Get the x-coordinate of the center point of this object adjusted to the
+	 * current zoom factor
+	 * 
+	 * @return the center x-coordinate
+	 */
 	public double getVCenterX() {
 		return vFromM(getPathwayElement().getCenterX());
 	}
 
+	/**
+	 * Get the y-coordinate of the center point of this object adjusted to the
+	 * current zoom factor
+	 *
+	 * @return the center y-coordinate
+	 */
 	public double getVCenterY() {
 		return vFromM(getPathwayElement().getCenterY());
 	}
 
-	public double getVLeft() {
-		return vFromM(getPathwayElement().getLeft());
-	}
-
+	/**
+	 * Get the width of this object adjusted to the current zoom factor, but not
+	 * taking into account rotation
+	 * 
+	 * @note if you want the width of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getWidth();
+	 * @return
+	 */
 	public double getVWidth() {
 		return vFromM(getPathwayElement().getWidth());
 	}
 
+	/**
+	 * Get the height of this object adjusted to the current zoom factor, but not
+	 * taking into account rotation
+	 * 
+	 * @note if you want the height of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getY();
+	 * @return
+	 */
 	public double getVHeight() {
 		return vFromM(getPathwayElement().getHeight());
 	}
 
+	/**
+	 * Get the x-coordinate of the left side of this object adjusted to the current
+	 * zoom factor, but not taking into account rotation
+	 * 
+	 * @note if you want the left side of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getX();
+	 * @return
+	 */
+	public double getVLeft() {
+		return vFromM(getPathwayElement().getLeft());
+	}
+
+	/**
+	 * Get the y-coordinate of the top side of this object adjusted to the current
+	 * zoom factor, but not taking into account rotation
+	 * 
+	 * @note if you want the top side of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getY();
+	 * @return
+	 */
 	public double getVTop() {
 		return vFromM(getPathwayElement().getTop());
 	}

@@ -46,6 +46,7 @@ import org.pathvisio.view.LinAlg;
 import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.model.Handle.Freedom;
+import org.pathvisio.view.model.shape.VShapeTypeRegistry;
 
 /**
  * This {@link Graphics} class represents the view of {@link ShapedElement}
@@ -93,6 +94,30 @@ public abstract class VShapedElement extends VPathwayElement
 	}
 
 	/**
+	 * Get the width of this object adjusted to the current zoom factor, but not
+	 * taking into account rotation
+	 * 
+	 * @note if you want the width of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getWidth();
+	 * @return
+	 */
+	public double getVWidth() {
+		return vFromM(getPathwayElement().getWidth());
+	}
+
+	/**
+	 * Get the height of this object adjusted to the current zoom factor, but not
+	 * taking into account rotation
+	 * 
+	 * @note if you want the height of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getY();
+	 * @return
+	 */
+	public double getVHeight() {
+		return vFromM(getPathwayElement().getHeight());
+	}
+
+	/**
 	 * Get the x-coordinate of the left side of this object adjusted to the current
 	 * zoom factor, but not taking into account rotation
 	 * 
@@ -116,29 +141,7 @@ public abstract class VShapedElement extends VPathwayElement
 		return vFromM(getPathwayElement().getTop());
 	}
 
-	/**
-	 * Get the width of this object adjusted to the current zoom factor, but not
-	 * taking into account rotation
-	 * 
-	 * @note if you want the width of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getWidth();
-	 * @return
-	 */
-	public double getVWidth() {
-		return vFromM(getPathwayElement().getWidth());
-	}
-
-	/**
-	 * Get the height of this object adjusted to the current zoom factor, but not
-	 * taking into account rotation
-	 * 
-	 * @note if you want the height of the rotated object's boundary, use
-	 *       {@link #getVShape(true)}.getY();
-	 * @return
-	 */
-	public double getVHeight() {
-		return vFromM(getPathwayElement().getHeight());
-	}
+	
 
 	/*----------------- Convenience methods from Model -----------------*/
 
@@ -204,7 +207,25 @@ public abstract class VShapedElement extends VPathwayElement
 
 	// ================================================================================
 	// Rotation Methods
+	// - rotation is stored in Model as Radians
+	// - rotation is shown in View as Degrees
 	// ================================================================================
+
+	/**
+	 * @param rotation
+	 * @return
+	 */
+	public double rotationToDegrees(double rotation) {
+		return rotation * (180 / Math.PI);
+	}
+
+	/**
+	 * @param degree
+	 * @return
+	 */
+	public double degreesToRotation(double degree) {
+		return degree * (Math.PI / 180);
+	}
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0;
 
@@ -588,7 +609,7 @@ public abstract class VShapedElement extends VPathwayElement
 		if (getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType() == ShapeType.NONE) {
 			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
-			s = getPathwayElement().getShapeType().getShape(mw, mh); // IShape....
+			s = VShapeTypeRegistry.getShape(getPathwayElement().getShapeType(), mw, mh);
 		}
 
 		AffineTransform t = new AffineTransform();

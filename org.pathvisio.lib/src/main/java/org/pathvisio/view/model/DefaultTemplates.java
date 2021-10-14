@@ -157,7 +157,7 @@ public abstract class DefaultTemplates {
 		 */
 		public VElement getDragElement(VPathwayModel vp) {
 			if (lastAdded != null) {
-				Graphics g = vp.getPathwayElementView(lastAdded);
+				VPathwayObject g = vp.getPathwayElementView(lastAdded);
 				if (g == null) {
 					throw new IllegalArgumentException("Given VPathway doesn't contain last added element");
 				}

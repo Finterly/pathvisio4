@@ -17,14 +17,18 @@
 package org.pathvisio.view.model;
 
 import java.awt.Color;
+import java.util.List;
 
 import org.pathvisio.model.DataNode;
+import org.pathvisio.model.DataNode.State;
 
 /**
  * This class implements a {@link DataNode} and provides methods to resize and
  * draw it.
  */
 public class VDataNode extends VShapedElement {
+
+	private List<VState> vStates;
 
 	public static final Color INITIAL_FILL_COLOR = Color.WHITE;
 
@@ -45,4 +49,10 @@ public class VDataNode extends VShapedElement {
 		return getPathwayElement();
 	}
 
+	private void addState(State st) {
+		VState vst = new VState(canvas, st, this);
+		vStates.add(vst);
+	}
+
+	
 }

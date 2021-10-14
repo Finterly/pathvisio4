@@ -402,7 +402,7 @@ public class SelectionBox extends VElement implements Adjustable
 
 		//Keep track of objects that were selected via a group
 		//Don't unselect them if they're out of the selection bounds
-		Set<Graphics> groupObjects = new HashSet<Graphics>();
+		Set<VPathwayObject> groupObjects = new HashSet<VPathwayObject>();
 
 		if (isSelecting)
 		{ // Selecting, so add containing objects to selection

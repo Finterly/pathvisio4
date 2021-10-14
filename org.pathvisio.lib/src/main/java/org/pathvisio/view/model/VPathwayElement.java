@@ -32,7 +32,7 @@ import com.sun.xml.bind.v2.model.core.ElementInfo;
  * 
  * @author finterly
  */
-public abstract class VPathwayElement extends Graphics {
+public abstract class VPathwayElement extends VPathwayObject {
 
 	private VCitation vCitation;
 

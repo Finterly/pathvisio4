@@ -16,6 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -499,9 +500,9 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			List<VPathwayObject> selection = vPathwayModel.getSelectedGraphics();
 			if (selection.size() == 1) {
-				Graphics g = selection.get(0);
+				VPathwayObject g = selection.get(0);
 				if (g instanceof VLineElement) {
 					VLineElement l = (VLineElement) g;
 					ConnectorShape s = l.getPathwayElement().getConnectorShape(); // TODO...
@@ -579,7 +580,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			List<Graphics> selection = vPathwayModel.getSelectedGraphics();
+			List<VPathwayObject> selection = vPathwayModel.getSelectedVPathwayObject();
 			if (selection.size() > 0) {
 				vPathwayModel.getUndoManager().newAction("Add anchor");
 				for (Graphics g : selection) {

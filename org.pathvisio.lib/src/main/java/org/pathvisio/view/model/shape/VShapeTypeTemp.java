@@ -17,7 +17,7 @@ import org.pathvisio.view.model.shape.GenMAPPShapes.Internal;
  * @author p70073399
  *
  */
-public enum VShapeType {
+public enum VShapeTypeTemp {
 
 	// Basic shapes
 	NONE(ShapeType.NONE, null), RECTANGLE(ShapeType.RECTANGLE, new Rectangle(0, 0, 10, 10)),
@@ -83,16 +83,17 @@ public enum VShapeType {
 	private final ShapeType shapeType;
 	private final Shape shape;
 
-	private VShapeType(ShapeType shapeType, Shape shape) {
+	private VShapeTypeTemp(ShapeType shapeType, Shape shape) {
 		this.shapeType = shapeType;
 		this.shape = shape;
 	}
 
-	public Shape getVShapeType(ShapeType shapeType) {
-
+	private Shape getShape() {
+		return shape; 		
 	}
-
-	public Shape getShape(double mw, double mh) {
+	
+	public Shape getVShapeType(ShapeType shapeType, double mw, double mh) {
+		Shape shape = shapeType.getShape();
 		// now scale the path so it has proper w and h.
 		Rectangle r = shape.getBounds();
 		AffineTransform at = new AffineTransform();

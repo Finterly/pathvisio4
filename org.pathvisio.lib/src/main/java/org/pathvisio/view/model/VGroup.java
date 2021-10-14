@@ -120,7 +120,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	protected boolean vContains(Point2D point) {
 		// return false if point falls on any individual element
 		for (VElement vpe : canvas.getDrawingObjects()) {
-			if (vpe instanceof Graphics && !(vpe instanceof VGroup) && vpe.vContains(point)) {
+			if (vpe instanceof VPathwayObject && !(vpe instanceof VGroup) && vpe.vContains(point)) {
 				return false;
 
 			}
@@ -136,14 +136,14 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	/**
 	 * Returns graphics for members of a group, including nested members
 	 *
-	 * @return ArrayList<Graphics>
+	 * @return ArrayList<VPathwayObject>
 	 */
-	public List<Graphics> getGroupGraphics() {
-		List<Graphics> gg = new ArrayList<Graphics>();
+	public List<VPathwayObject> getGroupGraphics() {
+		List<VPathwayObject> gg = new ArrayList<VPathwayObject>();
 		// return true if group object is referenced by selection
 		for (VElement vpe : canvas.getDrawingObjects()) {
-			if (vpe instanceof Graphics && vpe != this) {
-				Graphics vpeg = (Graphics) vpe;
+			if (vpe instanceof VPathwayObject && vpe != this) {
+				VPathwayObject vpeg = (VPathwayObject) vpe;
 				Group pe = (Group) vpeg.getPathwayElement();
 				Group ref = pe.getGroupRef();
 				if (ref != null && ref.equals(getPathwayElement().getElementId())) {
@@ -156,7 +156,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 
 	@Override
 	public void select() {
-		for (Graphics g : getGroupGraphics()) {
+		for (VPathwayObject g : getGroupGraphics()) {
 			g.select();
 		}
 		super.select();
@@ -164,7 +164,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 
 	@Override
 	public void deselect() {
-		for (Graphics g : getGroupGraphics()) {
+		for (VPathwayObject g : getGroupGraphics()) {
 			g.deselect();
 		}
 		super.deselect();
@@ -212,7 +212,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	public void highlight(Color c) {
 		super.highlight(c);
 		// Highlight the children
-		for (Graphics g : getGroupGraphics()) {
+		for (VPathwayObject g : getGroupGraphics()) {
 			g.highlight();
 		}
 	}

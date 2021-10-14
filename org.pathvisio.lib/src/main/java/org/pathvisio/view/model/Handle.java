@@ -27,6 +27,8 @@ import java.awt.geom.Rectangle2D;
  * A Handle is a little marker (like a little yellow square) that the user can
  * grab with the mouse and drag around, and in that way adjust some property of
  * an object (such as its width, rotation, etc.)
+ * 
+ * @author unknown
  */
 public class Handle extends VElement {
 	// The direction this handle is allowed to move in
@@ -99,8 +101,8 @@ public class Handle extends VElement {
 	 * 
 	 * @param aFreedom   Direction this handle can be moved in (one of the Freedom
 	 *                   enum)
-	 * @param parent     The {@link VElement} this handle belongs to, and which will
-	 *                   be selected when this handle is clicked
+	 * @param parent     The {@link VElement} this handle belongs to, and
+	 *                   which will be selected when this handle is clicked
 	 * @param adjustable The object that is being adjusted by this handle. This is
 	 *                   usually, but not always, the same as parent. For example, a
 	 *                   Handle on a {@link VPoint} has a {@link VLine} as parent

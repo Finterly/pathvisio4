@@ -31,7 +31,7 @@ public class VPoint implements Adjustable {
 
 	private final VPathwayModel canvas;
 	private LinePoint linePoint;
-	private VLineElement line;
+	private VLineElement vLine;
 	private boolean isHighlighted = false;
 	/**
 	 * The handle that goes with this VPoint. This Handle is created, destroyed and
@@ -49,7 +49,7 @@ public class VPoint implements Adjustable {
 	VPoint(VPathwayModel canvas, LinePoint linePoint, VLineElement line) {
 		this.canvas = canvas;
 		this.linePoint = linePoint;
-		this.line = line;
+		this.vLine = line;
 	}
 
 	/**
@@ -68,14 +68,14 @@ public class VPoint implements Adjustable {
 	public void highlight() {
 		if (!isHighlighted) {
 			isHighlighted = true;
-			line.markDirty();
+			vLine.markDirty();
 		}
 	}
 
 	public void unhighlight() {
 		if (isHighlighted) {
 			isHighlighted = false;
-			line.markDirty();
+			vLine.markDirty();
 		}
 	}
 
@@ -105,7 +105,7 @@ public class VPoint implements Adjustable {
 	}
 
 	public VLineElement getLine() {
-		return line;
+		return vLine;
 	}
 
 	public void adjustToHandle(Handle h, double vnewx, double vnewy) {
@@ -117,8 +117,8 @@ public class VPoint implements Adjustable {
 			// get global preference and convert to radians.
 			double lineSnapStep = PreferenceManager.getCurrent().getInt(GlobalPreference.SNAP_TO_ANGLE_STEP) * Math.PI
 					/ 180;
-			VPoint p1 = line.getStart();
-			VPoint p2 = line.getEnd();
+			VPoint p1 = vLine.getStart();
+			VPoint p2 = vLine.getEnd();
 			double basex, basey;
 			// base is the static point the line rotates about.
 			// it is equal to the OTHER point, the one we're not moving.

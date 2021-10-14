@@ -18,13 +18,66 @@ package org.pathvisio.view.model;
 
 import org.pathvisio.model.Groupable;
 
-
 /**
  * This class represents the view of a {@link Groupable} PathwayElement.
  * 
  * @author finterly
  */
 public interface VGroupable {
-	
 
+	/**
+	 * Get the x-coordinate of the center point of this object adjusted to the
+	 * current zoom factor
+	 * 
+	 * @return the center x-coordinate
+	 */
+	public double getVCenterX();
+
+	/**
+	 * Get the y-coordinate of the center point of this object adjusted to the
+	 * current zoom factor
+	 *
+	 * @return the center y-coordinate
+	 */
+	public double getVCenterY();
+
+	/**
+	 * Get the width of this object adjusted to the current zoom factor, but not
+	 * taking into account rotation
+	 * 
+	 * @note if you want the width of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getWidth();
+	 * @return
+	 */
+	public double getVWidth();
+
+	/**
+	 * Get the height of this object adjusted to the current zoom factor, but not
+	 * taking into account rotation
+	 * 
+	 * @note if you want the height of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getY();
+	 * @return
+	 */
+	public double getVHeight();
+
+	/**
+	 * Get the x-coordinate of the left side of this object adjusted to the current
+	 * zoom factor, but not taking into account rotation
+	 * 
+	 * @note if you want the left side of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getX();
+	 * @return
+	 */
+	public double getVLeft();
+
+	/**
+	 * Get the y-coordinate of the top side of this object adjusted to the current
+	 * zoom factor, but not taking into account rotation
+	 * 
+	 * @note if you want the top side of the rotated object's boundary, use
+	 *       {@link #getVShape(true)}.getY();
+	 * @return
+	 */
+	public double getVTop();
 }

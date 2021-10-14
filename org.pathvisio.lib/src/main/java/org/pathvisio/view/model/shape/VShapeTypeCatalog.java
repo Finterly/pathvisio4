@@ -22,9 +22,9 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * This class defines and registers some special shapes. Shapes are defined and
- * registered in the static section of this class. These custom shapes are
- * created using {@link GeneralPath}.
+ * This class defines some shapes. Shapes are defined and registered in the
+ * static section of this class. Custom shapes are created using
+ * {@link GeneralPath}.
  * 
  * <p>
  * <ol>
@@ -40,7 +40,7 @@ import java.awt.geom.RoundRectangle2D;
  * 
  * @author unknown, finterly
  */
-public class VShapesCatalog {
+public class VShapeTypeCatalog {
 	static void registerShapes() {
 	}
 
@@ -50,6 +50,8 @@ public class VShapesCatalog {
 	 */
 	public enum Internal {
 		// Basic shapes
+		
+		// Basic line shapes
 		BRACE,
 		// Cellular components
 		MITOCHONDRIA, SARCOPLASMICRETICULUM, ENDOPLASMICRETICULUM, GOLGIAPPARATUS,
