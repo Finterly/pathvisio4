@@ -927,7 +927,7 @@ public class VPathwayModel implements PathwayListener {
 	 * @param ks
 	 */
 	public void moveByKey(KeyStroke ks, int increment) {
-		List<VPathwayObject> selectedVPathwayObject = getSelectedNonGroupVPathwayObject();
+		List<VGroupable> selectedVPathwayObject = getSelectedNonGroupVPathwayObject();
 		if (selectedVPathwayObject.size() > 0) {
 			switch (ks.getKeyCode()) {
 			case 37:
@@ -1871,7 +1871,7 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Handles aligning layoutTypes ALIGN_*
 	 */
-	private void alignVPathwayObject(LayoutType alignType, List<VPathwayObject> gs) {
+	private void alignVPathwayObject(LayoutType alignType, List<VGroupable> gs) {
 		// first sort either horizontally or vertically
 		switch (alignType) {
 		case ALIGN_CENTERY:
@@ -1896,30 +1896,30 @@ public class VPathwayModel implements PathwayListener {
 
 		// The bounds of the model to view
 		// translated shape
-		Rectangle2D vBoundsFirst = gs.get(0).getVShape(true).getBounds2D();
+		Rectangle2D vBoundsFirst = ((VPathwayObject) gs.get(0)).getVShape(true).getBounds2D();
 
 		for (int i = 1; i < gs.size(); i++) {
-			VPathwayObject g = gs.get(i);
-			Rectangle2D vBounds = g.getVShape(true).getBounds2D();
+			VGroupable g = gs.get(i);
+			Rectangle2D vBounds = ((VPathwayObject) g).getVShape(true).getBounds2D();
 
 			switch (alignType) {
 			case ALIGN_CENTERX:
-				g.vMoveBy(vBoundsFirst.getCenterX() - vBounds.getCenterX(), 0);
+				((SelectionBox) g).vMoveBy(vBoundsFirst.getCenterX() - vBounds.getCenterX(), 0);
 				break;
 			case ALIGN_CENTERY:
-				g.vMoveBy(0, vBoundsFirst.getCenterY() - vBounds.getCenterY());
+				((SelectionBox) g).vMoveBy(0, vBoundsFirst.getCenterY() - vBounds.getCenterY());
 				break;
 			case ALIGN_LEFT:
-				g.vMoveBy(vBoundsFirst.getX() - vBounds.getX(), 0);
+				((SelectionBox) g).vMoveBy(vBoundsFirst.getX() - vBounds.getX(), 0);
 				break;
 			case ALIGN_RIGHT:
-				g.vMoveBy(vBoundsFirst.getMaxX() - vBounds.getMaxX(), 0);
+				((SelectionBox) g).vMoveBy(vBoundsFirst.getMaxX() - vBounds.getMaxX(), 0);
 				break;
 			case ALIGN_TOP:
-				g.vMoveBy(0, vBoundsFirst.getY() - vBounds.getY());
+				((SelectionBox) g).vMoveBy(0, vBoundsFirst.getY() - vBounds.getY());
 				break;
 			case ALIGN_BOTTOM:
-				g.vMoveBy(0, vBoundsFirst.getMaxY() - vBounds.getMaxY());
+				((SelectionBox) g).vMoveBy(0, vBoundsFirst.getMaxY() - vBounds.getMaxY());
 				break;
 			default:
 				break;
@@ -1931,7 +1931,7 @@ public class VPathwayModel implements PathwayListener {
 	 * Align, stack or scale selected objects based on user-selected layout type
 	 */
 	public void layoutSelected(LayoutType layoutType) {
-		List<VPathwayObject> selectedVPathwayObject = getSelectedNonGroupVPathwayObject();
+		List<VGroupable> selectedVPathwayObject = getSelectedNonGroupVPathwayObject();
 
 		if (selectedVPathwayObject.size() > 0) {
 			undoManager.newAction(layoutType.getDescription());
@@ -1970,7 +1970,7 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Stacks a set of objects based on user-selected stack type
 	 */
-	private void stackVPathwayObject(LayoutType stackType, List<VPathwayObject> gs) {
+	private void stackVPathwayObject(LayoutType stackType, List<VGroupable> gs) {
 		// first we sort the selected graphics, either horizontally or vertically
 		switch (stackType) {
 		case STACK_CENTERX:
@@ -1989,33 +1989,33 @@ public class VPathwayModel implements PathwayListener {
 
 		for (int i = 1; i < gs.size(); i++) {
 			// Get the current and previous graphics objects
-			VPathwayObject eCurr = gs.get(i);
-			VPathwayObject ePrev = gs.get(i - 1);
+			VGroupable eCurr = gs.get(i);
+			VGroupable ePrev = gs.get(i - 1);
 
 			// Get the bounds of the model to view translated shapes
-			Rectangle2D vBoundsPrev = ePrev.getVShape(true).getBounds2D();
-			Rectangle2D vBoundsCurr = eCurr.getVShape(true).getBounds2D();
+			Rectangle2D vBoundsPrev = ((VPathwayObject) ePrev).getVShape(true).getBounds2D();
+			Rectangle2D vBoundsCurr = ((VPathwayObject) eCurr).getVShape(true).getBounds2D();
 			switch (stackType) {
 			case STACK_CENTERX:
-				eCurr.vMoveBy(vBoundsPrev.getCenterX() - vBoundsCurr.getCenterX(),
+				((SelectionBox) eCurr).vMoveBy(vBoundsPrev.getCenterX() - vBoundsCurr.getCenterX(),
 						vBoundsPrev.getMaxY() - vBoundsCurr.getY());
 				break;
 			case STACK_CENTERY:
-				eCurr.vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getX(),
+				((SelectionBox) eCurr).vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getX(),
 						vBoundsPrev.getCenterY() - vBoundsCurr.getCenterY());
 				break;
 			case STACK_LEFT:
-				eCurr.vMoveBy(vBoundsPrev.getX() - vBoundsCurr.getX(), vBoundsPrev.getMaxY() - vBoundsCurr.getY());
+				((SelectionBox) eCurr).vMoveBy(vBoundsPrev.getX() - vBoundsCurr.getX(), vBoundsPrev.getMaxY() - vBoundsCurr.getY());
 				break;
 			case STACK_RIGHT:
-				eCurr.vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getMaxX(),
+				((SelectionBox) eCurr).vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getMaxX(),
 						vBoundsPrev.getMaxY() - vBoundsCurr.getY());
 				break;
 			case STACK_TOP:
-				eCurr.vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getX(), vBoundsPrev.getY() - vBoundsCurr.getY());
+				((SelectionBox) eCurr).vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getX(), vBoundsPrev.getY() - vBoundsCurr.getY());
 				break;
 			case STACK_BOTTOM:
-				eCurr.vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getX(),
+				((SelectionBox) eCurr).vMoveBy(vBoundsPrev.getMaxX() - vBoundsCurr.getX(),
 						vBoundsPrev.getMaxY() - vBoundsCurr.getMaxY());
 				break;
 			default:
@@ -2131,16 +2131,16 @@ public class VPathwayModel implements PathwayListener {
 	 * 
 	 * @param gs the list of VPathwayElements.
 	 */
-	public void moveVPathwayObjectUp(List<VPathwayElement> gs) {
+	public void moveVPathwayObjectUp(List<VGroupable> gs) {
 		// TODO: Doesn't really work very well with multiple selections
-		for (VPathwayElement g : gs) {
+		for (VGroupable g : gs) {
 			// make sure there is enough space between g and the next
 			autoRenumberZOrder();
 
 			int order = g.getPathwayElement().getZOrder();
-			VPathwayElement nextVPathwayObject = null;
+			VGroupable nextVPathwayObject = null;
 			int nextZ = order;
-			for (VPathwayElement i : getOverlappingVPathwayObject(g)) {
+			for (VGroupable i : getOverlappingVPathwayObject(g)) {
 				int iorder = i.getPathwayElement().getZOrder();
 				if (nextVPathwayObject == null && iorder > nextZ) {
 					nextZ = iorder;
@@ -2185,16 +2185,16 @@ public class VPathwayModel implements PathwayListener {
 	 * Looks for overlapping graphics with a lower z-order and moves g on under
 	 * that.
 	 */
-	public void moveVPathwayObjectDown(List<VPathwayElement> gs) {
+	public void moveVPathwayObjectDown(List<VGroupable> gs) {
 		// TODO: Doesn't really work very well with multiple selections
-		for (VPathwayElement g : gs) {
+		for (VGroupable g : gs) {
 			// make sure there is enough space between g and the previous
 			autoRenumberZOrder();
 
 			int order = g.getPathwayElement().getZOrder();
-			VPathwayElement nextVPathwayObject = null;
+			VGroupable nextVPathwayObject = null;
 			int nextZ = order;
-			for (VPathwayElement i : getOverlappingVPathwayObject(g)) {
+			for (VGroupable i : getOverlappingVPathwayObject(g)) {
 				int iorder = i.getPathwayElement().getZOrder();
 				if (nextVPathwayObject == null && iorder < nextZ) {
 					nextZ = iorder;
@@ -2213,10 +2213,10 @@ public class VPathwayModel implements PathwayListener {
 	 * bounding rectangles is used, so the returned list is only an approximation
 	 * for rounded shapes.
 	 */
-	public List<VPathwayElement> getOverlappingVPathwayObject(VPathwayElement g) { // TODO sure V ELementInfo of
-																					// VPathwayObject???
-		List<VPathwayElement> result = new ArrayList<VPathwayElement>();
-		Rectangle2D r1 = g.getVBounds();
+	public List<VElement> getOverlappingVPathwayObject(VElement g) { // TODO sure V ELementInfo of
+																			// VPathwayObject???
+		List<VElement> result = new ArrayList<VElement>();
+		Rectangle2D r1 = ((VElement) g).getVBounds();
 
 		for (VElement ve : drawingObjects) {
 			if (ve instanceof VPathwayElement && ve != g) {
@@ -2253,12 +2253,12 @@ public class VPathwayModel implements PathwayListener {
 	 *
 	 * @return
 	 */
-	public List<VPathwayObject> getSelectedNonGroupVPathwayObject() {
-		List<VPathwayObject> result = new ArrayList<VPathwayObject>();
+	public List<VGroupable> getSelectedNonGroupVPathwayObject() {
+		List<VGroupable> result = new ArrayList<VGroupable>();
 		for (VElement g : drawingObjects) {
-			if (g.isSelected() && g instanceof VPathwayObject && !(g instanceof SelectionBox)
+			if (g.isSelected() && g instanceof VGroupable && !(g instanceof SelectionBox)
 					&& !((g instanceof VGroup))) {
-				result.add((VPathwayObject) g);
+				result.add((VGroupable) g);
 			}
 		}
 		return result;
@@ -2616,7 +2616,7 @@ public class VPathwayModel implements PathwayListener {
 	 *
 	 */
 	public static class XComparator implements Comparator<VGroupable> {
-		
+
 		public int compare(VGroupable g1, VGroupable g2) {
 			if (g1.getVCenterX() == g2.getVCenterX()) {
 				return 0;
@@ -2639,7 +2639,7 @@ public class VPathwayModel implements PathwayListener {
 		 * @param g2
 		 * @return
 		 */
-		public int compare(VPathwayElement g1, VPathwayElement g2) {
+		public int compare(VGroupable g1, VGroupable g2) {
 			return g1.getPathwayElement().getZOrder() - g2.getPathwayElement().getZOrder();
 		}
 	}
@@ -2736,7 +2736,7 @@ public class VPathwayModel implements PathwayListener {
 		Set<String> groupIds = new HashSet<String>();
 		for (VElement o : toMove) {
 			if (o instanceof VPathwayObject) {
-				PathwayElement elt = ((VPathwayObject) o).getPathwayElement();
+				PathwayObject elt = ((VPathwayObject) o).getPathwayElement();
 				String id = elt.getElementId();
 				if (id != null) {
 					eltIds.add(id);
@@ -2754,8 +2754,10 @@ public class VPathwayModel implements PathwayListener {
 			}
 			if (o instanceof VPathwayElement) {
 				// skip if parent group is also in selection
-				if (groupIds.contains(((VPathwayElement) o).getPathwayElement().getGroupRef())) {
-					continue;
+				if (o instanceof VGroupable) {
+					if (groupIds.contains(((VGroupable) o).getPathwayElement().getGroupRef())) {
+						continue;
+					}
 				}
 				o.vMoveBy(vdx, vdy);
 			}

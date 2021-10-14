@@ -19,11 +19,19 @@ package org.pathvisio.view.model;
 import org.pathvisio.model.Groupable;
 
 /**
- * This class represents the view of a {@link Groupable} PathwayElement.
+ * This class represents the view of a {@link Groupable} PathwayElement. This
+ * class is implemented by {@link VShapedElement} and {@link VLineElement}.
  * 
  * @author finterly
  */
 public interface VGroupable {
+
+	/**
+	 * Gets the model representation (PathwayElement) of this class
+	 * 
+	 * @return
+	 */
+	public Groupable getPathwayElement();
 
 	/**
 	 * Get the x-coordinate of the center point of this object adjusted to the
