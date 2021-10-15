@@ -24,15 +24,15 @@ import java.util.List;
 
 //import org.pathvisio.core.biopax.PublicationXref;
 import org.pathvisio.debug.DebugList;
-import org.pathvisio.events.PathwayElementEvent;
-import org.pathvisio.events.PathwayElementListener;
+import org.pathvisio.events.PathwayObjectEvent;
+import org.pathvisio.events.PathwayObjectListener;
 import org.pathvisio.model.PathwayObject;
 
 /**
  * This class is a parent class for all graphics that can be added to a
  * VPathwayModel.
  */
-public abstract class VPathwayObject extends VElement implements PathwayElementListener {
+public abstract class VPathwayObject extends VElement implements PathwayObjectListener {
 
 	protected PathwayObject gdata = null;
 
@@ -65,7 +65,7 @@ public abstract class VPathwayObject extends VElement implements PathwayElementL
 
 	boolean listen = true;
 
-	public void gmmlObjectModified(PathwayElementEvent e) {
+	public void gmmlObjectModified(PathwayObjectEvent e) {
 		if (listen) {
 			markDirty(); // mark everything dirty
 //			checkCitation(); TODO

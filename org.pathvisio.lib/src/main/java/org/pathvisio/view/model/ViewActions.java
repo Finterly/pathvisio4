@@ -580,7 +580,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			List<VPathwayObject> selection = vPathwayModel.getSelectedVPathwayObject();
+			List<VPathwayObject> selection = vPathwayModel.getSelectedVPathwayElement();
 			if (selection.size() > 0) {
 				vPathwayModel.getUndoManager().newAction("Add anchor");
 				for (Graphics g : selection) {

@@ -16,7 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayModel;
 
 /**

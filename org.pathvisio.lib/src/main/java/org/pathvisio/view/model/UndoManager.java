@@ -25,26 +25,24 @@ import org.pathvisio.view.UndoManagerEvent;
 import org.pathvisio.view.UndoManagerListener;
 
 /** Manages a stack of undo actions */
-public class UndoManager
-{
+public class UndoManager {
 	public static final String CANT_UNDO = "Can't undo";
 
 	private List<UndoAction> undoList = new ArrayList<UndoAction>();
 
 	private PathwayModel pathwayModel;
 
-	public void setPathwayModel (PathwayModel pathwayModel) {
+	public void setPathwayModel(PathwayModel pathwayModel) {
 		this.pathwayModel = pathwayModel;
 	}
 
 	private Engine engine;
 
 	/**
-	 * Check if this undo manager is active.
-	 * If there is no instance of Engine available,
-	 * the undo manager will not record any undo events.
-	 * Provide an instance of engine to activate the undo
-	 * manager.
+	 * Check if this undo manager is active. If there is no instance of Engine
+	 * available, the undo manager will not record any undo events. Provide an
+	 * instance of engine to activate the undo manager.
+	 * 
 	 * @see #activate(Engine)
 	 */
 	public boolean isActive() {
@@ -53,16 +51,17 @@ public class UndoManager
 
 	/**
 	 * Set the engine for this undo manager.
+	 * 
 	 * @param engine
 	 */
-	public void activate (Engine engine) {
+	public void activate(Engine engine) {
 		this.engine = engine;
 	}
 
 	/**
-	 * Get the engine for this undo manager. The engine
-	 * can be null, in which case the undo manager will be
-	 * inactive.
+	 * Get the engine for this undo manager. The engine can be null, in which case
+	 * the undo manager will be inactive.
+	 * 
 	 * @return The Engine, or null if the undo manager is inactive.
 	 */
 	protected Engine getEngine() {
@@ -70,96 +69,89 @@ public class UndoManager
 	}
 
 	static final int MAX_UNDO_SIZE = 25;
-	/**
-	   Insert a new action into the Undo Queue based on an UndoAction
-	   object that already contains a copy of the original state of
-	   the pathway. This way you can actually record the action after
-	   the pathway has already modified, useful for collapsing
-	   multiple drag events into one action.
 
-	   @param act: UndoAction containing pre-recorded pathway state
-	   and description of the action.
+	/**
+	 * Insert a new action into the Undo Queue based on an UndoAction object that
+	 * already contains a copy of the original state of the pathway. This way you
+	 * can actually record the action after the pathway has already modified, useful
+	 * for collapsing multiple drag events into one action.
+	 * 
+	 * @param act: UndoAction containing pre-recorded pathway state and description
+	 *             of the action.
 	 */
-	public void newAction (UndoAction act)
-	{
-		if(!isActive()) return; //Don' record event if inactive
+	public void newAction(UndoAction act) {
+		if (!isActive())
+			return; // Don' record event if inactive
 
 		act.setUndoManager(this);
-		undoList.add (act);
-		if (undoList.size() > MAX_UNDO_SIZE)
-		{
+		undoList.add(act);
+		if (undoList.size() > MAX_UNDO_SIZE) {
 			undoList.remove(0);
 		}
-		fireUndoManagerEvent (new UndoManagerEvent (getTopMessage()));
+		fireUndoManagerEvent(new UndoManagerEvent(getTopMessage()));
 	}
 
 	/**
-	   Insert a new action into the Undo Queue. This method
-	   will make a copy of the current state of the pathway, so call
-	   this method before the action actually takes place.
-
-	   @param desc: description of the change, for display in the edit
-	   menu.
+	 * Insert a new action into the Undo Queue. This method will make a copy of the
+	 * current state of the pathway, so call this method before the action actually
+	 * takes place.
+	 * 
+	 * @param desc: description of the change, for display in the edit menu.
 	 */
-	public void newAction (String desc)
-	{
-		if(!isActive()) return; //Don' record event if inactive
+	public void newAction(String desc) {
+		if (!isActive())
+			return; // Don' record event if inactive
 
-		if(pathwayModel != null) {
-			UndoAction x = new UndoAction (desc, (PathwayModel)pathwayModel.clone());
+		if (pathwayModel != null) {
+			UndoAction x = new UndoAction(desc, (PathwayModel) pathwayModel.clone());
 			x.setUndoManager(this);
-			newAction (x);
+			newAction(x);
 		}
 	}
 
-	public String getTopMessage()
-	{
+	public String getTopMessage() {
 		String result;
-		if (undoList.size() == 0)
-		{
+		if (undoList.size() == 0) {
 			result = CANT_UNDO;
-		}
-		else
-		{
+		} else {
 			result = undoList.get(undoList.size() - 1).getMessage();
 		}
 		return result;
 	}
 
-	void undo()
-	{
-		if (undoList.size() > 0 && isActive())
-		{
-			UndoAction a = undoList.get(undoList.size()-1);
+	void undo() {
+		if (undoList.size() > 0 && isActive()) {
+			UndoAction a = undoList.get(undoList.size() - 1);
 			a.undo();
 			undoList.remove(a);
-			fireUndoManagerEvent (new UndoManagerEvent (getTopMessage()));
+			fireUndoManagerEvent(new UndoManagerEvent(getTopMessage()));
 		}
 	}
 
-	private List <UndoManagerListener> listeners =
-		new ArrayList <UndoManagerListener>();
+	private List<UndoManagerListener> listeners = new ArrayList<UndoManagerListener>();
 
-	public void addListener (UndoManagerListener v) { listeners.add(v); }
-	public void removeListener (UndoManagerListener v) { listeners.remove(v); }
+	public void addListener(UndoManagerListener v) {
+		listeners.add(v);
+	}
+
+	public void removeListener(UndoManagerListener v) {
+		listeners.remove(v);
+	}
 
 	/**
-	   This is called whenever a new item is added to the Undo Manager,
-	   or when an undo action takes place.
-	   mainly intended for the menu item to update itself.
+	 * This is called whenever a new item is added to the Undo Manager, or when an
+	 * undo action takes place. mainly intended for the menu item to update itself.
 	 */
-	void fireUndoManagerEvent (UndoManagerEvent e)
-	{
-		//printSummary();
-		for (UndoManagerListener g : listeners)
-		{
-			g.undoManagerEvent (e);
+	void fireUndoManagerEvent(UndoManagerEvent e) {
+		// printSummary();
+		for (UndoManagerListener g : listeners) {
+			g.undoManagerEvent(e);
 		}
 	}
 
 	private boolean disposed = false;
-	public void dispose()
-	{
+
+	public void dispose() {
 		assert (!disposed);
 		undoList.clear();
 		listeners.clear();
@@ -167,21 +159,20 @@ public class UndoManager
 	}
 
 	/**
-	   debugging helper function
+	 * debugging helper function
 	 */
 	@SuppressWarnings("unused")
-	private void printSummary()
-	{
-		System.out.println ("===============================");
-		System.out.println (undoList.size() + " remaining");
-		for (int i = undoList.size() - 1; i >= 0; --i)
-		{
-			System.out.printf ("%3d: ", i);
+	private void printSummary() {
+		System.out.println("===============================");
+		System.out.println(undoList.size() + " remaining");
+		for (int i = undoList.size() - 1; i >= 0; --i) {
+			System.out.printf("%3d: ", i);
 			undoList.get(i).printSummary();
-			System.out.println ();
+			System.out.println();
 		}
-		System.out.println ("Current pathway");
-		System.out.print (pathwayModel.summary());
+		System.out.println("Current pathway");
+		System.out.print(pathwayModel.summary());
 		System.out.println();
 	}
+
 }

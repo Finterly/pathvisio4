@@ -20,6 +20,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -31,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.AttributedString;
 
-import org.pathvisio.events.PathwayElementEvent;
+import org.pathvisio.events.PathwayObjectEvent;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Group;
 import org.pathvisio.model.Label;
@@ -635,7 +636,7 @@ public abstract class VShapedElement extends VPathwayElement
 	}
 
 	@Override
-	public void gmmlObjectModified(PathwayElementEvent e) {
+	public void gmmlObjectModified(PathwayObjectEvent e) {
 //		if (listen) { //TODO??? 
 		markDirty(); // mark everything dirty
 		checkCitation();

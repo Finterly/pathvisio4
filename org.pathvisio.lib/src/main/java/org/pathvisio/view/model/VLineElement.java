@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.pathvisio.events.PathwayElementEvent;
+import org.pathvisio.core.modeltemp.PathwayElementEvent;
 import org.pathvisio.model.GraphLink.LinkableFrom;
 import org.pathvisio.model.LineElement;
 import org.pathvisio.model.LineElement.Anchor;
