@@ -14,18 +14,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.gex;
+package org.pathvisio.application.gex;
 
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.bridgedb.rdb.construct.DBConnector;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.preferences.PreferenceManager;
 import org.pathvisio.data.DataException;
 import org.pathvisio.data.DataInterface;
+import org.pathvisio.util.preferences.GlobalPreference;
 
 /**
  * Manage the centralized SimpleGex

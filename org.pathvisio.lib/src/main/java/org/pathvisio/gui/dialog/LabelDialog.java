@@ -14,10 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.gui.dialogs;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+package org.pathvisio.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Font;
@@ -35,9 +32,12 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.pathvisio.core.model.PathwayElement;
 import org.pathvisio.gui.SwingEngine;
 import org.pathvisio.gui.util.FontChooser;
+import org.pathvisio.model.Label;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Dialog to modify label specific properties
@@ -48,20 +48,29 @@ public class LabelDialog extends PathwayElementDialog {
 	JTextArea text;
 	JLabel fontPreview;
 
-	protected LabelDialog(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, Component locationComp) {
+	protected LabelDialog(SwingEngine swingEngine, Label e, boolean readonly, Frame frame, Component locationComp) {
 		super(swingEngine, e, readonly, frame, "Label properties", locationComp);
 		text.requestFocus();
+	}
+	
+
+	/**
+	 * Get the pathway element for this dialog
+	 */
+	@Override
+	protected Label getInput() {
+		return (Label) super.getInput();
 	}
 
 	protected void refresh() {
 		super.refresh();
 		if(getInput() != null) {
-			PathwayElement input = getInput();
+			Label input = getInput();
 			text.setText(input.getTextLabel());
-			int style = input.isBold() ? Font.BOLD : Font.PLAIN;
-			style |= input.isItalic() ? Font.ITALIC : Font.PLAIN;
+			int style = input.getFontWeight() ? Font.BOLD : Font.PLAIN;
+			style |= input.getFontStyle() ? Font.ITALIC : Font.PLAIN;
 			Font f = new Font(
-					input.getFontName(), style, (int)(input.getMFontSize())
+					input.getFontName(), style, (int)(input.getFontSize())
 			);
 			fontPreview.setFont(f);
 			fontPreview.setText(f.getName());
@@ -91,11 +100,11 @@ public class LabelDialog extends PathwayElementDialog {
 			public void actionPerformed(ActionEvent e) {
 				Font f = FontChooser.showDialog(null, (Component)e.getSource(), fontPreview.getFont());
 				if(f != null) {
-					if(input != null) {
-						input.setFontName(f.getFamily());
-						input.setBold(f.isBold());
-						input.setItalic(f.isItalic());
-						input.setMFontSize(f.getSize());
+					if(getInput() != null) {
+						getInput().setFontName(f.getFamily());
+						getInput().setFontWeight(f.isBold());
+						getInput().setFontStyle(f.isItalic());
+						getInput().setFontSize(f.getSize());
 						fontPreview.setText(f.getFamily());
 						fontPreview.setFont(f);
 					}

@@ -1,4 +1,4 @@
-package org.pathvisio.view.model.shape;
+package org.pathvisio.view;
 
 import java.awt.Rectangle;
 import java.awt.Shape;

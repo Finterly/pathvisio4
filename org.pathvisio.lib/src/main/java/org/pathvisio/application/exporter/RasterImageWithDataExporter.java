@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.model;
+package org.pathvisio.application.exporter;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;

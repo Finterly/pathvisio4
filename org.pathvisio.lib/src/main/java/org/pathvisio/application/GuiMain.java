@@ -38,77 +38,81 @@ import javax.swing.UIManager;
 import org.bridgedb.IDMapperException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.pathvisio.application.exporter.BatikImageWithDataExporter;
+import org.pathvisio.application.exporter.DataNodeListExporter;
+import org.pathvisio.application.exporter.EUGeneExporter;
+import org.pathvisio.application.exporter.ImageExporter;
+import org.pathvisio.application.exporter.RasterImageWithDataExporter;
+import org.pathvisio.application.gex.GexManager;
+import org.pathvisio.application.gex.GexManager.GexManagerEvent;
+import org.pathvisio.application.gex.GexManager.GexManagerListener;
+import org.pathvisio.application.visualization.VisualizationManager;
 import org.pathvisio.controller.Engine;
 import org.pathvisio.controller.Globals;
 import org.pathvisio.controller.data.GdbEvent;
 import org.pathvisio.controller.data.GdbManager;
 import org.pathvisio.controller.data.GdbManager.GdbEventListener;
-import org.pathvisio.debug.Logger;
-import org.pathvisio.core.modeltemp.DataNodeListExporter;
-import org.pathvisio.core.modeltemp.EUGeneExporter;
-import org.pathvisio.io.GpmlFormat;
-import org.pathvisio.core.modeltemp.ImageExporter;
 import org.pathvisio.core.modeltemp.MappFormat;
 import org.pathvisio.core.util.Resources;
-import org.pathvisio.util.preferences.GlobalPreference;
-import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.data.DataException;
 import org.pathvisio.data.DataInterface;
-import org.pathvisio.application.gex.GexManager;
-import org.pathvisio.application.gex.GexManager.GexManagerEvent;
-import org.pathvisio.application.gex.GexManager.GexManagerListener;
-import org.pathvisio.application.model.BatikImageWithDataExporter;
-import org.pathvisio.application.model.RasterImageWithDataExporter;
-import org.pathvisio.application.visualization.VisualizationManager;
+import org.pathvisio.debug.Logger;
 import org.pathvisio.gui.MainPanel;
 import org.pathvisio.gui.SwingEngine;
 import org.pathvisio.gui.SwingEngine.Browser;
+import org.pathvisio.io.GpmlFormat;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
 
 /**
  * Main class for the Swing GUI. This class creates and shows the GUI.
- * Subclasses may override {@link #createAndShowGUI(MainPanelStandalone, SwingEngine)} to perform custom
+ * Subclasses may override
+ * {@link #createAndShowGUI(MainPanelStandalone, SwingEngine)} to perform custom
  * actions before showing the GUI.
  * 
  * @author thomas
  * @author anwesha
  *
  */
-public class GuiMain implements GdbEventListener, GexManagerListener
-{
-	GuiMain() { 
-		
+public class GuiMain implements GdbEventListener, GexManagerListener {
+	GuiMain() {
+
 	}
 
 	private MainPanelStandalone mainPanel;
 
 	private PvDesktop pvDesktop;
 	private SwingEngine swingEngine;
-	public AutoSave auto;  // needs to be here for the same timer to be available always
+	public AutoSave auto; // needs to be here for the same timer to be available always
 
-	private static void initLog(Engine engine)
-	{
+	/**
+	 * @param engine
+	 */
+	private static void initLog(Engine engine) {
 		String logDest = PreferenceManager.getCurrent().get(GlobalPreference.FILE_LOG);
-		Logger.log.setDest (logDest);
-		Logger.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
+		Logger.log.setDest(logDest);
+		Logger.log.setLogLevel(true, true, true, true, true, true);// Modify this to adjust log level
 		Logger.log.info("Application name: " + engine.getApplicationName());
-		Logger.log.info("os.name: " + System.getProperty("os.name") +
-					" os.version: " + System.getProperty("os.version") +
-					" java.version: " + System.getProperty ("java.version"));
-		Logger.log.info ("Locale: " + Locale.getDefault().getDisplayName());
+		Logger.log.info("os.name: " + System.getProperty("os.name") + " os.version: " + System.getProperty("os.version")
+				+ " java.version: " + System.getProperty("java.version"));
+		Logger.log.info("Locale: " + Locale.getDefault().getDisplayName());
 	}
-	
+
+	/**
+	 * @param pathwayFile
+	 */
 	private void openPathwayFile(String pathwayFile) {
 		File f = new File(pathwayFile);
 		URL url;
-		//Assume the argument is a file
-		if(f.exists()) {
+		// Assume the argument is a file
+		if (f.exists()) {
 			swingEngine.openPathway(f);
 		} else {
-			//If it doesn't exist, assume it's an url
+			// If it doesn't exist, assume it's an url
 			try {
 				url = new URL(pathwayFile);
 				swingEngine.openPathway(url);
-			} catch(MalformedURLException e) {
+			} catch (MalformedURLException e) {
 				Logger.log.error("Couldn't open pathway url " + pathwayFile);
 			}
 		}
@@ -119,11 +123,12 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	// TODO: find better solution
 	public static final String ARG_PROPERTY_PGEX = "pathvisio.pgex";
 	public static final String ARG_PROPERTY_PATHWAYFILE = "pathvisio.pathwayfile";
+
 	/**
 	 * Act upon the command line arguments
 	 */
 	public void processOptions() {
-		//Create a plugin manager that loads the plugins
+		// Create a plugin manager that loads the plugins
 		pvDesktop.loadPluginManager();
 //		pvDesktop.initPlugins();
 
@@ -131,83 +136,108 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		if (str != null) {
 			openPathwayFile(str);
 		}
-		
+
 		str = System.getProperty(ARG_PROPERTY_PGEX);
-		if(str != null) {
+		if (str != null) {
 			try {
 				pvDesktop.getGexManager().setCurrentGex(str, false);
 				pvDesktop.loadGexCache();
-				Logger.log.info ("Loaded pgex " + str);
-			} 
-			catch (DataException e) {
-				Logger.log.error ("Couldn't open pgex " + str, e);
+				Logger.log.info("Loaded pgex " + str);
+			} catch (DataException e) {
+				Logger.log.error("Couldn't open pgex " + str, e);
 			}
 		}
 	}
 
+	/**
+	 * @param s
+	 * @return
+	 */
 	private String shortenString(String s) {
 		return shortenString(s, 20);
 	}
 
+	/**
+	 * @param s
+	 * @param maxLength
+	 * @return
+	 */
 	private String shortenString(String s, int maxLength) {
 		String prefix = "...";
-		if(s.length() > maxLength + prefix.length()) {
+		if (s.length() > maxLength + prefix.length()) {
 			s = s.substring(s.length() - maxLength - prefix.length());
 			s = prefix + s;
 		}
 		return s;
 	}
-	
-	/** The statements below check for local identifier mapping databases,
-	*	and change the output line in the bottom of PV to the correct name(s).
-	*   In the future, this could be extended with different mapping database.
-	*   Please check which combination can occur for correct output (when adding more mapping databases).
-	*/	
 
+	/**
+	 * The statements below check for local identifier mapping databases, and change
+	 * the output line in the bottom of PV to the correct name(s). In the future,
+	 * this could be extended with different mapping database. Please check which
+	 * combination can occur for correct output (when adding more mapping
+	 * databases).
+	 * 
+	 * @param allLabel
+	 */
 	private void setGdbStatus(JLabel allLabel) {
 		String gdb = "" + swingEngine.getGdbManager().getGeneDb();
 		String mdb = "" + swingEngine.getGdbManager().getMetaboliteDb();
 		String idb = "" + swingEngine.getGdbManager().getInteractionDb();
-		
-		if (swingEngine.getGdbManager().getGeneDb() == null && swingEngine.getGdbManager().getMetaboliteDb() == null && swingEngine.getGdbManager().getInteractionDb() == null) {
+
+		if (swingEngine.getGdbManager().getGeneDb() == null && swingEngine.getGdbManager().getMetaboliteDb() == null
+				&& swingEngine.getGdbManager().getInteractionDb() == null) {
 			allLabel.setText(" | Local mapping databases loaded: " + "None.");
-		}
-		else if (swingEngine.getGdbManager().getGeneDb() != null && swingEngine.getGdbManager().getMetaboliteDb() == null && swingEngine.getGdbManager().getInteractionDb() == null) {
+		} else if (swingEngine.getGdbManager().getGeneDb() != null
+				&& swingEngine.getGdbManager().getMetaboliteDb() == null
+				&& swingEngine.getGdbManager().getInteractionDb() == null) {
 			allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb));
-		}
-		else if (swingEngine.getGdbManager().getGeneDb() == null && swingEngine.getGdbManager().getMetaboliteDb() != null && swingEngine.getGdbManager().getInteractionDb() == null) {
+		} else if (swingEngine.getGdbManager().getGeneDb() == null
+				&& swingEngine.getGdbManager().getMetaboliteDb() != null
+				&& swingEngine.getGdbManager().getInteractionDb() == null) {
 			allLabel.setText(" | Local mapping databases loaded: " + "Metabolite: " + shortenString(mdb));
-		}
-		else if (swingEngine.getGdbManager().getGeneDb() == null && swingEngine.getGdbManager().getMetaboliteDb() == null && swingEngine.getGdbManager().getInteractionDb() != null) {
+		} else if (swingEngine.getGdbManager().getGeneDb() == null
+				&& swingEngine.getGdbManager().getMetaboliteDb() == null
+				&& swingEngine.getGdbManager().getInteractionDb() != null) {
 			allLabel.setText(" | Local mapping databases loaded: " + "Interactions: " + shortenString(idb));
+		} else if (swingEngine.getGdbManager().getGeneDb() != null
+				&& swingEngine.getGdbManager().getMetaboliteDb() != null
+				&& swingEngine.getGdbManager().getInteractionDb() == null) {
+			allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb) + " | "
+					+ "Metabolite: " + shortenString(mdb));
+		} else if (swingEngine.getGdbManager().getGeneDb() == null
+				&& swingEngine.getGdbManager().getMetaboliteDb() != null
+				&& swingEngine.getGdbManager().getInteractionDb() != null) {
+			allLabel.setText(" | Local mapping databases loaded: " + "Metabolite: " + shortenString(mdb) + " | "
+					+ "Interactions: " + shortenString(idb));
+		} else if (swingEngine.getGdbManager().getGeneDb() != null
+				&& swingEngine.getGdbManager().getMetaboliteDb() == null
+				&& swingEngine.getGdbManager().getInteractionDb() != null) {
+			allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb) + " | "
+					+ "Interactions: " + shortenString(idb));
+		} else {
+			allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb) + " | "
+					+ "Metabolite: " + shortenString(mdb) + " | " + "Interactions: " + shortenString(idb));
 		}
-		else if (swingEngine.getGdbManager().getGeneDb() != null && swingEngine.getGdbManager().getMetaboliteDb() != null && swingEngine.getGdbManager().getInteractionDb() == null) {
-			allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb) + " | " + "Metabolite: " + shortenString(mdb));
-		}
-		else if (swingEngine.getGdbManager().getGeneDb() == null && swingEngine.getGdbManager().getMetaboliteDb() != null && swingEngine.getGdbManager().getInteractionDb() != null) {
-			allLabel.setText(" | Local mapping databases loaded: " + "Metabolite: " + shortenString(mdb) + " | " + "Interactions: " + shortenString(idb));
-		}
-		else if (swingEngine.getGdbManager().getGeneDb() != null && swingEngine.getGdbManager().getMetaboliteDb() == null && swingEngine.getGdbManager().getInteractionDb() != null) {
-			allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb) + " | " + "Interactions: " + shortenString(idb));
-		}
-		else {
-		     allLabel.setText(" | Local mapping databases loaded: " + "GeneProtein: " + shortenString(gdb) + " | " + "Metabolite: " + shortenString(mdb) + " | " + "Interactions: " + shortenString(idb));
-		}
-		
+
 		allLabel.setToolTipText("Local BridgeDb mapping databases to support identifier mapping");
-	}		
-		
+	}
+
+	/**
+	 *
+	 * @param e
+	 */
 	public void gdbEvent(GdbEvent e) {
 		setGdbStatus(allLabel);
 	}
 
-	public void gexManagerEvent(GexManagerEvent e)
-	{
-		if(e.getType() == GexManagerEvent.CONNECTION_OPENED ||
-				e.getType() == GexManagerEvent.CONNECTION_CLOSED)
-		{
+	/**
+	 * @param e
+	 */
+	public void gexManagerEvent(GexManagerEvent e) {
+		if (e.getType() == GexManagerEvent.CONNECTION_OPENED || e.getType() == GexManagerEvent.CONNECTION_CLOSED) {
 			DataInterface gex = pvDesktop.getGexManager().getCurrentGex();
-			if(gex != null && gex.isConnected()) {
+			if (gex != null && gex.isConnected()) {
 				gexLabel.setText(" | Dataset: " + shortenString(gex.getDbName()));
 				gexLabel.setToolTipText(gex.getDbName());
 			} else {
@@ -218,22 +248,24 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	}
 
 	private JLabel allLabel;
-/*	private JLabel gdbLabel;
-	private JLabel mdbLabel;
-	private JLabel idbLabel;*/
+	/*
+	 * private JLabel gdbLabel; private JLabel mdbLabel; private JLabel idbLabel;
+	 */
 	private JLabel gexLabel;
 
 	/**
-	 * Creates and shows the GUI. Creates and shows the Frame, sets the size, title and menubar.
-	 * @param mainPanel The main panel to show in the frame
+	 * Creates and shows the GUI. Creates and shows the Frame, sets the size, title
+	 * and menubar.
+	 * 
+	 * @param mainPanel the main panel to show in the frame
+	 * @param swingEngine the swing engine. 
 	 */
-	protected JFrame createAndShowGUI(final MainPanelStandalone mainPanel, final SwingEngine swingEngine)
-	{
-		//Create and set up the window.
+	protected JFrame createAndShowGUI(final MainPanelStandalone mainPanel, final SwingEngine swingEngine) {
+		// Create and set up the window.
 		final JFrame frame = new JFrame(Globals.APPLICATION_NAME);
 		// dispose on close, otherwise windowClosed event is not called.
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		
+
 		URL url = Resources.getResourceURL("bigcateye.gif");
 		frame.setIconImage(Toolkit.getDefaultToolkit().createImage(url));
 
@@ -244,17 +276,17 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		frame.add(statusBar, BorderLayout.SOUTH);
 
 		allLabel = new JLabel();
-/*		gdbLabel = new JLabel();
-		mdbLabel = new JLabel();
-		idbLabel = new JLabel();*/
+		/*
+		 * gdbLabel = new JLabel(); mdbLabel = new JLabel(); idbLabel = new JLabel();
+		 */
 		gexLabel = new JLabel();
 
 		statusBar.add(allLabel);
-/*		statusBar.add(gdbLabel);
-		statusBar.add(mdbLabel);
-		statusBar.add(idbLabel);*/
+		/*
+		 * statusBar.add(gdbLabel); statusBar.add(mdbLabel); statusBar.add(idbLabel);
+		 */
 		statusBar.add(gexLabel);
-		//setGdbStatus(gdbLabel, mdbLabel, idbLabel);
+		// setGdbStatus(gdbLabel, mdbLabel, idbLabel);
 		setGdbStatus(allLabel);
 
 		swingEngine.getGdbManager().addGdbEventListener(this);
@@ -267,13 +299,12 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		frame.setSize(preferences.getInt(GlobalPreference.WIN_W), preferences.getInt(GlobalPreference.WIN_H));
 		int x = preferences.getInt(GlobalPreference.WIN_X);
 		int y = preferences.getInt(GlobalPreference.WIN_Y);
-		if(x >= 0 && y >= 0) frame.setLocation(x, y);
+		if (x >= 0 && y >= 0)
+			frame.setLocation(x, y);
 
-		frame.addWindowListener(new WindowAdapter()
-		{
+		frame.addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosing(WindowEvent we)
-			{
+			public void windowClosing(WindowEvent we) {
 
 				PreferenceManager prefs = PreferenceManager.getCurrent();
 				JFrame frame = swingEngine.getFrame();
@@ -284,23 +315,23 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 				prefs.setInt(GlobalPreference.WIN_X, p.x);
 				prefs.setInt(GlobalPreference.WIN_Y, p.y);
 
-				if(swingEngine.canDiscardPathway()) {
+				if (swingEngine.canDiscardPathway()) {
 					frame.dispose();
 				}
 			}
 
 			@Override
-			public void windowClosed(WindowEvent we)
-			{
+			public void windowClosed(WindowEvent we) {
 				GuiMain.this.shutdown(swingEngine);
-			
+
 				// stops all bundles, exceptions are no real problem
 				// because System.exit(0) should stop everything anyway
-				for(Bundle bundle : pvDesktop.getContext().getBundles()) {
-					if(bundle.getState() == Bundle.ACTIVE) {
+				for (Bundle bundle : pvDesktop.getContext().getBundles()) {
+					if (bundle.getState() == Bundle.ACTIVE) {
 						try {
 							bundle.stop();
-						} catch (BundleException e) {}
+						} catch (BundleException e) {
+						}
 					}
 				}
 				// added system exit, so the application closes after the window is closed
@@ -308,31 +339,29 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 			}
 		});
 
-		//Display the window.
+		// Display the window.
 		frame.setVisible(true);
 
-		int spPercent = PreferenceManager.getCurrent().getInt (GlobalPreference.GUI_SIDEPANEL_SIZE);
+		int spPercent = PreferenceManager.getCurrent().getInt(GlobalPreference.GUI_SIDEPANEL_SIZE);
 		double spSize = (100 - spPercent) / 100.0;
 		mainPanel.getSplitPane().setDividerLocation(spSize);
 
 		return frame;
 	}
 
-	private void shutdown(SwingEngine swingEngine)
-	{
+	/**
+	 * @param swingEngine
+	 */
+	private void shutdown(SwingEngine swingEngine) {
 		PreferenceManager prefs = PreferenceManager.getCurrent();
 		prefs.store();
 
-		//explicit clean shutdown of gdb prevents file from being left open
-		if (swingEngine.getGdbManager().isConnected())
-		{
-			try
-			{
+		// explicit clean shutdown of gdb prevents file from being left open
+		if (swingEngine.getGdbManager().isConnected()) {
+			try {
 				swingEngine.getGdbManager().getCurrentGdb().close();
-			}
-			catch (IDMapperException ex)
-			{
-				Logger.log.error ("Couldn't cleanly close pgdb database", ex);
+			} catch (IDMapperException ex) {
+				Logger.log.error("Couldn't cleanly close pgdb database", ex);
 			}
 		}
 		swingEngine.getGdbManager().removeGdbEventListener(this);
@@ -341,25 +370,31 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		pvDesktop.dispose();
 		swingEngine.getEngine().dispose();
 		swingEngine.dispose();
-		Logger.log.info ("PathVisio was shut down cleanly");
-		
+		Logger.log.info("PathVisio was shut down cleanly");
+
 		// stop the timer and clean out the files on a successful shutdown
 		auto.stopTimer();
 	}
 
-	public MainPanel getMainPanel() { return mainPanel; }
+	/**
+	 * @return
+	 */
+	public MainPanel getMainPanel() {
+		return mainPanel;
+	}
 
+	/**
+	 * @param pvDesktop
+	 */
 	public void init(PvDesktop pvDesktop) {
 		this.pvDesktop = pvDesktop;
-		
+
 		Engine engine = pvDesktop.getSwingEngine().getEngine();
 		initLog(engine);
 		engine.setApplicationName("PathVisio " + Engine.getVersion());
-		if (PreferenceManager.getCurrent().getBoolean(GlobalPreference.USE_SYSTEM_LOOK_AND_FEEL))
-		{
+		if (PreferenceManager.getCurrent().getBoolean(GlobalPreference.USE_SYSTEM_LOOK_AND_FEEL)) {
 			try {
-			    UIManager.setLookAndFeel(
-			        UIManager.getSystemLookAndFeelClassName());
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} catch (Exception ex) {
 				Logger.log.error("Unable to load native look and feel", ex);
 			}
@@ -369,13 +404,14 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		swingEngine.setUrlBrowser(new Browser() {
 			public void openUrl(URL url) {
 				try {
-					if(Desktop.isDesktopSupported()) {
+					if (Desktop.isDesktopSupported()) {
 						Desktop.getDesktop().browse(url.toURI());
 					} else {
-						new JOptionPane("Could not open default browser.\n Please go to\n" + url + "\nin your browser.", JOptionPane.WARNING_MESSAGE);
+						new JOptionPane("Could not open default browser.\n Please go to\n" + url + "\nin your browser.",
+								JOptionPane.WARNING_MESSAGE);
 					}
 				} catch (Exception ex) {
-					Logger.log.error ("Couldn't open url '" + url + "'", ex);
+					Logger.log.error("Couldn't open url '" + url + "'", ex);
 				}
 			}
 		});
@@ -390,7 +426,7 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		initExporters(engine, swingEngine.getGdbManager());
 		swingEngine.setFrame(frame);
 		swingEngine.setApplicationPanel(mainPanel);
-		
+
 		// start the autosave timer
 		auto = new AutoSave(swingEngine);
 		auto.startTimer(300);
@@ -398,16 +434,20 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		processOptions();
 	}
 
-	
-	private void initImporters(Engine engine)
-	{
+	/**
+	 * @param engine
+	 */
+	private void initImporters(Engine engine) {
 		engine.addPathwayImporter(new MappFormat());
 		engine.addPathwayImporter(new GpmlFormat());
 	}
 
-	private void initExporters(Engine engine, GdbManager gdbManager)
-	{
-		engine.addPathwayExporter(new MappFormat()); 
+	/**
+	 * @param engine
+	 * @param gdbManager
+	 */
+	private void initExporters(Engine engine, GdbManager gdbManager) {
+		engine.addPathwayExporter(new MappFormat());
 		engine.addPathwayExporter(new GpmlFormat());
 
 		GexManager gex = pvDesktop.getGexManager();

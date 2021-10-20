@@ -36,6 +36,8 @@ import org.pathvisio.view.VElementMouseListener;
  *
  * Also contains the getGroupGraphics method to quickly access all Graphics'
  * that are in this group.
+ * 
+ * @author unknown, finterly
  */
 public class VGroup extends VShapedElement implements LinkProvider, VElementMouseListener {
 	public static final int FLAG_SELECTED = 1 << 0;
@@ -54,7 +56,7 @@ public class VGroup extends VShapedElement implements LinkProvider, VElementMous
 	 */
 	@Override
 	public Group getPathwayElement() {
-		return getPathwayElement();
+		return (Group) super.getPathwayElement();
 	}
 
 //	/**

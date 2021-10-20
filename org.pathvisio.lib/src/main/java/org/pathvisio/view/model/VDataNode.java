@@ -25,6 +25,8 @@ import org.pathvisio.model.DataNode.State;
 /**
  * This class implements a {@link DataNode} and provides methods to resize and
  * draw it.
+ * 
+ * @author unknown, finterly
  */
 public class VDataNode extends VShapedElement {
 
@@ -46,7 +48,7 @@ public class VDataNode extends VShapedElement {
 	 */
 	@Override
 	public DataNode getPathwayElement() {
-		return getPathwayElement();
+		return (DataNode) super.getPathwayElement();
 	}
 
 	private void addState(State st) {
@@ -54,5 +56,4 @@ public class VDataNode extends VShapedElement {
 		vStates.add(vst);
 	}
 
-	
 }

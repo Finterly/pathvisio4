@@ -26,18 +26,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 
 import org.bridgedb.Xref;
-import org.pathvisio.core.ApplicationEvent;
-import org.pathvisio.core.Engine;
-import org.pathvisio.core.Engine.ApplicationEventListener;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.core.model.PathwayElementEvent;
-import org.pathvisio.core.model.PathwayElementListener;
-import org.pathvisio.core.view.SelectionBox.SelectionEvent;
-import org.pathvisio.core.view.SelectionBox.SelectionListener;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.model.VElement;
-import org.pathvisio.core.view.model.VPathwayModel;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.core.modeltemp.PathwayElementEvent;
+import org.pathvisio.events.PathwayObjectListener;
 import org.pathvisio.gui.DataPaneTextProvider;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayObject;
+import org.pathvisio.props.StaticProperty;
+import org.pathvisio.view.model.SelectionBox.SelectionEvent;
+import org.pathvisio.view.model.SelectionBox.SelectionListener;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.model.VPathwayObject;
 
 /**
  * The backpage panel for the Swing version of PathVisio. This pane shows
@@ -55,7 +57,7 @@ import org.pathvisio.gui.DataPaneTextProvider;
  * method, otherwise the background thread is not killed.
  */
 public class DataPane extends JEditorPane implements ApplicationEventListener,
-		SelectionListener, PathwayElementListener {
+		SelectionListener, PathwayObjectListener {
 	private final DataPaneTextProvider dpt;
 	private Engine engine;
 	private ExecutorService executor;
@@ -95,7 +97,7 @@ public class DataPane extends JEditorPane implements ApplicationEventListener,
 
 	private PathwayElement input;
 
-	public void setInput(final PathwayElement e) {
+	public void setInput(final PathwayObject e) {
 		// System.err.println("===== SetInput Called ==== " + e);
 		if (e == input)
 			return; // Don't set same input twice
@@ -144,8 +146,8 @@ public class DataPane extends JEditorPane implements ApplicationEventListener,
 				// works for all Graphics object
 				// the backpage checks and gives the correct error if
 				// it's not a datanode or line
-				if (o instanceof Graphics) {
-					setInput(((Graphics) o).getPathwayElement());
+				if (o instanceof VPathwayObject) {
+					setInput(((VPathwayObject) o).getPathwayElement());
 					break;
 				}
 			}

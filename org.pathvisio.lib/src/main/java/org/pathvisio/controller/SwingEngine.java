@@ -38,29 +38,29 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.bridgedb.bio.Organism;
-import org.pathvisio.controller.ApplicationEvent;
-import org.pathvisio.controller.Engine;
 import org.pathvisio.controller.Engine.ApplicationEventListener;
-import org.pathvisio.controller.Globals;
 import org.pathvisio.controller.data.GdbManager;
 import org.pathvisio.core.util.ProgressKeeper;
-import org.pathvisio.core.util.Utils;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.io.ConverterException;
-import org.pathvisio.model.GpmlFormat;
-import org.pathvisio.model.PathwayModel;
-import org.pathvisio.model.Pathway.StatusFlagEvent;
-import org.pathvisio.io.PathwayIO;
-import org.pathvisio.util.preferences.GlobalPreference;
-import org.pathvisio.util.preferences.Preference;
-import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.model.VPathwayWrapper;
+import org.pathvisio.events.PathwayIO;
 import org.pathvisio.gui.CommonActions;
 import org.pathvisio.gui.MainPanel;
+import org.pathvisio.gui.PathwayFileFilter;
+import org.pathvisio.gui.ProgressDialog;
 import org.pathvisio.gui.dialog.NewPathwayDialog;
 import org.pathvisio.gui.dialog.OkCancelDialog;
 import org.pathvisio.gui.dialog.PopupDialogHandler;
 import org.pathvisio.gui.view.VPathwaySwing;
+import org.pathvisio.io.ConverterException;
+import org.pathvisio.io.GpmlFormat;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.PathwayModel.StatusFlagEvent;
+import org.pathvisio.util.Utils;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.Preference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.view.model.VPathwayWrapper;
 
 /**
  * SwingEngine ties together a number of global objects needed both in the
@@ -239,7 +239,7 @@ public class SwingEngine implements ApplicationEventListener, PathwayModel.Statu
 			protected Boolean doInBackground() {
 				pk.setTaskName("Importing pathway");
 				try {
-					boolean editMode = engine.hasVPathway() ? engine.getActiveVPathway().isEditMode() : true;
+					boolean editMode = engine.hasVPathwayModel() ? engine.getActiveVPathway().isEditMode() : true;
 					engine.setWrapper (createWrapper());
 					engine.importPathway(f);
 					engine.getActiveVPathway().setEditMode(editMode);
@@ -357,7 +357,7 @@ public class SwingEngine implements ApplicationEventListener, PathwayModel.Statu
 					"", pk, false, true);
 
 			// create a clone so we can safely act on it in a worker thread.
-			final Pathway clone = engine.getActivePathway().clone();
+			final PathwayModel clone = engine.getActivePathway().clone();
 
 			SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() 
 			{

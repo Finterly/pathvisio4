@@ -34,7 +34,7 @@ import org.pathvisio.util.preferences.PreferenceManager;
  * NB: VElement does not necessarily correspond directly with a
  * org.pathvisio.model.PathwayElement.
  *
- * @author unknown
+ * @author unknown, finterly
  */
 public abstract class VElement implements Comparable<VElement> {
 

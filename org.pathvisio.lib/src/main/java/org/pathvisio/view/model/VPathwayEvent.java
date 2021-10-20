@@ -24,23 +24,16 @@ import java.util.List;
 import org.pathvisio.view.MouseEvent;
 
 /**
- * event sent by VPathway upon modification of one or more VPathwayElements.
+ * Event sent by VPathway upon modification of one or more VPathwayElements.
+ * 
+ * @author unknown, finterly
  */
 public class VPathwayEvent extends EventObject {
 
 	/** Possible event types */
-	public static enum VPathwayEventType
-	{
-		ELEMENT_ADDED,
-		EDIT_MODE_ON,
-		EDIT_MODE_OFF,
-		MODEL_LOADED,
-		ELEMENT_DOUBLE_CLICKED,
-		ELEMENT_DRAWN,
-		ELEMENT_CLICKED_UP,
-		ELEMENT_CLICKED_DOWN,
-		ELEMENT_HOVER,
-		HREF_ACTIVATED;
+	public static enum VPathwayEventType {
+		ELEMENT_ADDED, EDIT_MODE_ON, EDIT_MODE_OFF, MODEL_LOADED, ELEMENT_DOUBLE_CLICKED, ELEMENT_DRAWN,
+		ELEMENT_CLICKED_UP, ELEMENT_CLICKED_DOWN, ELEMENT_HOVER, HREF_ACTIVATED;
 	}
 
 	private VPathwayEventType type;
@@ -101,6 +94,6 @@ public class VPathwayEvent extends EventObject {
 	}
 
 	public VPathwayModel getVPathway() {
-		return (VPathwayModel)getSource();
+		return (VPathwayModel) getSource();
 	}
 }

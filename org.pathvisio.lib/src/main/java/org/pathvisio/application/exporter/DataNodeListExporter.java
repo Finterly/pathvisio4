@@ -15,7 +15,7 @@
  * the License.
  ******************************************************************************/
 
-package org.pathvisio.core.model;
+package org.pathvisio.application.exporter;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

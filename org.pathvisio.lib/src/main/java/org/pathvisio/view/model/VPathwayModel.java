@@ -88,6 +88,8 @@ import org.pathvisio.view.model.ViewActions.TextFormattingAction;
  *
  * It's necessary to call {@link PreferenceManager.init()} before you can
  * instantiate this class.
+ * 
+ * @author unknown, finterly
  */
 public class VPathwayModel implements PathwayListener {
 
@@ -107,8 +109,6 @@ public class VPathwayModel implements PathwayListener {
 
 	SelectionBox selection;
 	private boolean selectionEnabled = true;
-
-	private boolean editMode = true;
 
 	// ================================================================================
 	// Selection and Flags Methods
@@ -172,9 +172,9 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Selects object by object type.
+	 * Selects object by object type. TODO also select states?
 	 * 
-	 * @param c
+	 * @param c the object class.
 	 */
 	public void selectObjectsByObjectType(Class c) {
 		clearSelection();
@@ -210,14 +210,14 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * select all objects of the pathway.
+	 * Selects all objects of the pathway.
 	 */
 	void selectAll() {
 		selectObjects(null);
 	}
 
 	/**
-	 * Deselect all elements on the drawing and resets the selectionbox.
+	 * Deselects all elements on the drawing and resets the selectionbox.
 	 */
 	public void clearSelection() {
 		clearSelection(0, 0);
@@ -234,31 +234,6 @@ public class VPathwayModel implements PathwayListener {
 		for (VElement e : drawingObjects)
 			e.deselect();
 		selection.reset(x, y);
-	}
-
-	/**
-	 * Checks if this drawing is in edit mode.
-	 *
-	 * @return true if in edit mode, false otherwise. //TODO
-	 */
-	public boolean isEditMode() {
-		return editMode;
-	}
-
-	/**
-	 * Set this drawing to edit mode.
-	 *
-	 * @param editMode true if edit mode has to be enabled, false if disabled (view
-	 *                 mode).
-	 */
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-		if (!editMode) {
-			clearSelection();
-		}
-		redraw();
-		VPathwayEventType type = editMode ? VPathwayEventType.EDIT_MODE_ON : VPathwayEventType.EDIT_MODE_OFF;
-		fireVPathwayEvent(new VPathwayEvent(this, type));
 	}
 
 	// ================================================================================
@@ -358,112 +333,43 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
-	// Template and Add Variables and Methods
-	// ================================================================================
-	/**
-	 * Temporary array of elements to be added to the pathway model by
-	 * {@link addScheduled}. Elements can be added to this array by
-	 * {@link addObject}
-	 */
-	private List<VElement> toAdd = new ArrayList<VElement>();
-
-	/**
-	 * The template that provides the new graphics type that has to be added next
-	 * time the user clicks on the drawing.
-	 */
-	Template newTemplate = null;
-
-	/**
-	 * Adds an element to the drawing.
-	 *
-	 * @param o the element to add.
-	 */
-	public void addObject(VElement o) {
-		toAdd.add(o);
-	}
-
-	/**
-	 * When adding elements to a pathway, they are not added immediately but placed
-	 * in a temporary array. This to prevent concurrent modification of the main
-	 * elements array. This method adds the elements that are scheduled to be added.
-	 */
-	void addScheduled() {
-		for (VElement elt : toAdd) {
-			if (!drawingObjects.contains(elt)) { // Don't add duplicates!
-				drawingObjects.add(elt);
-			}
-		}
-		toAdd.clear();
-	}
-
-	/**
-	 * Method to set the template that provides the new graphics type that has to be
-	 * added next time the user clicks on the drawing.
-	 *
-	 * @param v the template that provides the elements to be added.
-	 */
-	public void setNewTemplate(Template v) {
-		newTemplate = v;
-	}
-
-	// ================================================================================
 	// Drawing Methods
 	// ================================================================================
-	/**
-	 * This will cause a complete redraw of the pathway to be scheduled. The redraw
-	 * will happen as soon as all other swing events are processed.
-	 * <p>
-	 * Use this only after large changes (e.g. loading a new pathway, applying a new
-	 * visualization method) as it is quite slow.
-	 */
-	public void redraw() {
-		if (parent != null)
-			parent.redraw();
-	}
+	private boolean editMode = true;
 
-	/**
-	 * Adds object boundaries to the "dirty" area, the area which needs to be
-	 * redrawn. The redraw will not happen immediately, but will be scheduled on the
-	 * event dispatch thread.
-	 */
-	void addDirtyRect(Rectangle2D ar) {
-		if (parent != null)
-			parent.redraw(ar.getBounds());
-	}
-
-	/**
-	 * Used by undo manager.
-	 * 
-	 * @param originalState the original state.
-	 */
-	public void replacePathway(PathwayModel originalState) {
-		boolean changed = data.hasChanged();
-
-		clearSelection();
-		drawingObjects = new ArrayList<VElement>();
-		// transfer selectionBox with corresponding listeners
-		SelectionBox newSelection = new SelectionBox(this);
-		for (Iterator<SelectionListener> i = selection.getListeners().iterator(); i.hasNext();) {
-			SelectionListener l = i.next();
-			newSelection.addListener(l);
-			i.remove();
-		}
-		selection = newSelection;
-		data.removeListener(this);
-		pressedObject = null;
-		data.transferStatusFlagListeners(originalState);
-		data = null;
-		pointsMtoV = new HashMap<LinePoint, VPoint>();
-		fromModel(originalState);
-
-		if (changed != originalState.hasChanged()) {
-			data.fireStatusFlagEvent(new StatusFlagEvent(originalState.hasChanged()));
+	boolean checkDrawAllowed(VElement o) {
+		if (isEditMode()) {
+			return true;
+		} else {
+			return !(o instanceof Handle || (o == selection && !isDragging));
 		}
 	}
 
-	// ================================================================================
-	// Draw Methods
-	// ================================================================================
+	/**
+	 * Checks if this drawing is in edit mode.
+	 *
+	 * @return true if in edit mode, false otherwise. //TODO
+	 */
+	public boolean isEditMode() {
+		return editMode;
+	}
+
+	/**
+	 * Set this drawing to edit mode.
+	 *
+	 * @param editMode true if edit mode has to be enabled, false if disabled (view
+	 *                 mode).
+	 */
+	public void setEditMode(boolean editMode) {
+		this.editMode = editMode;
+		if (!editMode) {
+			clearSelection();
+		}
+		redraw();
+		VPathwayEventType type = editMode ? VPathwayEventType.EDIT_MODE_ON : VPathwayEventType.EDIT_MODE_OFF;
+		fireVPathwayEvent(new VPathwayEvent(this, type));
+	}
+
 	/**
 	 * Paints all components in the drawing. This method is called automatically in
 	 * the painting process. This method will draw opaquely, meaning it will erase
@@ -515,11 +421,55 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
-	boolean checkDrawAllowed(VElement o) {
-		if (isEditMode()) {
-			return true;
-		} else {
-			return !(o instanceof Handle || (o == selection && !isDragging));
+	/**
+	 * This will cause a complete redraw of the pathway to be scheduled. The redraw
+	 * will happen as soon as all other swing events are processed.
+	 * <p>
+	 * Use this only after large changes (e.g. loading a new pathway, applying a new
+	 * visualization method) as it is quite slow.
+	 */
+	public void redraw() {
+		if (parent != null)
+			parent.redraw();
+	}
+
+	/**
+	 * Adds object boundaries to the "dirty" area, the area which needs to be
+	 * redrawn. The redraw will not happen immediately, but will be scheduled on the
+	 * event dispatch thread.
+	 */
+	void addDirtyRect(Rectangle2D ar) {
+		if (parent != null)
+			parent.redraw(ar.getBounds());
+	}
+
+	/**
+	 * Used by undo manager.
+	 * 
+	 * @param originalState the original state.
+	 */
+	public void replacePathway(PathwayModel originalState) {
+		boolean changed = data.hasChanged();
+
+		clearSelection();
+		drawingObjects = new ArrayList<VElement>();
+		// transfer selectionBox with corresponding listeners
+		SelectionBox newSelection = new SelectionBox(this);
+		for (Iterator<SelectionListener> i = selection.getListeners().iterator(); i.hasNext();) {
+			SelectionListener l = i.next();
+			newSelection.addListener(l);
+			i.remove();
+		}
+		selection = newSelection;
+		data.removeListener(this);
+		pressedObject = null;
+		data.transferStatusFlagListeners(originalState);
+		data = null;
+		pointsMtoV = new HashMap<LinePoint, VPoint>();
+		fromModel(originalState);
+
+		if (changed != originalState.hasChanged()) {
+			data.fireStatusFlagEvent(new StatusFlagEvent(originalState.hasChanged()));
 		}
 	}
 
@@ -614,6 +564,9 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Map the contents of a single {@link DataNode} to this VPathwayModel.
+	 * 
+	 * @param o the pathway element object.
+	 * @return
 	 */
 	private VPathwayObject fromModelDataNode(DataNode o) {
 		return new VDataNode(this, o);
@@ -621,6 +574,9 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Map the contents of a single {@link LineElement} to this VPathwayModel.
+	 * 
+	 * @param o the pathway element object.
+	 * @return
 	 */
 	private VPathwayObject fromModelLine(LineElement o) {
 		return new VLineElement(this, o);
@@ -628,6 +584,9 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Map the contents of a single {@link Label} to this VPathwayModel.
+	 * 
+	 * @param o the pathway element object.
+	 * @return
 	 */
 	private VPathwayObject fromModelLabel(Label o) {
 		return new VLabel(this, o);
@@ -635,6 +594,9 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Map the contents of a single {@link Shape} to this VPathwayModel.
+	 * 
+	 * @param o the pathway element object.
+	 * @return
 	 */
 	private VPathwayObject fromModelShape(Shape o) {
 		return new VShape(this, o);
@@ -642,6 +604,9 @@ public class VPathwayModel implements PathwayListener {
 
 	/**
 	 * Map the contents of a single {@link Group} to this VPathwayModel.
+	 * 
+	 * @param o the pathway element object.
+	 * @return
 	 */
 	private VPathwayObject fromModelGroup(Group o) {
 		return new VGroup(this, o);
@@ -788,6 +753,56 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	// ================================================================================
+	// Template and Add Variables and Methods
+	// ================================================================================
+
+	/**
+	 * The template that provides the new graphics type that has to be added next
+	 * time the user clicks on the drawing.
+	 */
+	Template newTemplate = null;
+
+	/**
+	 * Method to set the template that provides the new graphics type that has to be
+	 * added next time the user clicks on the drawing.
+	 *
+	 * @param v the template that provides the elements to be added.
+	 */
+	public void setNewTemplate(Template v) {
+		newTemplate = v;
+	}
+
+	/**
+	 * Temporary array of elements to be added to the pathway model by
+	 * {@link addScheduled}. Elements can be added to this array by
+	 * {@link addObject}
+	 */
+	private List<VElement> toAdd = new ArrayList<VElement>();
+
+	/**
+	 * Adds an element to the drawing.
+	 *
+	 * @param o the element to add.
+	 */
+	public void addObject(VElement o) {
+		toAdd.add(o);
+	}
+
+	/**
+	 * When adding elements to a pathway, they are not added immediately but placed
+	 * in a temporary array. This to prevent concurrent modification of the main
+	 * elements array. This method adds the elements that are scheduled to be added.
+	 */
+	void addScheduled() {
+		for (VElement elt : toAdd) {
+			if (!drawingObjects.contains(elt)) { // Don't add duplicates!
+				drawingObjects.add(elt);
+			}
+		}
+		toAdd.clear();
+	}
+
+	// ================================================================================
 	// Mouse Event Variables and Methods
 	// ================================================================================
 
@@ -804,7 +819,9 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * handles mouse movement
+	 * Handles mouse movement
+	 * 
+	 * @param ve the mouse event.
 	 */
 	public void mouseMove(MouseEvent ve) {
 		snapModifierPressed = ve.isKeyDown(MouseEvent.M_SHIFT);
@@ -842,6 +859,10 @@ public class VPathwayModel implements PathwayListener {
 		hoverManager.reset(ve);
 	}
 
+	/**
+	 * @param ve      the mouse event.
+	 * @param objects the list of velement objects.
+	 */
 	private void processMouseEnterEvents(MouseEvent ve, List<VElement> objects) {
 		for (VElement vpe : objects) {
 			if (!lastMouseOver.contains(vpe)) {
@@ -859,6 +880,10 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	/**
+	 * @param ve      the mouse event.
+	 * @param objects the list of velement objects.
+	 */
 	private void processMouseExitEvents(MouseEvent ve, List<VElement> objects) {
 		Set<VElement> toRemove = new HashSet<VElement>();
 
@@ -924,7 +949,8 @@ public class VPathwayModel implements PathwayListener {
 	/**
 	 * Handles movement of objects with the arrow keys
 	 *
-	 * @param ks
+	 * @param ks        the keystroke.
+	 * @param increment the increment.
 	 */
 	public void moveByKey(KeyStroke ks, int increment) {
 		List<VGroupable> selectedVPathwayObject = getSelectedNonGroupVPathwayElement();
@@ -1045,7 +1071,7 @@ public class VPathwayModel implements PathwayListener {
 	}
 
 	/**
-	 * Handles mouse entered input.
+	 * Handles mouse Entered input.
 	 * 
 	 * @param e the mouse event.
 	 */
@@ -1281,7 +1307,7 @@ public class VPathwayModel implements PathwayListener {
 	private static final int DRAG_UNDO_CHANGED = 2;
 
 	/**
-	 * pathvisio distinguishes between placing objects with a click or with a drag.
+	 * Pathvisio distinguishes between placing objects with a click or with a drag.
 	 * If you don't move the cursor in between the mousedown and mouseup event, the
 	 * object is placed with a default initial size.
 	 *
@@ -1298,7 +1324,7 @@ public class VPathwayModel implements PathwayListener {
 	private static final int MIN_DRAG_LENGTH = 3;
 
 	/**
-	 * Add a new object to the drawing {@see VPathway#setNewVPathwayObject(int)}
+	 * Adds a new object to the drawing {@see VPathway#setNewVPathwayObject(int)}
 	 *
 	 * @param ve The point where the user clicked on the drawing to add a new
 	 *           graphics
@@ -1453,6 +1479,9 @@ public class VPathwayModel implements PathwayListener {
 		}
 	}
 
+	// ================================================================================
+	// KeyBoard Action
+	// ================================================================================
 	// TODO: should use Toolkit.getMenuShortcutKeyMask(), but
 	// that doesn't work in headless mode so screws up automated testing.
 	// solution: define keyboard shortcuts elsewhere

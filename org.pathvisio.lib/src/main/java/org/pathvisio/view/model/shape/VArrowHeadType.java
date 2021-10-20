@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model.shape;
 
 import java.awt.Shape;
 
@@ -38,39 +38,29 @@ import java.awt.Shape;
 	  | /              ##/             /
 	  |/               #/             /
  * </pre>
+ * 
+ * @author unknown
  */
-public class ArrowShape {
-	/**
-	 * Enumerates possible ways to combine the outline and body.
-	 */
-	public enum FillType {
-		/**
-		 * Open fill-type, where the outline is colored with the foreground color and
-		 * the body is colored with the canvas color.
-		 */
-		OPEN,
-
-		/**
-		 * Closed fill-type, where both the outline and the body are colored with the
-		 * line color.
-		 */
-		CLOSED,
-
-		/**
-		 * Wire fill-type, there is only an outline.
-		 */
-		WIRE
-	}
+public class VArrowHeadType {
 
 	private Shape shape;
 	private FillType fillType;
 	private int gap = 0;
 
 	/**
-	 * Normally, this constructor is not called directly. Use
-	 * {@link ShapeRegistry.registerShape} instead to define a new ArrowShape.
+	 * Enumerates possible ways to combine the outline and body.
 	 */
-	public ArrowShape(Shape shape, FillType fillType, int gap) {
+	public enum FillType {
+		OPEN, // outline is colored with line color, body is colored with canvas color
+		CLOSED, // both outline and body are colored with the line color
+		WIRE // wire, there is only an outline
+	}
+
+	/**
+	 * Normally, this constructor is not called directly. Use
+	 * {@link ShapesRegistry.registerShape} instead to define a new ArrowShape.
+	 */
+	public VArrowHeadType(Shape shape, FillType fillType, int gap) {
 		this.shape = shape;
 		this.fillType = fillType;
 		this.gap = gap;
@@ -79,9 +69,9 @@ public class ArrowShape {
 
 	/**
 	 * Normally, this constructor is not called directly. Use
-	 * {@link ShapeRegistry.registerShape} instead to define a new ArrowShape.
+	 * {@link ShapesRegistry.registerShape} instead to define a new ArrowShape.
 	 */
-	public ArrowShape(Shape shape, FillType fillType) {
+	public VArrowHeadType(Shape shape, FillType fillType) {
 		this.shape = shape;
 		this.fillType = fillType;
 	}

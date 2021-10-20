@@ -14,15 +14,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.gui.dialogs;
+package org.pathvisio.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Frame;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.pathvisio.core.model.PathwayElement;
 import org.pathvisio.gui.SwingEngine;
+import org.pathvisio.model.Label;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Shape;
 
 /**
  * This is a factory class for the PathwayElement Popup dialog, which pops up after double-clicking an element in the pathway.
@@ -77,10 +79,16 @@ public class PopupDialogHandler
 	public PathwayElementDialog getInstance(PathwayElement e, boolean readonly, Frame frame, Component locationComp) {
 		PathwayElementDialog result = null;
 		
-		switch(e.getObjectType()) {
-		case LABEL:
+	
+			if (e.getClass() == Label.class) {
+				
+			} else if (e.getClass() == Shape.class) {
+				result = new LabelDialog(swingEngine, e, readonly, frame, locationComp);
+			
+			}
+			
 		case SHAPE:
-			result = new LabelDialog(swingEngine, e, readonly, frame, locationComp);
+			
 			break;
 		case DATANODE:
 			result = new DataNodeDialog(swingEngine, e, readonly, frame, locationComp);

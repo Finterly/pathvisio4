@@ -43,8 +43,8 @@ import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.ArrowShape;
-import org.pathvisio.view.ShapeRegistry;
+import org.pathvisio.view.model.shape.ShapesRegistry;
+import org.pathvisio.view.model.shape.VArrowHeadType;
 
 /**
  * This class represents a Line {@link LineElement} on the pathway, or rather a
@@ -55,10 +55,13 @@ import org.pathvisio.view.ShapeRegistry;
  * will get a Segment Handle.
  *
  * The actual implementation of the path is done by implementations of the
- * {@link ConnectorShape} interface.
+ * {@link ConnectorShape} interface. 
  * 
  * @see ConnectorShape
  * @see org.pathvisio.view.connector.ConnectorShapeFactory
+ * 
+ * @author unknown, finterly
+ * 
  */
 public class VLineElement extends VPathwayElement implements Adjustable, VGroupable { // TODO
 	// ConnectorRestrictions
@@ -90,7 +93,7 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 	 */
 	@Override
 	public LineElement getPathwayElement() {
-		return getPathwayElement();
+		return (LineElement) super.getPathwayElement();
 	}
 
 	private void addPoint(LinePoint mp) {
@@ -220,11 +223,11 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 
 		double gap = 0;
 		if (type == null) {
-			gap = ShapeRegistry.getArrow("Default").getGap();
+			gap = ShapesRegistry.getArrow("Default").getGap();
 		} else if (type.getName().equals("Line")) {
 			gap = 0;
 		} else {
-			gap = ShapeRegistry.getArrow(type.getName()).getGap();
+			gap = ShapesRegistry.getArrow(type.getName()).getGap();
 		}
 		return gap;
 
@@ -237,9 +240,9 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 
 		Shape l = getVConnectorAdjusted();
 
-		ArrowShape[] heads = getVHeadsAdjusted();
-		ArrowShape hs = heads[0];
-		ArrowShape he = heads[1];
+		VArrowHeadType[] heads = getVHeadsAdjusted();
+		VArrowHeadType hs = heads[0];
+		VArrowHeadType he = heads[1];
 
 		g.draw(l);
 		drawHead(g, he, c);
@@ -308,14 +311,14 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 	 * 
 	 * @return An array with two arrowheads, for the start and end respectively
 	 */
-	public ArrowShape[] getVHeads() {
+	public VArrowHeadType[] getVHeads() {
 		Segment[] segments = getConnectorShape().getSegments();
 
-		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), segments[segments.length - 1].getMEnd(),
+		VArrowHeadType he = getVHead(segments[segments.length - 1].getMStart(), segments[segments.length - 1].getMEnd(),
 				getPathwayElement().getEndLineType());
-		ArrowShape hs = getVHead(segments[0].getMEnd(), segments[0].getMStart(),
+		VArrowHeadType hs = getVHead(segments[0].getMEnd(), segments[0].getMStart(),
 				getPathwayElement().getStartLineType());
-		return new ArrowShape[] { hs, he };
+		return new VArrowHeadType[] { hs, he };
 	}
 
 	/**
@@ -324,28 +327,29 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 	 * 
 	 * @return An array with two arrowheads, for the start and end respectively
 	 */
-	public ArrowShape[] getVHeadsAdjusted() {
+	public VArrowHeadType[] getVHeadsAdjusted() {
 		Segment[] segments = getConnectorShape().getSegments();
 
 		// last segment in the Connector Shape
 		double lineEndingWidth = getGap(getPathwayElement().getEndLineType());
 		Point2D adjustedSegmentEnd = segments[segments.length - 1].calculateNewEndPoint(lineEndingWidth);
-		ArrowShape he = getVHead(segments[segments.length - 1].getMStart(), adjustedSegmentEnd,
+		VArrowHeadType he = getVHead(segments[segments.length - 1].getMStart(), adjustedSegmentEnd,
 				getPathwayElement().getEndLineType());
 
 		// first segment in the connector shape
 		double lineStartingWidth = getGap(getPathwayElement().getStartLineType());
 		Point2D adjustedSegmentStart = segments[0].calculateNewStartPoint(lineStartingWidth);
-		ArrowShape hs = getVHead(segments[0].getMEnd(), adjustedSegmentStart, getPathwayElement().getStartLineType());
-		return new ArrowShape[] { hs, he };
+		VArrowHeadType hs = getVHead(segments[0].getMEnd(), adjustedSegmentStart,
+				getPathwayElement().getStartLineType());
+		return new VArrowHeadType[] { hs, he };
 	}
 
 	protected Shape getVShape(boolean rotate) {
 		Shape l = getVConnectorAdjusted();
 
-		ArrowShape[] heads = getVHeadsAdjusted();
-		ArrowShape hs = heads[0];
-		ArrowShape he = heads[1];
+		VArrowHeadType[] heads = getVHeadsAdjusted();
+		VArrowHeadType hs = heads[0];
+		VArrowHeadType he = heads[1];
 
 		float thickness = (float) vFromM(getPathwayElement().getLineWidth());
 		if (getPathwayElement().getLineStyle() == LineStyleType.DOUBLE)
@@ -416,7 +420,7 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 		}
 	}
 
-	protected void drawHead(Graphics2D g, ArrowShape head, Color c) {
+	protected void drawHead(Graphics2D g, VArrowHeadType head, Color c) {
 		if (head != null) {
 			// reset stroked line to solid, but use given thickness
 			g.setStroke(new BasicStroke((float) vFromM(getPathwayElement().getLineWidth())));
@@ -449,19 +453,19 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 	 * @param mP2 The end point in model coordinates
 	 * @return The ArrowShape in view coordinates
 	 */
-	protected ArrowShape getVHead(Point2D mP1, Point2D mP2, ArrowHeadType type) {
+	protected VArrowHeadType getVHead(Point2D mP1, Point2D mP2, ArrowHeadType type) {
 		double xs = vFromM(mP1.getX());
 		double ys = vFromM(mP1.getY());
 		double xe = vFromM(mP2.getX());
 		double ye = vFromM(mP2.getY());
 
-		ArrowShape h;
+		VArrowHeadType h;
 		if (type == null) {
-			h = ShapeRegistry.getArrow("Default");
+			h = ShapesRegistry.getArrow("Default");
 		} else if (type.getName().equals("Line")) {
 			h = null;
 		} else {
-			h = ShapeRegistry.getArrow(type.getName());
+			h = ShapesRegistry.getArrow(type.getName());
 		}
 
 		if (h != null) {
@@ -471,7 +475,7 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 			f.translate(xe, ye);
 			f.scale(scaleFactor, scaleFactor);
 			Shape sh = f.createTransformedShape(h.getShape());
-			h = new ArrowShape(sh, h.getFillType());
+			h = new VArrowHeadType(sh, h.getFillType());
 		}
 		return h;
 	}

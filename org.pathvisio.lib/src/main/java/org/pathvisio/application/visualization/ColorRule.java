@@ -22,19 +22,17 @@ import java.awt.Rectangle;
 import java.util.List;
 
 import org.jdom2.Element;
-import org.pathvisio.debug.Logger;
+import org.pathvisio.application.visualization.Criterion.CriterionException;
 import org.pathvisio.core.util.ColorConverter;
 import org.pathvisio.data.IRow;
 import org.pathvisio.data.ISample;
-import org.pathvisio.application.visualization.Criterion.CriterionException;
+import org.pathvisio.debug.Logger;
 
 /**
- * A rule, or boolean expression, that determines how an
- * Object value (usually a Double, but that is not required)
- * maps to a color
+ * A rule, or boolean expression, that determines how an Object value (usually a
+ * Double, but that is not required) maps to a color
  */
-public class ColorRule extends ColorSetObject
-{
+public class ColorRule extends ColorSetObject {
 	// colorCriterion for backwards compatibility
 	public static final String XML_ELEMENT_NAME = "ColorCriterion";
 
@@ -43,23 +41,25 @@ public class ColorRule extends ColorSetObject
 	public static final Color INITIAL_COLOR = Color.WHITE;
 	private Color color;
 
-	public void setColor(Color color)
-	{
+	public void setColor(Color color) {
 		this.color = color;
 		fireModifiedEvent();
 	}
 
-	public Color getColor() { return color == null ? INITIAL_COLOR : color; }
+	public Color getColor() {
+		return color == null ? INITIAL_COLOR : color;
+	}
 
 	/**
 	 * Returns error message or null if there was no error.
 	 */
-	public String setExpression(String expression, List<String> symbols)
-	{
+	public String setExpression(String expression, List<String> symbols) {
 		return criterion.setExpression(expression, symbols);
 	}
 
-	public String getExpression() { return criterion.getExpression(); }
+	public String getExpression() {
+		return criterion.getExpression();
+	}
 
 	public ColorRule() {
 		setName("rule");
@@ -70,15 +70,17 @@ public class ColorRule extends ColorSetObject
 		loadXML(xml);
 	}
 
-	@Override Color getColor(IRow data, ISample key) throws CriterionException
-	{
-		if (criterion.evaluate(data.getByName())) return color;
+	@Override
+	Color getColor(IRow data, ISample key) throws CriterionException {
+		if (criterion.evaluate(data.getByName()))
+			return color;
 		return null;
 	}
 
 	public void paintPreview(Graphics2D g, Rectangle bounds) {
 		Color c = getColor();
-		if(c == null) c = Color.BLACK;
+		if (c == null)
+			c = Color.BLACK;
 		g.setColor(c);
 		g.fill(bounds);
 	}
@@ -94,14 +96,16 @@ public class ColorRule extends ColorSetObject
 			criterion = new Criterion();
 			criterion.setExpression(expression);
 			Element ce = xml.getChild(XML_ELM_COLOR);
-			if(ce != null) color = ColorConverter.parseColorElement(ce);
-		} catch(Exception e) {
+			if (ce != null)
+				color = ColorConverter.parseColorElement(ce);
+		} catch (Exception e) {
 			Logger.log.error("Unable to load ColorCriterion", e);
 		}
 	}
 
 	static final String XML_ELM_COLOR = "color";
 	static final String XML_ATTR_EXPRESSION = "expression";
+
 	public Element toXML() {
 		Element elm = super.toXML();
 		Element ce = ColorConverter.createColorElement(XML_ELM_COLOR, getColor());

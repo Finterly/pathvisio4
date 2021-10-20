@@ -36,6 +36,8 @@ import org.pathvisio.model.Pathway;
  * model.PathwayElement(ObjectType.MAPPINFO) and in some ways to
  * model.PathwayElement(ObjectType.INFOBOX). This confusion is rooted in
  * inconsistencies in GPML. This should be cleaned up one day.
+ * 
+ * @author unknown, finterly
  */
 public class VInfoBox extends VPathwayElement {
 
@@ -56,7 +58,7 @@ public class VInfoBox extends VPathwayElement {
 	 */
 	@Override
 	public Pathway getPathwayElement() {
-		return getPathwayElement();
+		return (Pathway) super.getPathwayElement();
 	}
 
 	// TODO

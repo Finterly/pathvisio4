@@ -17,6 +17,7 @@
 package org.pathvisio.gui;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -32,35 +33,36 @@ import javax.swing.KeyStroke;
 import org.pathvisio.controller.ApplicationEvent;
 import org.pathvisio.controller.Engine;
 import org.pathvisio.controller.Engine.ApplicationEventListener;
-import org.pathvisio.core.util.Resources;
 import org.pathvisio.controller.Globals;
+import org.pathvisio.core.util.Resources;
+import org.pathvisio.gui.dialog.AboutDlg;
+import org.pathvisio.gui.dialog.PathwayElementDialog;
+import org.pathvisio.gui.dialog.PublicationXRefDialog;
+import org.pathvisio.io.GPML2013aReader.PublicationXref;
+import org.pathvisio.model.Label;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayModel;
+import org.pathvisio.model.PathwayModel.StatusFlagEvent;
+import org.pathvisio.model.PathwayModel.StatusFlagListener;
+import org.pathvisio.model.type.ArrowHeadType;
 //import org.pathvisio.controller.biopax.BiopaxReferenceManager;
 //import org.pathvisio.controller.biopax.PublicationXref;
 //import org.pathvisio.controller.model.CellularComponentType;
 import org.pathvisio.model.type.ConnectorType;
 import org.pathvisio.model.type.DataNodeType;
 import org.pathvisio.model.type.LineStyleType;
-import org.pathvisio.model.type.ArrowHeadType;
-import org.pathvisio.model.PathwayModel;
-import org.pathvisio.model.PathwayModel.StatusFlagEvent;
-import org.pathvisio.model.PathwayModel.StatusFlagListener;
-import org.pathvisio.model.Label;
-import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.type.ShapeType;
-import org.pathvisio.view.model.VLabel;
 import org.pathvisio.view.LayoutType;
-import org.pathvisio.view.MIMShapes;
-import org.pathvisio.view.model.SelectionBox;
 import org.pathvisio.view.Template;
 import org.pathvisio.view.model.DefaultTemplates;
-import org.pathvisio.view.model.Graphics;
 import org.pathvisio.view.model.Handle;
+import org.pathvisio.view.model.SelectionBox;
 import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VLabel;
+import org.pathvisio.view.model.VPathwayElement;
 import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.view.model.ViewActions;
-import org.pathvisio.gui.dialog.AboutDlg;
-import org.pathvisio.gui.dialog.PathwayElementDialog;
-import org.pathvisio.gui.dialog.PublicationXRefDialog;
+import org.pathvisio.view.model.shape.MIMShapes;
 
 /**
  * A collection of {@link Action}s that may be used throughout the program (e.g.
@@ -668,8 +670,8 @@ public class CommonActions implements ApplicationEventListener {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if (element instanceof Graphics) {
-				PathwayElement p = ((Graphics) element).getPathwayElement();
+			if (element instanceof VPathwayElement) { //TODO was Graphics
+				PathwayElement p = ((VPathwayElement) element).getPathwayElement();
 				PathwayElementDialog pd = swingEngine.getPopupDialogHandler().getInstance(p,
 						!element.getDrawing().isEditMode(), null, parent);
 				if (pd != null) {

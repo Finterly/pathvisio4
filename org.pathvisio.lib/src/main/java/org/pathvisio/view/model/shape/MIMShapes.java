@@ -14,14 +14,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model.shape;
 
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.core.model.AbstractShape;
+import org.pathvisio.core.modeltemp.IShape;
 //import org.pathvisio.core.model.IShape;
 import org.pathvisio.model.type.ArrowHeadType;
 
@@ -30,6 +30,7 @@ import org.pathvisio.model.type.ArrowHeadType;
  * style of pathways
  */
 public class MIMShapes {
+	
 	public static final ArrowHeadType MIM_NECESSARY_STIMULATION = ArrowHeadType.register("mim-necessary-stimulation");
 	public static final ArrowHeadType MIM_BINDING = ArrowHeadType.register("mim-binding");
 	public static final ArrowHeadType MIM_CONVERSION = ArrowHeadType.register("mim-conversion");
@@ -59,29 +60,29 @@ public class MIMShapes {
 			"mim-interaction");
 
 	public static void registerShapes() {
-		ShapeRegistry.registerArrow(MIM_NECESSARY_STIMULATION.getName(), getMIMNecessary(), ArrowShape.FillType.OPEN,
+		ShapesRegistry.registerArrow(MIM_NECESSARY_STIMULATION.getName(), getMIMNecessary(), VArrowHeadType.FillType.OPEN,
 				ARROWWIDTH);
-		ShapeRegistry.registerArrow(MIM_BINDING.getName(), getMIMBinding(), ArrowShape.FillType.CLOSED);
-		ShapeRegistry.registerArrow(MIM_CONVERSION.getName(), getMIMConversion(), ArrowShape.FillType.CLOSED,
+		ShapesRegistry.registerArrow(MIM_BINDING.getName(), getMIMBinding(), VArrowHeadType.FillType.CLOSED);
+		ShapesRegistry.registerArrow(MIM_CONVERSION.getName(), getMIMConversion(), VArrowHeadType.FillType.CLOSED,
 				ARROWWIDTH);
-		ShapeRegistry.registerArrow(MIM_TRANSLOCATION.getName(), getMIMTranslocation(), ArrowShape.FillType.CLOSED,
+		ShapesRegistry.registerArrow(MIM_TRANSLOCATION.getName(), getMIMTranslocation(), VArrowHeadType.FillType.CLOSED,
 				ARROWWIDTH);
-		ShapeRegistry.registerArrow(MIM_STIMULATION.getName(), getMIMStimulation(), ArrowShape.FillType.OPEN,
+		ShapesRegistry.registerArrow(MIM_STIMULATION.getName(), getMIMStimulation(), VArrowHeadType.FillType.OPEN,
 				ARROWWIDTH);
-		ShapeRegistry.registerArrow(MIM_MODIFICATION.getName(), getMIMBinding(), ArrowShape.FillType.CLOSED);
-		ShapeRegistry.registerArrow(MIM_CATALYSIS.getName(), getMIMCatalysis(), ArrowShape.FillType.OPEN,
+		ShapesRegistry.registerArrow(MIM_MODIFICATION.getName(), getMIMBinding(), VArrowHeadType.FillType.CLOSED);
+		ShapesRegistry.registerArrow(MIM_CATALYSIS.getName(), getMIMCatalysis(), VArrowHeadType.FillType.OPEN,
 				CATALYSIS_DIAM + CATALYSIS_GAP);
-		ShapeRegistry.registerArrow(MIM_CLEAVAGE.getName(), getMIMCleavage(), ArrowShape.FillType.WIRE, CLEAVAGE_FIRST);
-		ShapeRegistry.registerArrow(MIM_BRANCHING_LEFT.getName(), getMIMBranching(LEFT), ArrowShape.FillType.OPEN,
+		ShapesRegistry.registerArrow(MIM_CLEAVAGE.getName(), getMIMCleavage(), VArrowHeadType.FillType.WIRE, CLEAVAGE_FIRST);
+		ShapesRegistry.registerArrow(MIM_BRANCHING_LEFT.getName(), getMIMBranching(LEFT), VArrowHeadType.FillType.OPEN,
 				BRANCH_LOCATION);
-		ShapeRegistry.registerArrow(MIM_BRANCHING_RIGHT.getName(), getMIMBranching(RIGHT), ArrowShape.FillType.OPEN,
+		ShapesRegistry.registerArrow(MIM_BRANCHING_RIGHT.getName(), getMIMBranching(RIGHT), VArrowHeadType.FillType.OPEN,
 				BRANCH_LOCATION);
-		ShapeRegistry.registerArrow(MIM_INHIBITION.getName(), getMIMInhibition(), ArrowShape.FillType.OPEN,
+		ShapesRegistry.registerArrow(MIM_INHIBITION.getName(), getMIMInhibition(), VArrowHeadType.FillType.OPEN,
 				TBARWIDTH + TBAR_GAP);
-		ShapeRegistry.registerArrow(MIM_COVALENT_BOND.getName(), getMIMCovalentBond(), ArrowShape.FillType.OPEN);
-		ShapeRegistry.registerArrow(MIM_TRANSLATION.getName(), getMIMTranslation(), ArrowShape.FillType.WIRE,
+		ShapesRegistry.registerArrow(MIM_COVALENT_BOND.getName(), getMIMCovalentBond(), VArrowHeadType.FillType.OPEN);
+		ShapesRegistry.registerArrow(MIM_TRANSLATION.getName(), getMIMTranslation(), VArrowHeadType.FillType.WIRE,
 				ARROWWIDTH + ARROWHEIGHT);
-		ShapeRegistry.registerArrow(MIM_GAP.getName(), getMIMGap(), ArrowShape.FillType.OPEN, 10);
+		ShapesRegistry.registerArrow(MIM_GAP.getName(), getMIMGap(), VArrowHeadType.FillType.OPEN, 10);
 	}
 
 	static private java.awt.Shape getMIMCovalentBond() {

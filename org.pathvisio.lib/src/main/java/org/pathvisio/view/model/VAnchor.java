@@ -30,14 +30,16 @@ import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LineElement.Anchor;
 import org.pathvisio.model.LineElement.LinePoint;
 import org.pathvisio.model.type.AnchorShapeType;
-import org.pathvisio.view.AnchorShape;
-import org.pathvisio.view.ShapeRegistry;
+import org.pathvisio.view.model.shape.ShapesRegistry;
+import org.pathvisio.view.model.shape.VAnchorShapeType;
 
 /**
  * VAnchor is the view representation of a {@link Anchor}.
  *
  * It is stuck to a Line and can move one-dimensionally across it. It has a
  * handle so the user can drag it.
+ * 
+ * @author unknown, finterly
  */
 public class VAnchor extends VElement implements VLinkableTo, LinkProvider, Adjustable {
 
@@ -117,8 +119,8 @@ public class VAnchor extends VElement implements VLinkableTo, LinkProvider, Adju
 		anchor.setPosition(position);
 	}
 
-	private AnchorShape getAnchorShape() {
-		AnchorShape shape = ShapeRegistry.getAnchor(anchor.getShapeType().getName());
+	private VAnchorShapeType getAnchorShape() {
+		VAnchorShapeType shape = ShapesRegistry.getAnchor(anchor.getShapeType().getName());
 
 		if (shape != null) {
 			AffineTransform f = new AffineTransform();
@@ -126,13 +128,13 @@ public class VAnchor extends VElement implements VLinkableTo, LinkProvider, Adju
 			f.translate(getVx(), getVy());
 			f.scale(scaleFactor, scaleFactor);
 			Shape sh = f.createTransformedShape(shape.getShape());
-			shape = new AnchorShape(sh);
+			shape = new VAnchorShapeType(sh);
 		}
 		return shape;
 	}
 
 	private Shape getShape() {
-		AnchorShape shape = getAnchorShape();
+		VAnchorShapeType shape = getAnchorShape();
 		return shape != null ? shape.getShape() : handle.getVOutline();
 	}
 
@@ -148,7 +150,7 @@ public class VAnchor extends VElement implements VLinkableTo, LinkProvider, Adju
 			c = vLine.getPathwayElement().getLineColor();
 		}
 
-		AnchorShape arrowShape = getAnchorShape();
+		VAnchorShapeType arrowShape = getAnchorShape();
 		if (arrowShape != null) {
 			g.setStroke(new BasicStroke());
 			g.setPaint(c);

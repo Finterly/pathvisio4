@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.gex;
+package org.pathvisio.application.gex;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,13 +33,11 @@ import org.bridgedb.DataSource;
 import org.bridgedb.IDMapper;
 import org.bridgedb.IDMapperException;
 import org.bridgedb.Xref;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.debug.ThreadSafe;
-import org.pathvisio.core.debug.WorkerThreadOnly;
 import org.pathvisio.data.DataException;
 import org.pathvisio.data.DataInterface;
 import org.pathvisio.data.IRow;
 import org.pathvisio.data.ISample;
+import org.pathvisio.debug.WorkerThreadOnly;
 
 /**
  * This class represents cached expression data for a pathway.

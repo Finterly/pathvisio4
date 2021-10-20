@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.view;
+package org.pathvisio.view.model.shape;
 
 import java.awt.Shape;
 
@@ -23,7 +23,7 @@ import java.awt.Shape;
  * ArrowShape for Arrows. Currently this is nothing but a wrapper for a simple
  * java Shape.
  */
-public class AnchorShape {
+public class VAnchorShapeType {
 
 	Shape shape;
 
@@ -32,7 +32,7 @@ public class AnchorShape {
 	 * 
 	 * @param shape the shape of the anchor.
 	 */
-	public AnchorShape(Shape shape) {
+	public VAnchorShapeType(Shape shape) {
 		this.shape = shape;
 	}
 

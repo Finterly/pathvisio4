@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.gex;
+package org.pathvisio.application.gex;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import org.pathvisio.data.IRow;
 import org.pathvisio.data.ISample;
 import org.pathvisio.gui.BackpageTextProvider.BackpageHook;
 import org.pathvisio.gui.DataPaneTextProvider.DataHook;
-import org.pathvisio.model.ref.PathwayElement;
+import org.pathvisio.model.PathwayElement;
 
 /**
  * Shows data uploaded for each DataNode/Interaction present in the pathway

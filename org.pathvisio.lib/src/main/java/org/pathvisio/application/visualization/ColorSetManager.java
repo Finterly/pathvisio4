@@ -29,7 +29,8 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.pathvisio.core.debug.Logger;
+import org.pathvisio.application.visualization.VisualizationManager.VisualizationListener;
+import org.pathvisio.debug.Logger;
 
 /**
  * Manages colorSets (a ColorSet is a combination of rules and / or gradients)

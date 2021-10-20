@@ -16,6 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.application.visualization;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -28,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jdom2.Element;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.view.model.Graphics;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.view.model.VPathwayObject;
 
 /**
  * Represents a set of configured visualization plugins
@@ -127,7 +128,7 @@ public class Visualization
 	 * @param g	The {@link Graphics} object the visualization applies to
 	 * @param g2d Graphical context on which drawing operations can be performed
 	 */
-	public void visualizeDrawing(Graphics g, Graphics2D g2d)
+	public void visualizeDrawing(VPathwayObject g, Graphics2D g2d)
 	{
 		// get a list of visualization methods,
 		// sort on default drawing order.
@@ -156,7 +157,7 @@ public class Visualization
 	 * @return A {@link Shape} object that contains the area in which the
 	 * VisualizationPlugin can draw its visualization
 	 */
-	public Area provideDrawArea(VisualizationMethod m, Graphics g) {
+	public Area provideDrawArea(VisualizationMethod m, VPathwayObject g) {
 		if(!m.isUseProvidedArea())
 			throw new IllegalArgumentException("useProvidedArea set to false for this plug-in");
 

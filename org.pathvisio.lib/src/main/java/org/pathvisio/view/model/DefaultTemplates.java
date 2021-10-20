@@ -48,8 +48,8 @@ import org.pathvisio.model.type.VAlignType;
 import org.pathvisio.util.ColorUtils;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.MIMShapes;
 import org.pathvisio.view.Template;
+import org.pathvisio.view.model.shape.MIMShapes;
 
 /**
  * Contains a set of templates, patterns of PathwayElements that can be added to

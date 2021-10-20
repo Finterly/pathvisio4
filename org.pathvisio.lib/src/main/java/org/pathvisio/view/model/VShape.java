@@ -41,7 +41,7 @@ public class VShape extends VShapedElement {
 	 */
 	@Override
 	public Shape getPathwayElement() {
-		return getPathwayElement();
+		return (Shape) super.getPathwayElement();
 	}
 
 

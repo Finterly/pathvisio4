@@ -31,6 +31,8 @@ import org.pathvisio.model.PathwayObject;
 /**
  * This class is a parent class for all graphics that can be added to a
  * VPathwayModel.
+ * 
+ * @author unknown, finterly
  */
 public abstract class VPathwayObject extends VElement implements PathwayObjectListener {
 

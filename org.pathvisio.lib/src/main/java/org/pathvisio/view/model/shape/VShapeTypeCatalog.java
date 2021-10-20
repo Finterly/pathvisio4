@@ -49,8 +49,12 @@ public class VShapeTypeCatalog {
 	 * no relation with the constants defined in ShapeType.
 	 */
 	public enum Internal {
-		// Basic shapes
 		
+		// Default shape
+		DEFAULT,
+		
+		// Basic shapes
+
 		// Basic line shapes
 		BRACE,
 		// Cellular components
@@ -79,7 +83,17 @@ public class VShapeTypeCatalog {
 	static public java.awt.Shape getPluggableShape(Internal st) {
 		GeneralPath path = new GeneralPath();
 		switch (st) {
-
+		case DEFAULT:
+			path.moveTo(0, 0);
+			path.lineTo(10, 0);
+			path.lineTo(10, 10);
+			path.lineTo(0, 10);
+			path.closePath();
+			path.moveTo(2, 2);
+			path.lineTo(8, 8);
+			path.moveTo(2, 8);
+			path.lineTo(8, 2);
+			break;
 		case BRACE:
 			path.moveTo(0, 4);
 			path.quadTo(0, 2, 3, 2);
@@ -192,7 +206,28 @@ public class VShapeTypeCatalog {
 				path.lineTo(endX, endY);
 			}
 			break;
-
+		case CELL:
+			break;
+		case CELLA:
+			break;
+		case NUCLEUS:
+			break;
+		case ORGANA:
+			break;
+		case ORGANB:
+			break;
+		case ORGANC:
+			break;
+		case ORGANELLE:
+			break;
+		case PROTEINB:
+			break;
+		case RIBOSOME:
+			break;
+		case VESICLE:
+			break;
+		default:
+			break;
 		}
 		return path;
 	}

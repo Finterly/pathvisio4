@@ -32,6 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.AttributedString;
 
+import org.pathvisio.core.modeltemp.VShapeTypeRegistry;
 import org.pathvisio.events.PathwayObjectEvent;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Group;
@@ -45,9 +46,8 @@ import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.LinAlg;
 import org.pathvisio.view.LinAlg.Point;
-import org.pathvisio.view.ShapeRegistry;
 import org.pathvisio.view.model.Handle.Freedom;
-import org.pathvisio.view.model.shape.VShapeTypeRegistry;
+import org.pathvisio.view.model.shape.ShapesRegistry;
 
 /**
  * This {@link Graphics} class represents the view of {@link ShapedElement}
@@ -608,9 +608,9 @@ public abstract class VShapedElement extends VPathwayElement
 		Shape s = null;
 
 		if (getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType() == ShapeType.NONE) {
-			s = ShapeRegistry.DEFAULT_SHAPE.getShape(mw, mh);
+			s = ShapesRegistry.DEFAULT_SHAPE.getShape(mw, mh);
 		} else {
-			s = VShapeTypeRegistry.getShape(getPathwayElement().getShapeType(), mw, mh);
+			s = VShapeTypeRegistry.getShape(getPathwayElement().getShapeType().getName(), mw, mh);
 		}
 
 		AffineTransform t = new AffineTransform();

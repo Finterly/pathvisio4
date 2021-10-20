@@ -41,7 +41,7 @@ public class VState extends VShapedElement {
 	 */
 	@Override
 	public State getPathwayElement() {
-		return getPathwayElement();
+		return (State) super.getPathwayElement();
 	}
 
 	protected void vMoveBy(double vdx, double vdy) {

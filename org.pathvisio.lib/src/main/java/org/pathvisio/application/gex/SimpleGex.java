@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.gex;
+package org.pathvisio.application.gex;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,7 +36,6 @@ import org.bridgedb.DataSource;
 import org.bridgedb.IDMapperException;
 import org.bridgedb.Xref;
 import org.bridgedb.rdb.construct.DBConnector;
-import org.pathvisio.core.debug.Logger;
 import org.pathvisio.data.DataException;
 import org.pathvisio.data.DataInterface;
 import org.pathvisio.data.IRow;

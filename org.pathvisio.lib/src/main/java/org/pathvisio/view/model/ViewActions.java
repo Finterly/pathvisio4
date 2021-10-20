@@ -519,7 +519,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 		}
 
 		private void removeWaypoint(LineElement l) {
-			// TODO: Instead of removing the last point, it would be better to adjust the
+			// TODO: Instead of removing the last point,f it would be better to adjust the
 			// context
 			// menu to remove a specific point (like with anchors). This could be done by
 			// making

@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.gui.dialogs;
+package org.pathvisio.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Frame;
@@ -24,11 +24,11 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.StaticProperty;
-import org.pathvisio.core.view.UndoAction;
-import org.pathvisio.core.view.VPathway;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.props.StaticProperty;
+import org.pathvisio.view.model.UndoAction;
+import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.gui.SwingEngine;
 import org.pathvisio.gui.panels.CommentPanel;
 import org.pathvisio.gui.panels.LitReferencePanel;
@@ -183,7 +183,7 @@ public class PathwayElementDialog extends OkCancelDialog {
 			}
 		}
 		if(done) {
-			VPathway p = swingEngine.getEngine().getActiveVPathway();
+			VPathwayModel p = swingEngine.getEngine().getActiveVPathway();
 			p.getUndoManager().newAction(
 					new UndoAction("Modified element properties", originalPathway)
 			);

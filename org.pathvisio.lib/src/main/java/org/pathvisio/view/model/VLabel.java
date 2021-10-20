@@ -20,6 +20,8 @@ import org.pathvisio.model.Label;
 
 /**
  * This class represents the view of a {@link Label} pathway element.
+ * 
+ * @author unknown, finterly
  */
 public class VLabel extends VShapedElement {
 
@@ -39,7 +41,7 @@ public class VLabel extends VShapedElement {
 	 */
 	@Override
 	public Label getPathwayElement() {
-		return getPathwayElement();
+		return (Label) super.getPathwayElement();
 	}
 
 	@Override

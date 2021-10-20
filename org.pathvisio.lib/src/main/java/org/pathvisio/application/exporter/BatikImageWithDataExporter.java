@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.application.model;
+package org.pathvisio.application.exporter;
 
 import java.awt.Dimension;
 import java.io.File;

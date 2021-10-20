@@ -14,9 +14,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.core.model;
+package org.pathvisio.core.modeltemp;
 
-public interface IShape
+public interface IShapeTemp
 {
 	public String getMappName(); //TODO not necessary 
 	public String getName(); 

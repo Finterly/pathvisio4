@@ -37,11 +37,7 @@ import org.pathvisio.view.VElementMouseListener;
 /**
  * Draws a citation number on top of a pathway object.
  * 
- * @author thomas
- */
-/**
- * @author p70073399
- *
+ * @author thomas, finterly
  */
 public class VCitation extends VElement implements VElementMouseListener {
 
@@ -153,10 +149,10 @@ public class VCitation extends VElement implements VElementMouseListener {
 				xrefStr = xrefStr.substring(0, xrefStr.length() - 2) + "...  ";
 				break; // Stop after maximum number of citations showed
 			}
-			//TODO 
-			CitationRef citationRef = xrefs.get(i); 
+			// TODO
+			CitationRef citationRef = xrefs.get(i);
 			Citation citation = citationRef.getCitation();
-			int n = canvas.getPathwayModel().getCitations().indexOf(citation);		
+			int n = canvas.getPathwayModel().getCitations().indexOf(citation);
 //			int n = getRefMgr().getBiopaxElementManager().getOrdinal(xrefs.get(i));
 			if (n != lastOrdinal + 1) { // End sequence
 				if (sequence > 2) {
@@ -256,7 +252,7 @@ public class VCitation extends VElement implements VElementMouseListener {
 //		refresh();
 //		canvas.redrawDirtyRect();
 //	}
-	
+
 //
 //	public BiopaxReferenceManager getRefMgr() {
 //		return parent.getPathwayElement().getBiopaxReferenceManager();
