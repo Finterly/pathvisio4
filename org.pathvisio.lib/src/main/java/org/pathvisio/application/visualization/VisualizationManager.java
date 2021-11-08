@@ -32,36 +32,41 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.pathvisio.control.ApplicationEvent;
-import org.pathvisio.control.Engine;
-import org.pathvisio.core.Engine.ApplicationEventListener;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.preferences.GlobalPreference;
-import org.pathvisio.core.view.VPathway;
-import org.pathvisio.core.view.VPathwayElement;
-import org.pathvisio.core.view.VPathwayEvent;
-import org.pathvisio.core.view.VPathwayEvent.VPathwayEventType;
-import org.pathvisio.core.view.model.Graphics;
-import org.pathvisio.core.view.VPathwayListener;
-import org.pathvisio.desktop.gex.GexManager;
-import org.pathvisio.desktop.gex.GexManager.GexManagerEvent;
-import org.pathvisio.desktop.gex.GexManager.GexManagerListener;
+import org.pathvisio.application.gex.GexManager;
+import org.pathvisio.application.gex.GexManager.GexManagerEvent;
+import org.pathvisio.application.gex.GexManager.GexManagerListener;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayEvent;
+import org.pathvisio.view.model.VPathwayEvent.VPathwayEventType;
+import org.pathvisio.view.model.VPathwayListener;
+import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.model.VPathwayObject;
 
 /**
  * Maintains the visualizations
  */
-public class VisualizationManager implements GexManagerListener, VPathwayListener, ApplicationEventListener
-{
-	/** Exceptions for the Visualization Manager,
-	 * such as failure while loading stored visualization xml */
-	public static class VisualizationException extends Exception
-	{
-		public VisualizationException (String msg) { super (msg); }
-		public VisualizationException (Throwable t) { super (t); }
+public class VisualizationManager implements GexManagerListener, VPathwayListener, ApplicationEventListener {
+	/**
+	 * Exceptions for the Visualization Manager, such as failure while loading
+	 * stored visualization xml
+	 */
+	public static class VisualizationException extends Exception {
+		public VisualizationException(String msg) {
+			super(msg);
+		}
+
+		public VisualizationException(Throwable t) {
+			super(t);
+		}
 	}
 
 	/**
-	   name of the top-level xml element
+	 * name of the top-level xml element
 	 */
 	public static final String XML_ELEMENT = "visualizations";
 
@@ -69,7 +74,7 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 	private final Engine engine;
 	private final GexManager gexManager;
 	private final VisualizationMethodRegistry methodRegistry;
-	
+
 	public VisualizationManager(Engine engine, GexManager gexManager) {
 		colorSetMgr = new ColorSetManager();
 		this.engine = engine;
@@ -77,20 +82,19 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 		this.methodRegistry = new VisualizationMethodRegistry();
 		gexManager.addListener(this);
 		engine.addApplicationEventListener(this);
-		VPathway vp = engine.getActiveVPathway();
-		if(vp != null) {
+		VPathwayModel vp = engine.getActiveVPathway();
+		if (vp != null) {
 			vp.addVPathwayListener(this);
 		}
-		if(gexManager.isConnected()) {
+		if (gexManager.isConnected()) {
 			loadXML();
 		}
 	}
 
-	public VisualizationMethodRegistry getVisualizationMethodRegistry()
-	{
+	public VisualizationMethodRegistry getVisualizationMethodRegistry() {
 		return methodRegistry;
 	}
-	
+
 	public Engine getEngine() {
 		return engine;
 	}
@@ -100,32 +104,32 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 	}
 
 	/**
-	   Interface for objects that want to listen to VisualizationEvents
-	*/
+	 * Interface for objects that want to listen to VisualizationEvents
+	 */
 	public interface VisualizationListener {
 		public void visualizationEvent(VisualizationEvent e);
 	}
 
 	/**
-	   List of all available Visualizations
+	 * List of all available Visualizations
 	 */
 	private List<Visualization> visualizations = new ArrayList<Visualization>();
 	private int active = -1;
 
 	/**
-	   Obtain the currently active visualization. This is the visualization shown
-	   in the open pathway.
+	 * Obtain the currently active visualization. This is the visualization shown in
+	 * the open pathway.
 	 */
 	public Visualization getActiveVisualization() {
-		if(active < 0 || active >= visualizations.size()) return null;
+		if (active < 0 || active >= visualizations.size())
+			return null;
 		return visualizations.get(active);
 	}
 
 	/**
-	   Set which visualization will be active, by index
+	 * Set which visualization will be active, by index
 	 */
-	public void setActiveVisualization(int index) 
-	{
+	public void setActiveVisualization(int index) {
 //		if (active == index) return; // No-op.
 //		if (getActiveVisualization() != null)
 //			getActiveVisualization().setActive(false);
@@ -133,145 +137,138 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 //		if (getActiveVisualization() != null)
 //			getActiveVisualization().setActive(true);
 		fireVisualizationEvent(
-				new VisualizationEvent(
-					VisualizationManager.class,
-					VisualizationEvent.VISUALIZATION_SELECTED));
+				new VisualizationEvent(VisualizationManager.class, VisualizationEvent.VISUALIZATION_SELECTED));
 	}
 
 	/**
-	   Set which visualization will be active, by Object
+	 * Set which visualization will be active, by Object
 	 */
 	public void setActiveVisualization(Visualization v) {
 		int index = getVisualizations().indexOf(v);
-		if(index > -1) setActiveVisualization(index);
+		if (index > -1)
+			setActiveVisualization(index);
 	}
 
 	/**
-	   get a List of all visualizations
+	 * get a List of all visualizations
 	 */
 	public List<Visualization> getVisualizations() {
 		return visualizations;
 	}
 
 	/**
-	   get a list of names of all visualizations as an array.
+	 * get a list of names of all visualizations as an array.
 	 */
 	public String[] getNames() {
 		String[] names = new String[visualizations.size()];
-		for(int i = 0; i < names.length; i++)
+		for (int i = 0; i < names.length; i++)
 			names[i] = visualizations.get(i).getName();
 		return names;
 	}
 
 	/**
-	   add a new visualization
+	 * add a new visualization
 	 */
-	public  void addVisualization(Visualization v) {
+	public void addVisualization(Visualization v) {
 		visualizations.add(v);
 		v.setVisualizationMgr(this);
 		fireVisualizationEvent(
-				new VisualizationEvent(
-					VisualizationManager.class,
-					VisualizationEvent.VISUALIZATION_ADDED));
+				new VisualizationEvent(VisualizationManager.class, VisualizationEvent.VISUALIZATION_ADDED));
 	}
 
 	/**
-	   remove a visualization (by index)
+	 * remove a visualization (by index)
 	 */
-	public  void removeVisualization(int index) {
-		if(index < 0 || index >= visualizations.size()) return; //Ignore wrong index
+	public void removeVisualization(int index) {
+		if (index < 0 || index >= visualizations.size())
+			return; // Ignore wrong index
 		visualizations.remove(index);
 		fireVisualizationEvent(
-				new VisualizationEvent(
-					VisualizationManager.class,
-					VisualizationEvent.VISUALIZATION_REMOVED));
+				new VisualizationEvent(VisualizationManager.class, VisualizationEvent.VISUALIZATION_REMOVED));
 	}
 
 	/**
-	   remove a visualization (by object)
+	 * remove a visualization (by object)
 	 */
-	public  void removeVisualization(Visualization v) {
+	public void removeVisualization(Visualization v) {
 		removeVisualization(visualizations.indexOf(v));
 	}
 
 	/**
-	   Remove all visualizations, in response to unloading
-	   expression data
+	 * Remove all visualizations, in response to unloading expression data
 	 */
-	private  void clearVisualizations() {
+	private void clearVisualizations() {
 		List<Visualization> toRemove = new ArrayList<Visualization>();
 		toRemove.addAll(visualizations);
-		for(Visualization v : toRemove) removeVisualization(v);
+		for (Visualization v : toRemove)
+			removeVisualization(v);
 	}
 
 	/**
-	   get a new name for a visualization, that is guaranteed to be unique
+	 * get a new name for a visualization, that is guaranteed to be unique
 	 */
-	public  String getNewName() {
+	public String getNewName() {
 		String prefix = "visualization";
 		int i = 1;
 		String name = prefix;
-		while(nameExists(name)) name = prefix + "-" + i++;
+		while (nameExists(name))
+			name = prefix + "-" + i++;
 		return name;
 	}
 
 	/**
-	   check if a name already exists.
+	 * check if a name already exists.
 	 */
-	public  boolean nameExists(String name) {
-		for(Visualization v : visualizations)
-			if(v.getName().equalsIgnoreCase(name)) return true;
+	public boolean nameExists(String name) {
+		for (Visualization v : visualizations)
+			if (v.getName().equalsIgnoreCase(name))
+				return true;
 		return false;
 	}
 
 	/**
-	   List of listeners
+	 * List of listeners
 	 */
-	private  Set<VisualizationListener> listeners = new HashSet<VisualizationListener>();
+	private Set<VisualizationListener> listeners = new HashSet<VisualizationListener>();
 
 	/**
-	 * Add a {@link VisualizationListener}, that will be notified if an
-	 * event related to visualizations occurs
+	 * Add a {@link VisualizationListener}, that will be notified if an event
+	 * related to visualizations occurs
 	 */
-	public  void addListener(VisualizationListener l)
-	{
+	public void addListener(VisualizationListener l) {
 		listeners.add(l);
 	}
 
-	public  void removeListener (VisualizationListener l)
-	{
-		listeners.remove (l);
+	public void removeListener(VisualizationListener l) {
+		listeners.remove(l);
 	}
 
 	/**
-	 * Fire a {@link VisualizationEvent} to notify all {@link VisualizationListener}s registered
-	 * to this class
+	 * Fire a {@link VisualizationEvent} to notify all
+	 * {@link VisualizationListener}s registered to this class
 	 */
-	public  void fireVisualizationEvent(VisualizationEvent e) {
-		for(VisualizationListener l : listeners) {
+	public void fireVisualizationEvent(VisualizationEvent e) {
+		for (VisualizationListener l : listeners) {
 			l.visualizationEvent(e);
 		}
 	}
 
 	/**
-	 * Refreshes the vpathway and fires visualization events after
-	 * a visualization has been modified.
+	 * Refreshes the vpathway and fires visualization events after a visualization
+	 * has been modified.
+	 * 
 	 * @param v The visualization that has been modified.
 	 */
 	protected void visualizationModified(Visualization v) {
-		VPathway vp = engine.getActiveVPathway();
-		if(vp != null) {
+		VPathwayModel vp = engine.getActiveVPathway();
+		if (vp != null) {
 			vp.redraw();
 		}
-		fireVisualizationEvent(new VisualizationEvent(
-			this, VisualizationEvent.VISUALIZATION_MODIFIED
-		));
+		fireVisualizationEvent(new VisualizationEvent(this, VisualizationEvent.VISUALIZATION_MODIFIED));
 	}
 
-	public void gexManagerEvent(GexManagerEvent e)
-	{
-		switch (e.getType())
-		{
+	public void gexManagerEvent(GexManagerEvent e) {
+		switch (e.getType()) {
 		case GexManagerEvent.CONNECTION_OPENED:
 			loadXML();
 			break;
@@ -286,47 +283,47 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 	public static final String ROOT_XML_ELEMENT = "expression-data-visualizations";
 
 	/**
-	 * Get a suitable file to store the Visualization XML.
-	 * If the database is a regular pgex, we store the xml in the same directory.
-	 * If it isn't, we store the xml in the PathVisio application data directory
+	 * Get a suitable file to store the Visualization XML. If the database is a
+	 * regular pgex, we store the xml in the same directory. If it isn't, we store
+	 * the xml in the PathVisio application data directory
 	 */
-	private File getFileForDb()
-	{
+	private File getFileForDb() {
 		String dbname = gexManager.getCurrentGex().getDbName();
 		File xmlFile = null;
-		
+
 		// We try to determine if it's a valid pgex file or something else
 		if (new File(dbname).exists())
 			xmlFile = new File(dbname + ".xml");
 		else
-			xmlFile = new File (GlobalPreference.getApplicationDir(), dbname.replaceAll("[?*<>|:\\/\n]", "_") + ".xml");
-		
+			xmlFile = new File(GlobalPreference.getApplicationDir(), dbname.replaceAll("[?*<>|:\\/\n]", "_") + ".xml");
+
 		return xmlFile;
 	}
-	
-	private InputStream getXmlInput()
-	{
+
+	private InputStream getXmlInput() {
 		File xmlFile = getFileForDb();
-		
+
 		Logger.log.trace("Getting visualizations xml: " + xmlFile);
 		try {
-			if(!xmlFile.exists()) xmlFile.createNewFile();
+			if (!xmlFile.exists())
+				xmlFile.createNewFile();
 			InputStream in = new FileInputStream(xmlFile);
 			return in;
-		} catch(Exception e) {
+		} catch (Exception e) {
 			Logger.log.error("Unable to find visualization settings file!");
 			return null;
 		}
 	}
 
-	public void saveXML() throws IOException
-	{
-		if(!gexManager.isConnected()) return;
-		
+	public void saveXML() throws IOException {
+		if (!gexManager.isConnected())
+			return;
+
 		File finalFile = getFileForDb();
-		if (finalFile.exists()) finalFile.delete();
+		if (finalFile.exists())
+			finalFile.delete();
 		finalFile.createNewFile();
-		
+
 		OutputStream out = new FileOutputStream(finalFile);
 
 		Document xmlDoc = new Document();
@@ -336,7 +333,7 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 		root.addContent(colorSetMgr.getXML());
 
 		Element vis = new Element(XML_ELEMENT);
-		for(Visualization v : getVisualizations()) {
+		for (Visualization v : getVisualizations()) {
 			vis.addContent(v.toXML());
 		}
 		root.addContent(vis);
@@ -348,34 +345,35 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 		Logger.log.info("Saved visualizations and color sets to xml: " + finalFile);
 	}
 
-
 	/**
-	   use a jdom Element to initialize the VisualizationManger
+	 * use a jdom Element to initialize the VisualizationManger
 	 */
 	public void loadXML(Element xml) {
-		if(xml == null) return;
+		if (xml == null)
+			return;
 
 		Visualization last = null;
-		for(Object o : xml.getChildren(Visualization.XML_ELEMENT)) {
+		for (Object o : xml.getChildren(Visualization.XML_ELEMENT)) {
 			last = Visualization.fromXML((Element) o, methodRegistry, this);
 		}
-		if (last != null) this.setActiveVisualization(last);
+		if (last != null)
+			this.setActiveVisualization(last);
 	}
 
-	public  void loadXML() {
+	public void loadXML() {
 		Logger.log.trace("Loading xml for visualization settings");
 		Document doc = getXML();
 		Element root = doc.getRootElement();
-		//Load the colorsets first
+		// Load the colorsets first
 		Element cs = root.getChild(ColorSetManager.XML_ELEMENT);
 		colorSetMgr.fromXML(cs);
-		//Load the visualizations
+		// Load the visualizations
 		Element vis = root.getChild(VisualizationManager.XML_ELEMENT);
 		loadXML(vis);
 		Logger.log.trace("Finished loading xml for visualization settings");
 	}
 
-	public  Document getXML() {
+	public Document getXML() {
 		InputStream in = getXmlInput();
 		Document doc;
 		Element root;
@@ -384,7 +382,7 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 			doc = parser.build(in);
 			in.close();
 			root = doc.getRootElement();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			doc = new Document();
 			root = new Element(ROOT_XML_ELEMENT);
 			doc.setRootElement(root);
@@ -392,42 +390,39 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 		return doc;
 	}
 
-
 	public void vPathwayEvent(VPathwayEvent e) {
-		if(e.getType() == VPathwayEventType.ELEMENT_DRAWN) {
+		if (e.getType() == VPathwayEventType.ELEMENT_DRAWN) {
 			Visualization v = getActiveVisualization();
-			VPathwayElement elm = e.getAffectedElement();
-			if(v != null && elm instanceof Graphics) {
-				v.visualizeDrawing((Graphics)elm, e.getGraphics2D());
+			VElement elm = e.getAffectedElement();
+			if (v != null && elm instanceof VPathwayObject) {
+				v.visualizeDrawing((VPathwayObject) elm, e.getGraphics2D());
 			}
 		}
 	}
 
 	public void applicationEvent(ApplicationEvent e) {
-		switch (e.getType())
-		{
+		switch (e.getType()) {
 		case VPATHWAY_CREATED:
-			((VPathway)e.getSource()).addVPathwayListener(this);
+			((VPathwayModel) e.getSource()).addVPathwayListener(this);
 			break;
 		case VPATHWAY_DISPOSED:
-			((VPathway)e.getSource()).removeVPathwayListener(this);
+			((VPathwayModel) e.getSource()).removeVPathwayListener(this);
 			break;
 		}
 	}
 
 	private boolean disposed = false;
+
 	/**
-	 * free all resources (such as listeners) held by this class.
-	 * Owners of this class must explicitly dispose of it to clean up.
+	 * free all resources (such as listeners) held by this class. Owners of this
+	 * class must explicitly dispose of it to clean up.
 	 */
-	public void dispose()
-	{
+	public void dispose() {
 		assert (!disposed);
 		gexManager.removeListener(this);
 		engine.removeApplicationEventListener(this);
-		VPathway vpwy = engine.getActiveVPathway();
-		if (vpwy != null)
-		{
+		VPathwayModel vpwy = engine.getActiveVPathway();
+		if (vpwy != null) {
 			vpwy.removeVPathwayListener(this);
 		}
 		disposed = true;

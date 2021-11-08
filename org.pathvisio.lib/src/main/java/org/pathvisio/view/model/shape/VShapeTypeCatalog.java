@@ -16,10 +16,8 @@
  ******************************************************************************/
 package org.pathvisio.view.model.shape;
 
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.RoundRectangle2D;
 
 /**
  * This class defines some shapes. Shapes are defined and registered in the
@@ -33,6 +31,7 @@ import java.awt.geom.RoundRectangle2D;
  * <li>SARCOPLASMICRETICULUM
  * <li>ENDOPLASMICRETICULUM
  * <li>GOLGIAPPARATUS
+ * <li>CORONAVIRUS //TODO
  * </ol>
  * 
  * NB: shapes were previously specific to GenMAPP, such as the GenMAPP
@@ -41,38 +40,23 @@ import java.awt.geom.RoundRectangle2D;
  * @author unknown, finterly
  */
 public class VShapeTypeCatalog {
-	static void registerShapes() {
-	}
 
 	/**
 	 * these constants are internal, only for the switch statement below. There is
 	 * no relation with the constants defined in ShapeType.
 	 */
 	public enum Internal {
-		
-		// Default shape
-		DEFAULT,
-		
+
 		// Basic shapes
 
 		// Basic line shapes
 		BRACE,
 		// Cellular components
 		MITOCHONDRIA, SARCOPLASMICRETICULUM, ENDOPLASMICRETICULUM, GOLGIAPPARATUS,
+
 		// Special shapes
 		CORONAVIRUS,
 
-		@Deprecated
-		ORGANA, @Deprecated
-		ORGANB, @Deprecated
-		ORGANC, @Deprecated
-		CELLA, @Deprecated
-		RIBOSOME, @Deprecated
-		PROTEINB, @Deprecated
-		CELL, @Deprecated
-		NUCLEUS, @Deprecated
-		ORGANELLE, @Deprecated
-		VESICLE;
 	}
 
 	/**
@@ -83,17 +67,6 @@ public class VShapeTypeCatalog {
 	static public java.awt.Shape getPluggableShape(Internal st) {
 		GeneralPath path = new GeneralPath();
 		switch (st) {
-		case DEFAULT:
-			path.moveTo(0, 0);
-			path.lineTo(10, 0);
-			path.lineTo(10, 10);
-			path.lineTo(0, 10);
-			path.closePath();
-			path.moveTo(2, 2);
-			path.lineTo(8, 8);
-			path.moveTo(2, 8);
-			path.lineTo(8, 2);
-			break;
 		case BRACE:
 			path.moveTo(0, 4);
 			path.quadTo(0, 2, 3, 2);
@@ -206,73 +179,10 @@ public class VShapeTypeCatalog {
 				path.lineTo(endX, endY);
 			}
 			break;
-		case CELL:
-			break;
-		case CELLA:
-			break;
-		case NUCLEUS:
-			break;
-		case ORGANA:
-			break;
-		case ORGANB:
-			break;
-		case ORGANC:
-			break;
-		case ORGANELLE:
-			break;
-		case PROTEINB:
-			break;
-		case RIBOSOME:
-			break;
-		case VESICLE:
-			break;
 		default:
 			break;
 		}
 		return path;
-	}
-
-	/**
-	 * Internal, For shape types composed of multiple basic shapes.
-	 * 
-	 * NOTE: These are all being deprecated. They should be automatically converted
-	 * to semantic-free shapes.
-	 */
-	static public java.awt.Shape getCombinedShape(Internal st) {
-		Area area = new Area();
-
-		switch (st) {
-		case CELL:
-			RoundRectangle2D.Double c1 = new RoundRectangle2D.Double(0, 0, 600, 600, 100, 100);
-			RoundRectangle2D.Double c2 = new RoundRectangle2D.Double(11, 11, 578, 578, 100, 100);
-			area.add(new Area(c1));
-			area.exclusiveOr(new Area(c2));
-			break;
-		case NUCLEUS:
-			Ellipse2D.Double n1 = new Ellipse2D.Double(0, 0, 300, 200);
-			Ellipse2D.Double n2 = new Ellipse2D.Double(8, 8, 284, 184);
-			area.add(new Area(n1));
-			area.exclusiveOr(new Area(n2));
-			break;
-//		case MITOCHONDRIA:
-//			RoundRectangle2D.Double m1 = new RoundRectangle2D.Double (0, 0, 200, 100, 40, 60);
-//			Ellipse2D.Double m2 = new Ellipse2D.Double (4, 4, 192, 92);
-//			area.add(new Area(m1));
-//			area.exclusiveOr(new Area(m2));
-//			break;
-		case ORGANELLE:
-			RoundRectangle2D.Double g1 = new RoundRectangle2D.Double(0, 0, 200, 100, 40, 60);
-			RoundRectangle2D.Double g2 = new RoundRectangle2D.Double(8, 8, 184, 84, 40, 60);
-			area.add(new Area(g1));
-			area.exclusiveOr(new Area(g2));
-			break;
-		case VESICLE:
-			Ellipse2D.Double v1 = new Ellipse2D.Double(0, 0, 100, 100);
-			area.add(new Area(v1));
-			break;
-
-		}
-		return area;
 	}
 
 	public static java.awt.Shape getRegularPolygon(int sides, double w, double h) {
@@ -288,6 +198,65 @@ public class VShapeTypeCatalog {
 			}
 		}
 		path.closePath();
+		return path;
+	}
+	
+	
+	//TODO 
+	@Deprecated
+//	MIM_PHOSPHORYLATED_SHAPE;
+//	MIM_DEGRADATION_SHAPE;
+//	MIM_INTERACTION_SHAPE;
+	
+	/**
+	 * Internal, Only for general shape types that can be described as a path. The
+	 * shapes are constructed as a general path with arbitrary size and then resized
+	 * to fit w and h parameters.
+	 */
+	static private java.awt.Shape getPluggableShape(int st) {
+		GeneralPath path = new GeneralPath();
+		switch (st) {
+		case MIM_DEGRADATION:
+			path.moveTo(31.59f, 18.46f);
+			path.curveTo(31.59f, 25.44f, 25.72f, 31.10f, 18.50f, 31.10f);
+			path.curveTo(11.27f, 31.10f, 5.41f, 25.44f, 5.41f, 18.46f);
+			path.curveTo(5.41f, 11.48f, 11.27f, 5.82f, 18.50f, 5.82f);
+			path.curveTo(25.72f, 5.82f, 31.59f, 11.48f, 31.59f, 18.46f);
+			path.closePath();
+			path.moveTo(0.39f, 0.80f);
+			path.curveTo(34.84f, 36.07f, 35.25f, 35.67f, 35.25f, 35.67f);
+			break;
+		case MIM_PHOSPHORYLATED:
+			path.moveTo(5.79f, 4.72f);
+			path.lineTo(5.79f, 18.18f);
+			path.lineTo(13.05f, 18.18f);
+			path.curveTo(15.74f, 18.18f, 17.81f, 17.60f, 19.28f, 16.43f);
+			path.curveTo(20.75f, 15.26f, 21.48f, 13.60f, 21.48f, 11.44f);
+			path.curveTo(21.48f, 9.29f, 20.75f, 7.64f, 19.28f, 6.47f);
+			path.curveTo(17.81f, 5.30f, 15.74f, 4.72f, 13.05f, 4.72f);
+			path.lineTo(5.79f, 4.72f);
+			path.moveTo(0.02f, 0.73f);
+			path.lineTo(13.05f, 0.73f);
+			path.curveTo(17.83f, 0.73f, 21.44f, 1.65f, 23.88f, 3.47f);
+			path.curveTo(26.34f, 5.28f, 27.57f, 7.93f, 27.57f, 11.44f);
+			path.curveTo(27.57f, 14.98f, 26.34f, 17.65f, 23.88f, 19.46f);
+			path.curveTo(21.44f, 21.26f, 17.83f, 22.17f, 13.05f, 22.17f);
+			path.lineTo(5.79f, 22.17f);
+			path.lineTo(5.79f, 36.57f);
+			path.lineTo(0.02f, 36.57f);
+			path.lineTo(0.02f, 0.73f);
+			break;
+		case MIM_INTERACTION:
+			path.moveTo(30.90f, 15.20f);
+			path.curveTo(30.90f, 23.18f, 24.02f, 29.65f, 15.55f, 29.65f);
+			path.curveTo(7.08f, 29.65f, 0.20f, 23.18f, 0.20f, 15.20f);
+			path.curveTo(0.20f, 7.23f, 7.08f, 0.76f, 15.55f, 0.76f);
+			path.curveTo(24.02f, 0.76f, 30.90f, 7.23f, 30.90f, 15.20f);
+			path.closePath();
+			break;
+		default:
+			assert (false);
+		}
 		return path;
 	}
 

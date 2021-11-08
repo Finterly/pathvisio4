@@ -25,6 +25,10 @@ public class VShapeType {
 	private static Shape roundedRectangle = new RoundRectangle2D.Double(0, 0, 10, 10, 20, 20);
 	private static Shape ellipse = new Ellipse2D.Double(0, 0, 10, 10);
 
+	// ================================================================================
+	// Instantiates and registers shapes
+	// ================================================================================
+
 	// Basic shapes
 	public static final VShapeType NONE = new VShapeType(ShapeType.NONE, null);
 	public static final VShapeType RECTANGLE = new VShapeType(ShapeType.RECTANGLE, rectangle);
@@ -40,7 +44,7 @@ public class VShapeType {
 			VShapeTypeCatalog.getRegularPolygon(8, 10, 10));
 
 	// Basic line shapes
-	public static final VShapeType EDGE = new VShapeType(ShapeType.EDGE, new Line2D.Double(0, 0, 10, 10));
+	public static final VShapeType EDGE = new VShapeType(ShapeType.EDGE, new Line2D.Double(0, 0, 10, 10));;
 	public static final VShapeType ARC = new VShapeType(ShapeType.ARC,
 			new Arc2D.Double(0, 0, 10, 10, 0, -180, Arc2D.OPEN));
 	public static final VShapeType BRACE = new VShapeType(ShapeType.BRACE,
@@ -64,12 +68,10 @@ public class VShapeType {
 
 	// Cellular components with basic shape
 	public static final VShapeType EXTRACELLULAR = new VShapeType(ShapeType.EXTRACELLULAR, roundedRectangle);
-	public static final VShapeType CELL = new VShapeType(ShapeType.CELL, roundedRectangle); // Rounded
-																							// rectangle
-	public static final VShapeType NUCLEUS = new VShapeType(ShapeType.NUCLEUS, ellipse); // Oval
-	public static final VShapeType ORGANELLE = new VShapeType(ShapeType.ORGANELLE, roundedRectangle); // Rounded
-	// rectangle
-	public static final VShapeType VESICLE = new VShapeType(ShapeType.VESICLE, ellipse); // Oval
+	public static final VShapeType CELL = new VShapeType(ShapeType.CELL, roundedRectangle);
+	public static final VShapeType NUCLEUS = new VShapeType(ShapeType.NUCLEUS, ellipse);
+	public static final VShapeType ORGANELLE = new VShapeType(ShapeType.ORGANELLE, roundedRectangle);
+	public static final VShapeType VESICLE = new VShapeType(ShapeType.VESICLE, ellipse);
 
 	// Deprecated since GPML2013a?
 	public static final VShapeType MEMBRANE = new VShapeType(ShapeType.MEMBRANE, null); // Rounded rectangle
@@ -80,40 +82,53 @@ public class VShapeType {
 	public static final VShapeType ORGANC = new VShapeType(ShapeType.ORGANC, null); // Oval
 	public static final VShapeType PROTEINB = new VShapeType(ShapeType.PROTEINB, null); // Hexagon
 
-	// Special Shapes //TODO
-	public static final VShapeType CORONAVIRUS = new VShapeType(ShapeType.register("Coronavirus"),
-			VShapeTypeCatalog.getPluggableShape(Internal.CORONAVIRUS));
+	// Special shapes
+	public static final VShapeType CORONAVIRUS = new VShapeType(ShapeType.CORONAVIRUS,
+			VShapeTypeCatalog.getPluggableShape(Internal.CORONAVIRUS)); // TODO
+	public static final VShapeType DNA = new VShapeType(ShapeType.DNA, null); // TODO
+	public static final VShapeType CELL_ICON = new VShapeType(ShapeType.CELL_ICON, null); // TODO
 
 	// ================================================================================
-	// VShapeType Variables
+	// Variables
 	// ================================================================================
-
-	private Shape shape;
 	private ShapeType shapeType;
+	private Shape shape;
+	private final boolean isResizeable;
+	private final boolean isRotatable;
 
 	// ================================================================================
 	// Constructors
 	// ================================================================================
-
+	/**
+	 * The constructor is private. ShapeType cannot be directly instantiated. Use
+	 * create() method to instantiate ShapeType.
+	 * 
+	 * @param name the string key of this ShapeType. // isResizeable if true object
+	 *             is resizeable.
+	 * @throws NullPointerException if name is null.
+	 */
 	private VShapeType(ShapeType shapeType, Shape shape) {
-		super();
+		this(shapeType, shape, true, true);
+	}
+
+	private VShapeType(ShapeType shapeType, Shape shape, boolean isResizeable, boolean isRotatable) {
 		this.shapeType = shapeType;
+		this.isResizeable = isResizeable;
+		this.isRotatable = isRotatable;
 		this.shape = shape;
-	}
-	
-	public static VShapeType register(ShapeType shapeType) {
-		if (nameToShapeType.containsKey(name)) {
-			return nameToShapeType.get(name);
-		} else {
-			Logger.log.trace("Registered shape type " + name);
-			return new ShapeType(name);
-		}
+		VShapeRegistry.registerShape(shapeType.getName(), this); // adds this name and ShapeType to map.
 	}
 
-	// ================================================================================
-	// Accessors
-	// ================================================================================
+	public ShapeType getShapeType() {
+		return shapeType;
+	}
 
+	/**
+	 * @param shapeTypeName
+	 * @param mw
+	 * @param mh
+	 * @return
+	 */
 	public Shape getShape(double mw, double mh) {
 		// now scale the path so it has proper w and h.
 		Rectangle r = shape.getBounds();
@@ -123,10 +138,12 @@ public class VShapeType {
 		return at.createTransformedShape(shape);
 	}
 
-	/**
-	 * 
-	 */
-	public ShapeType getShapeType() {
-		return shapeType;
+	public boolean isResizeable() {
+		return isResizeable;
 	}
+
+	public boolean isRotatable() {
+		return isRotatable;
+	}
+
 }

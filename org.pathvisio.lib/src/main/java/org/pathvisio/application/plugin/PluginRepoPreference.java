@@ -14,11 +14,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.plugin;
+package org.pathvisio.application.plugin;
 
 import java.io.File;
 
-import org.pathvisio.core.preferences.Preference;
+import org.pathvisio.util.preferences.Preference;
 
 public enum PluginRepoPreference implements Preference {
 

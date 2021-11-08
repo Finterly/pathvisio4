@@ -883,7 +883,7 @@ public class MappFormat extends AbstractPathwayFormat
 	private static PathwayElement mapShapeType(String[] mappObject)
     {
     	PathwayElement o = PathwayElement.createPathwayElement(ObjectType.SHAPE);
-    	IShape shapeType = ShapesRegistry.fromMappName(mappObject[COL_TYPE]);
+    	IShape shapeType = VShapeRegistry.fromMappName(mappObject[COL_TYPE]);
     	o.setShapeType(shapeType);
     	if (shapeType == ShapeType.ARC || shapeType == ShapeType.OVAL)
     		mapShapeHalf (o, mappObject);
@@ -937,7 +937,7 @@ public class MappFormat extends AbstractPathwayFormat
     private static PathwayElement mapFixedShapeType(String[] mappObject)
     {
     	PathwayElement o = PathwayElement.createPathwayElement(ObjectType.SHAPE);
-        o.setShapeType(ShapesRegistry.fromMappName(mappObject[COL_TYPE]));
+        o.setShapeType(VShapeRegistry.fromMappName(mappObject[COL_TYPE]));
         mapCenter (o, mappObject);
 
         if (o.shapeType == ShapeType.CELLA)
@@ -1002,7 +1002,7 @@ public class MappFormat extends AbstractPathwayFormat
         }
     	else
     	{
-    		o.setShapeType(ShapesRegistry.fromMappName(mappObject[COL_TYPE]));
+    		o.setShapeType(VShapeRegistry.fromMappName(mappObject[COL_TYPE]));
     	}
 
     	mapCenter(o, mappObject);

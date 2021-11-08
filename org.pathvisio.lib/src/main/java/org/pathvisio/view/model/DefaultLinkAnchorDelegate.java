@@ -16,7 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.view.model;
 
-import org.pathvisio.model.Group;
 import org.pathvisio.model.ShapedElement;
 import org.pathvisio.view.AbstractLinkAnchorDelegate;
 
@@ -40,9 +39,9 @@ public class DefaultLinkAnchorDelegate extends AbstractLinkAnchorDelegate {
 
 	public void showLinkAnchors() {
 		// disAllowLinks? TODO
-		if (parent instanceof VGroup && ((Group) parent.getPathwayElement()).getType().isDisallowLinks()) {
-			return;
-		}
+//		if (parent instanceof VGroup && ((Group) parent.getPathwayElement()).getType().isDisallowLinks()) {
+//			return;
+//		}
 		// one link anchor per side. if large enough 3 link anchors per side.
 		int numAnchors = 3;
 		int numH = 1;

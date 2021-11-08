@@ -50,7 +50,7 @@ public class AbstractShape implements IShape {
 		this.mappName = mappName;
 		this.isRotatable = isRotatable;
 		this.isResizeable = isResizeable;
-		ShapesRegistry.registerShape(this);
+		VShapeRegistry.registerShape(this);
 	}
 
 	/**

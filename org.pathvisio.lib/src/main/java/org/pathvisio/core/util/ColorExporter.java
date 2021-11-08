@@ -159,7 +159,7 @@ public class ColorExporter implements VPathwayListener {
 			String outStr = args[1];
 
 			//Enable MiM support (for export to graphics formats)
-			MIMShapes.registerShapes();
+			MIMShape.registerShapes();
 
 			Logger.log.setStream (System.err);
 			Logger.log.setLogLevel (false, false, true, true, true, true);

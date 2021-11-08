@@ -16,6 +16,7 @@
  ******************************************************************************/
 package org.pathvisio.gui;
 
+import java.awt.Graphics;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,15 +29,13 @@ import org.bridgedb.Xref;
 import org.pathvisio.controller.ApplicationEvent;
 import org.pathvisio.controller.Engine;
 import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.core.modeltemp.PathwayElementEvent;
+import org.pathvisio.core.modeltemp.PathwayElementListener;
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.PathwayElementEvent;
-import org.pathvisio.model.PathwayElementListener;
-import org.pathvisio.model.StaticProperty;
-import org.pathvisio.view.model.Graphics;
-import org.pathvisio.view.model.VElement;
-import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.view.model.SelectionBox.SelectionEvent;
 import org.pathvisio.view.model.SelectionBox.SelectionListener;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * The backpage panel for the Swing version of PathVisio. This pane shows annotation
@@ -63,7 +62,7 @@ public class BackpagePane extends JEditorPane implements ApplicationEventListene
 		super();
 
 		engine.addApplicationEventListener(this);
-		VPathway vp = engine.getActiveVPathway();
+		VPathwayModel vp = engine.getActiveVPathway();
 		if(vp != null) vp.addSelectionListener(this);
 
 		this.engine = engine;

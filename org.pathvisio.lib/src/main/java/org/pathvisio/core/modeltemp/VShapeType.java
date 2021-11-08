@@ -23,13 +23,13 @@ public class VShapeType {
 	static void registerShapes() {
 
 		// register arrow heads
-		ShapesRegistry.registerShape(ShapeType.NONE.getName(), null);
-		ShapesRegistry.registerShape("TBar", getTBar(), VArrowHeadType.FillType.OPEN, TBARWIDTH + TBAR_GAP);
-		ShapesRegistry.registerShape("LigandRound", getLRound(), VArrowHeadType.FillType.CLOSED);
-		ShapesRegistry.registerShape("ReceptorRound", getRRound(), VArrowHeadType.FillType.WIRE);
-		ShapesRegistry.registerShape("Receptor", getReceptor(), VArrowHeadType.FillType.WIRE);
-		ShapesRegistry.registerShape("ReceptorSquare", getReceptorSquare(), VArrowHeadType.FillType.WIRE);
-		ShapesRegistry.registerShape("LigandSquare", getLigand(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerShape(ShapeType.NONE.getName(), null);
+		VShapeRegistry.registerShape("TBar", getTBar(), VArrowHeadType.FillType.OPEN, TBARWIDTH + TBAR_GAP);
+		VShapeRegistry.registerShape("LigandRound", getLRound(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerShape("ReceptorRound", getRRound(), VArrowHeadType.FillType.WIRE);
+		VShapeRegistry.registerShape("Receptor", getReceptor(), VArrowHeadType.FillType.WIRE);
+		VShapeRegistry.registerShape("ReceptorSquare", getReceptorSquare(), VArrowHeadType.FillType.WIRE);
+		VShapeRegistry.registerShape("LigandSquare", getLigand(), VArrowHeadType.FillType.CLOSED);
 	}
 
 	public static final Map<String, VShapeType> shapeMap = new TreeMap<String, VShapeType>(

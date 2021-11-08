@@ -14,14 +14,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-package org.pathvisio.desktop.plugin;
+package org.pathvisio.application.plugin;
 
 import java.io.File;
 import java.util.List;
 
 import javax.swing.JFrame;
 
-import org.pathvisio.desktop.PvDesktop;
+import org.pathvisio.application.PvDesktop;
 
 public interface IPluginManager {
 

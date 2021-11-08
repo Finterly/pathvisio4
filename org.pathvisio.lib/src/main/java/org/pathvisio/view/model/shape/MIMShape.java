@@ -1,6 +1,6 @@
 /*******************************************************************************
  * PathVisio, a tool for data visualization and analysis using biological pathways
-  * Copyright 2006-2021 BiGCaT Bioinformatics, WikiPathways
+ * Copyright 2006-2021 BiGCaT Bioinformatics, WikiPathways
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License.  You may obtain a copy
@@ -21,16 +21,14 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.core.modeltemp.IShape;
-//import org.pathvisio.core.model.IShape;
 import org.pathvisio.model.type.ArrowHeadType;
 
 /**
  * Collection of Shapes and ArrowHeads used in the Molecular Interaction Map -
  * style of pathways
  */
-public class MIMShapes {
-	
+public class MIMShape {
+
 	public static final ArrowHeadType MIM_NECESSARY_STIMULATION = ArrowHeadType.register("mim-necessary-stimulation");
 	public static final ArrowHeadType MIM_BINDING = ArrowHeadType.register("mim-binding");
 	public static final ArrowHeadType MIM_CONVERSION = ArrowHeadType.register("mim-conversion");
@@ -46,43 +44,31 @@ public class MIMShapes {
 	public static final ArrowHeadType MIM_TRANSLATION = ArrowHeadType.register("mim-transcription-translation");
 	public static final ArrowHeadType MIM_GAP = ArrowHeadType.register("mim-gap");
 
-	private static final int MIM_PHOSPHORYLATED = 0;
-	private static final int MIM_DEGRADATION = 1;
-	private static final int MIM_INTERACTION = 2;
-
-	@Deprecated
-	public static final IShape MIM_PHOSPHORYLATED_SHAPE = new AbstractShape(getPluggableShape(MIM_PHOSPHORYLATED),
-			"mim-phosphorylated");
-	public static final IShape MIM_DEGRADATION_SHAPE = new AbstractShape(getPluggableShape(MIM_DEGRADATION),
-			"mim-degradation");
-	@Deprecated
-	public static final IShape MIM_INTERACTION_SHAPE = new AbstractShape(getPluggableShape(MIM_INTERACTION),
-			"mim-interaction");
-
 	public static void registerShapes() {
-		ShapesRegistry.registerArrow(MIM_NECESSARY_STIMULATION.getName(), getMIMNecessary(), VArrowHeadType.FillType.OPEN,
+		VShapeRegistry.registerArrow(MIM_NECESSARY_STIMULATION.getName(), getMIMNecessary(),
+				VArrowHeadType.FillType.OPEN, ARROWWIDTH);
+		VShapeRegistry.registerArrow(MIM_BINDING.getName(), getMIMBinding(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerArrow(MIM_CONVERSION.getName(), getMIMConversion(), VArrowHeadType.FillType.CLOSED,
 				ARROWWIDTH);
-		ShapesRegistry.registerArrow(MIM_BINDING.getName(), getMIMBinding(), VArrowHeadType.FillType.CLOSED);
-		ShapesRegistry.registerArrow(MIM_CONVERSION.getName(), getMIMConversion(), VArrowHeadType.FillType.CLOSED,
+		VShapeRegistry.registerArrow(MIM_TRANSLOCATION.getName(), getMIMTranslocation(), VArrowHeadType.FillType.CLOSED,
 				ARROWWIDTH);
-		ShapesRegistry.registerArrow(MIM_TRANSLOCATION.getName(), getMIMTranslocation(), VArrowHeadType.FillType.CLOSED,
+		VShapeRegistry.registerArrow(MIM_STIMULATION.getName(), getMIMStimulation(), VArrowHeadType.FillType.OPEN,
 				ARROWWIDTH);
-		ShapesRegistry.registerArrow(MIM_STIMULATION.getName(), getMIMStimulation(), VArrowHeadType.FillType.OPEN,
-				ARROWWIDTH);
-		ShapesRegistry.registerArrow(MIM_MODIFICATION.getName(), getMIMBinding(), VArrowHeadType.FillType.CLOSED);
-		ShapesRegistry.registerArrow(MIM_CATALYSIS.getName(), getMIMCatalysis(), VArrowHeadType.FillType.OPEN,
+		VShapeRegistry.registerArrow(MIM_MODIFICATION.getName(), getMIMBinding(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerArrow(MIM_CATALYSIS.getName(), getMIMCatalysis(), VArrowHeadType.FillType.OPEN,
 				CATALYSIS_DIAM + CATALYSIS_GAP);
-		ShapesRegistry.registerArrow(MIM_CLEAVAGE.getName(), getMIMCleavage(), VArrowHeadType.FillType.WIRE, CLEAVAGE_FIRST);
-		ShapesRegistry.registerArrow(MIM_BRANCHING_LEFT.getName(), getMIMBranching(LEFT), VArrowHeadType.FillType.OPEN,
+		VShapeRegistry.registerArrow(MIM_CLEAVAGE.getName(), getMIMCleavage(), VArrowHeadType.FillType.WIRE,
+				CLEAVAGE_FIRST);
+		VShapeRegistry.registerArrow(MIM_BRANCHING_LEFT.getName(), getMIMBranching(LEFT), VArrowHeadType.FillType.OPEN,
 				BRANCH_LOCATION);
-		ShapesRegistry.registerArrow(MIM_BRANCHING_RIGHT.getName(), getMIMBranching(RIGHT), VArrowHeadType.FillType.OPEN,
-				BRANCH_LOCATION);
-		ShapesRegistry.registerArrow(MIM_INHIBITION.getName(), getMIMInhibition(), VArrowHeadType.FillType.OPEN,
+		VShapeRegistry.registerArrow(MIM_BRANCHING_RIGHT.getName(), getMIMBranching(RIGHT),
+				VArrowHeadType.FillType.OPEN, BRANCH_LOCATION);
+		VShapeRegistry.registerArrow(MIM_INHIBITION.getName(), getMIMInhibition(), VArrowHeadType.FillType.OPEN,
 				TBARWIDTH + TBAR_GAP);
-		ShapesRegistry.registerArrow(MIM_COVALENT_BOND.getName(), getMIMCovalentBond(), VArrowHeadType.FillType.OPEN);
-		ShapesRegistry.registerArrow(MIM_TRANSLATION.getName(), getMIMTranslation(), VArrowHeadType.FillType.WIRE,
+		VShapeRegistry.registerArrow(MIM_COVALENT_BOND.getName(), getMIMCovalentBond(), VArrowHeadType.FillType.OPEN);
+		VShapeRegistry.registerArrow(MIM_TRANSLATION.getName(), getMIMTranslation(), VArrowHeadType.FillType.WIRE,
 				ARROWWIDTH + ARROWHEIGHT);
-		ShapesRegistry.registerArrow(MIM_GAP.getName(), getMIMGap(), VArrowHeadType.FillType.OPEN, 10);
+		VShapeRegistry.registerArrow(MIM_GAP.getName(), getMIMGap(), VArrowHeadType.FillType.OPEN, 10);
 	}
 
 	static private java.awt.Shape getMIMCovalentBond() {
@@ -212,58 +198,6 @@ public class MIMShapes {
 		GeneralPath path = new GeneralPath();
 		path.moveTo(0, 0);
 		path.moveTo(0, 5);
-		return path;
-	}
-
-	/**
-	 * Internal, Only for general shape types that can be described as a path. The
-	 * shapes are constructed as a general path with arbitrary size and then resized
-	 * to fit w and h parameters.
-	 */
-	static private java.awt.Shape getPluggableShape(int st) {
-		GeneralPath path = new GeneralPath();
-		switch (st) {
-		case MIM_DEGRADATION:
-			path.moveTo(31.59f, 18.46f);
-			path.curveTo(31.59f, 25.44f, 25.72f, 31.10f, 18.50f, 31.10f);
-			path.curveTo(11.27f, 31.10f, 5.41f, 25.44f, 5.41f, 18.46f);
-			path.curveTo(5.41f, 11.48f, 11.27f, 5.82f, 18.50f, 5.82f);
-			path.curveTo(25.72f, 5.82f, 31.59f, 11.48f, 31.59f, 18.46f);
-			path.closePath();
-			path.moveTo(0.39f, 0.80f);
-			path.curveTo(34.84f, 36.07f, 35.25f, 35.67f, 35.25f, 35.67f);
-			break;
-		case MIM_PHOSPHORYLATED:
-			path.moveTo(5.79f, 4.72f);
-			path.lineTo(5.79f, 18.18f);
-			path.lineTo(13.05f, 18.18f);
-			path.curveTo(15.74f, 18.18f, 17.81f, 17.60f, 19.28f, 16.43f);
-			path.curveTo(20.75f, 15.26f, 21.48f, 13.60f, 21.48f, 11.44f);
-			path.curveTo(21.48f, 9.29f, 20.75f, 7.64f, 19.28f, 6.47f);
-			path.curveTo(17.81f, 5.30f, 15.74f, 4.72f, 13.05f, 4.72f);
-			path.lineTo(5.79f, 4.72f);
-			path.moveTo(0.02f, 0.73f);
-			path.lineTo(13.05f, 0.73f);
-			path.curveTo(17.83f, 0.73f, 21.44f, 1.65f, 23.88f, 3.47f);
-			path.curveTo(26.34f, 5.28f, 27.57f, 7.93f, 27.57f, 11.44f);
-			path.curveTo(27.57f, 14.98f, 26.34f, 17.65f, 23.88f, 19.46f);
-			path.curveTo(21.44f, 21.26f, 17.83f, 22.17f, 13.05f, 22.17f);
-			path.lineTo(5.79f, 22.17f);
-			path.lineTo(5.79f, 36.57f);
-			path.lineTo(0.02f, 36.57f);
-			path.lineTo(0.02f, 0.73f);
-			break;
-		case MIM_INTERACTION:
-			path.moveTo(30.90f, 15.20f);
-			path.curveTo(30.90f, 23.18f, 24.02f, 29.65f, 15.55f, 29.65f);
-			path.curveTo(7.08f, 29.65f, 0.20f, 23.18f, 0.20f, 15.20f);
-			path.curveTo(0.20f, 7.23f, 7.08f, 0.76f, 15.55f, 0.76f);
-			path.curveTo(24.02f, 0.76f, 30.90f, 7.23f, 30.90f, 15.20f);
-			path.closePath();
-			break;
-		default:
-			assert (false);
-		}
 		return path;
 	}
 

@@ -52,22 +52,21 @@ import javax.swing.table.TableCellRenderer;
 
 import org.pathvisio.controller.ApplicationEvent;
 import org.pathvisio.controller.Engine.ApplicationEventListener;
-import org.pathvisio.core.util.Utils;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.view.model.SelectionBox;
-import org.pathvisio.view.model.Graphics;
-import org.pathvisio.view.model.Handle;
-import org.pathvisio.view.model.VElement;
-import org.pathvisio.view.model.VLabel;
-import org.pathvisio.view.model.VPathwayEvent;
-import org.pathvisio.view.model.VPathwayListener;
-import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.gui.BackpageTextProvider.BackpageAttributes;
 import org.pathvisio.gui.BackpageTextProvider.BackpageXrefs;
 import org.pathvisio.gui.CommonActions.ZoomAction;
 import org.pathvisio.gui.dnd.PathwayImportHandler;
 import org.pathvisio.gui.handler.PathwayTableModel;
+import org.pathvisio.model.PathwayObject;
+import org.pathvisio.util.Utils;
+import org.pathvisio.view.model.Handle;
+import org.pathvisio.view.model.SelectionBox;
+import org.pathvisio.view.model.VElement;
+import org.pathvisio.view.model.VPathwayEvent;
+import org.pathvisio.view.model.VPathwayListener;
+import org.pathvisio.view.model.VPathwayModel;
+import org.pathvisio.view.model.VPathwayObject;
 
 import com.mammothsoftware.frwk.ddb.DropDownButton;
 
@@ -460,7 +459,7 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 	}
 
 	public void vPathwayEvent(VPathwayEvent e) {
-		VPathway vp = (VPathway)e.getSource();
+		VPathwayModel vp = (VPathwayModel)e.getSource();
 		switch(e.getType()) {
 		case ELEMENT_DOUBLE_CLICKED:
 			VElement pwe = e.getAffectedElement();
@@ -468,9 +467,9 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 			{
 				pwe = ((Handle)pwe).getParent();
 			}
-			if(pwe instanceof Graphics &&
+			if(pwe instanceof VPathwayObject &&
 					!(pwe instanceof SelectionBox)) {
-				PathwayElement p = ((Graphics)pwe).getPathwayElement();
+				PathwayObject p = ((VPathwayObject)pwe).getPathwayElement(); //TODO 
 				if(p != null) {
 					swingEngine.getPopupDialogHandler().getInstance(p, !vp.isEditMode(), null, this).setVisible(true);
 				}

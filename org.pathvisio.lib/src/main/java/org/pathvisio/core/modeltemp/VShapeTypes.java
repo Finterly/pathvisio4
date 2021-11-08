@@ -26,18 +26,18 @@ public class VShapeTypes {
 	static void registerShapes() {
 
 		// register arrow heads
-		ShapesRegistry.registerShape("Arrow", getArrowHead(), VArrowHeadType.FillType.CLOSED);
-		ShapesRegistry.registerArrow("TBar", getTBar(), VArrowHeadType.FillType.OPEN, TBARWIDTH + TBAR_GAP);
-		ShapesRegistry.registerArrow("LigandRound", getLRound(), VArrowHeadType.FillType.CLOSED);
-		ShapesRegistry.registerArrow("ReceptorRound", getRRound(), VArrowHeadType.FillType.WIRE);
-		ShapesRegistry.registerArrow("Receptor", getReceptor(), VArrowHeadType.FillType.WIRE);
-		ShapesRegistry.registerArrow("ReceptorSquare", getReceptorSquare(), VArrowHeadType.FillType.WIRE);
-		ShapesRegistry.registerArrow("LigandSquare", getLigand(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerShape("Arrow", getArrowHead(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerArrow("TBar", getTBar(), VArrowHeadType.FillType.OPEN, TBARWIDTH + TBAR_GAP);
+		VShapeRegistry.registerArrow("LigandRound", getLRound(), VArrowHeadType.FillType.CLOSED);
+		VShapeRegistry.registerArrow("ReceptorRound", getRRound(), VArrowHeadType.FillType.WIRE);
+		VShapeRegistry.registerArrow("Receptor", getReceptor(), VArrowHeadType.FillType.WIRE);
+		VShapeRegistry.registerArrow("ReceptorSquare", getReceptorSquare(), VArrowHeadType.FillType.WIRE);
+		VShapeRegistry.registerArrow("LigandSquare", getLigand(), VArrowHeadType.FillType.CLOSED);
 
 		// register anchors
-		ShapesRegistry.registerAnchor(AnchorShapeType.SQUARE.getName(), getAnchorSquare()); // TODO
-		ShapesRegistry.registerAnchor(AnchorShapeType.CIRCLE.getName(), getAnchorCircle());
-		ShapesRegistry.registerAnchor(AnchorShapeType.NONE.getName(), getAnchorNone());
+		VShapeRegistry.registerAnchor(AnchorShapeType.SQUARE.getName(), getAnchorSquare()); // TODO
+		VShapeRegistry.registerAnchor(AnchorShapeType.CIRCLE.getName(), getAnchorCircle());
+		VShapeRegistry.registerAnchor(AnchorShapeType.NONE.getName(), getAnchorNone());
 	}
 
 	// Basic shapes

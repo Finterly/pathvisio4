@@ -30,7 +30,7 @@ import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LineElement.Anchor;
 import org.pathvisio.model.LineElement.LinePoint;
 import org.pathvisio.model.type.AnchorShapeType;
-import org.pathvisio.view.model.shape.ShapesRegistry;
+import org.pathvisio.view.model.shape.VShapeRegistry;
 import org.pathvisio.view.model.shape.VAnchorShapeType;
 
 /**
@@ -120,7 +120,7 @@ public class VAnchor extends VElement implements VLinkableTo, LinkProvider, Adju
 	}
 
 	private VAnchorShapeType getAnchorShape() {
-		VAnchorShapeType shape = ShapesRegistry.getAnchor(anchor.getShapeType().getName());
+		VAnchorShapeType shape = VShapeRegistry.getAnchor(anchor.getShapeType().getName());
 
 		if (shape != null) {
 			AffineTransform f = new AffineTransform();

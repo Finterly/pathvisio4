@@ -19,8 +19,8 @@ package org.pathvisio.application;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.pathvisio.controller.Engine;
-import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.controller.SwingEngine;
+import org.pathvisio.util.preferences.PreferenceManager;
 
 /**
  * This class activates 
@@ -30,7 +30,7 @@ import org.pathvisio.controller.SwingEngine;
 public class Activator implements BundleActivator {
 
 	/**
-	 * Starts
+	 * Starts the application. 
 	 * 
 	 * @param context
 	 */

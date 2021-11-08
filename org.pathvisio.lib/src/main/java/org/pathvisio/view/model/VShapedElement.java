@@ -32,7 +32,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.AttributedString;
 
-import org.pathvisio.core.modeltemp.VShapeTypeRegistry;
 import org.pathvisio.events.PathwayObjectEvent;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.Group;
@@ -47,7 +46,8 @@ import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.LinAlg;
 import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.view.model.Handle.Freedom;
-import org.pathvisio.view.model.shape.ShapesRegistry;
+import org.pathvisio.view.model.shape.VDefaultShapeType;
+import org.pathvisio.view.model.shape.VShapeRegistry;
 
 /**
  * This {@link Graphics} class represents the view of {@link ShapedElement}
@@ -71,7 +71,7 @@ public abstract class VShapedElement extends VPathwayElement
 	 */
 	@Override
 	public ShapedElement getPathwayElement() {
-		return getPathwayElement();
+		return (ShapedElement) super.getPathwayElement();
 	}
 
 	/**
@@ -141,8 +141,6 @@ public abstract class VShapedElement extends VPathwayElement
 	public double getVTop() {
 		return vFromM(getPathwayElement().getTop());
 	}
-
-	
 
 	/*----------------- Convenience methods from Model -----------------*/
 
@@ -246,12 +244,12 @@ public abstract class VShapedElement extends VPathwayElement
 	Handle[] handles = new Handle[] {};
 
 	protected void createHandles() {
-
-		if (getPathwayElement().getShapeType() != null && !getPathwayElement().getShapeType().isResizeable()
-				&& !getPathwayElement().getShapeType().isRotatable()) {
+		ShapeType shapeType = getPathwayElement().getShapeType();
+		boolean isResizeable = VShapeRegistry.getVShapeType(shapeType.getName()).isResizeable();
+		boolean isRotatable = VShapeRegistry.getVShapeType(shapeType.getName()).isRotatable();
+		if (shapeType != null && !isResizeable && !isRotatable) {
 			return; // no resizing, no handles
-		} else if (getPathwayElement().getShapeType() != null && !getPathwayElement().getShapeType().isResizeable()
-				&& getPathwayElement().getShapeType().isRotatable()) {
+		} else if (shapeType != null && !isResizeable && isRotatable) {
 			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
 			handleR.setAngle(1);
 			handles = new Handle[] { handleR };
@@ -586,6 +584,9 @@ public abstract class VShapedElement extends VPathwayElement
 		}
 	}
 
+	/**
+	 * @return
+	 */
 	public Shape getShape() {
 		return getShape(false, 0);
 	}
@@ -606,11 +607,12 @@ public abstract class VShapedElement extends VPathwayElement
 		double mcy = getPathwayElement().getCenterY();
 
 		Shape s = null;
+		ShapeType shapeType = getPathwayElement().getShapeType();
 
-		if (getPathwayElement().getShapeType() == null || getPathwayElement().getShapeType() == ShapeType.NONE) {
-			s = ShapesRegistry.DEFAULT_SHAPE.getShape(mw, mh);
+		if (shapeType == null || shapeType == ShapeType.NONE) {
+			s = null; // nothing to draw
 		} else {
-			s = VShapeTypeRegistry.getShape(getPathwayElement().getShapeType().getName(), mw, mh);
+			s = VShapeRegistry.getVShapeType(shapeType.getName()).getShape(mw, mh);
 		}
 
 		AffineTransform t = new AffineTransform();
@@ -762,12 +764,16 @@ public abstract class VShapedElement extends VPathwayElement
 
 	protected void drawShape(Graphics2D g) {
 		Color fillcolor = getPathwayElement().getFillColor();
-
-		if (!hasOutline())
+		if (!hasOutline()) {
 			return; // nothing to draw.
-
+		}
 		java.awt.Shape shape = getShape(true, false);
-
+		// if shape not available for shapeType
+		if (shape == null) {
+			// warning sign
+			VDefaultShapeType.getPluggableGraphic(VDefaultShapeType.Internal.DEFAULT_SHAPE, g);
+			return; // draw
+		}
 		if (getPathwayElement().getShapeType() == ShapeType.BRACE
 				|| getPathwayElement().getShapeType() == ShapeType.ARC) {
 			// don't fill arcs or braces

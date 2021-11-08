@@ -32,7 +32,7 @@ public class AbstractShape {
 		this.sh = sh;
 		this.isRotatable = isRotatable;
 		this.isResizeable = isResizeable;
-		ShapesRegistry.registerShape(this);
+		VShapeRegistry.registerShape(this);
 	}
 
 	public AbstractShape(Shape sh, String name) {

@@ -31,7 +31,12 @@ import org.pathvisio.view.model.shape.VShapeTypeCatalog.Internal;
  * 
  * @author unknown, finterly
  */
-public class ShapesRegistry {
+/**
+ * @author p70073399
+ *
+ */
+public class VShapeRegistry {
+
 	public static final Shape DEFAULT_SHAPE = VShapeTypeCatalog.getPluggableShape(Internal.DEFAULT);
 	private static VArrowHeadType defaultArrow = null;
 	private static VAnchorShapeType defaultAnchor = null;
@@ -43,47 +48,15 @@ public class ShapesRegistry {
 
 	static {
 		GeneralPath temp = new GeneralPath();
-		temp.moveTo(-50, -50);
-		temp.lineTo(50, -50);
-		temp.lineTo(50, 50);
-		temp.lineTo(-50, 50);
-		temp.closePath();
-		temp.moveTo(-30, -30);
-		temp.lineTo(30, 30);
-		temp.moveTo(-30, 30);
-		temp.lineTo(30, -30);
+		temp.moveTo(13.629531, 19.93828);
+		// TODO
 		defaultArrow = new VArrowHeadType(temp, VArrowHeadType.FillType.OPEN);
 
-		LineShapes.registerShapes();
-		VShapeTypeCatalog.registerShapes();
-//		MIMShapes.registerShapes(); TODO 
+		VLineShapeType.registerShapes();
+		MIMShape.registerShapes();
 	}
 
-	/**
-	 * looks up the VShapeType corresponding to that name.
-	 */
-	public static VShapeType fromName(String value) {
-		return shapeMap.get(value);
-	}
-
-
-//	/*
-//	 * Warning when using fromMappName: in case value == Poly, this will return
-//	 * Triangle. The caller needs to check for this special case.
-//	 */
-//	public static IShape fromMappName(String value) {
-//		return mappMappings.get(value);
-//	}
-
-	public static void registerShape2(String shapeTypeName, VShapeType vShapeType) {
-		shapeMap.put(VShapeType.getShapeType().getName(), vShapeType);
-//		if (ish.getMappName() != null) {
-//			mappMappings.put(ish.getMappName(), ish);
-//		}
-	}
-	
-	public static VShapeType registerShape(VShapeType vShapeType) {
-		String shapeTypeName = vShapeType.getShapeType().getName();
+	public static VShapeType registerShape(String shapeTypeName, VShapeType vShapeType) {
 		if (shapeMap.containsKey(shapeTypeName)) {
 			return shapeMap.get(shapeTypeName);
 		} else {
@@ -91,6 +64,13 @@ public class ShapesRegistry {
 			shapeMap.put(shapeTypeName, vShapeType);
 			return vShapeType;
 		}
+	}
+
+	/**
+	 * looks up the ShapeType corresponding to that name.
+	 */
+	public static VShapeType getVShapeType(String value) {
+		return shapeMap.get(value);
 	}
 
 	/**
@@ -132,6 +112,10 @@ public class ShapesRegistry {
 	 * Returns a named arrow head. The shape is normalized so that it fits with a
 	 * line that goes along the positive x-axis. The tip of the arrow head is in
 	 * 0,0.
+	 * 
+	 * NB: here we return a reference to the object on the registry itself, we
+	 * should really return a clone, although in practice this is not a problem
+	 * since we do an affine transform immediately after. TODO 
 	 */
 	public static VArrowHeadType getArrow(String name) {
 		VArrowHeadType sh = arrowMap.get(name);
@@ -139,10 +123,6 @@ public class ShapesRegistry {
 			sh = defaultArrow;
 		}
 		return sh;
-		// TODO: here we return a reference to the object on the
-		// registry itself we should really return a clone, although
-		// in practice this is not a problem since we do an affine
-		// transform immediately after.
 	}
 
 	/**
@@ -155,7 +135,5 @@ public class ShapesRegistry {
 		}
 		return sh;
 	}
-	
-	
 
 }

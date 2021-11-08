@@ -32,11 +32,11 @@ import java.awt.Shape;
  * the body.
  * 
  * <pre>
-    open             closed             wire
-      |\               #\             \
-  ____| \        ______##\        _____\
-	  | /              ##/             /
-	  |/               #/             /
+ *   open             closed             wire
+ *    |\               #\             \
+ * ___| \        ______##\        _____\
+ *	  | /              ##/             /
+ *	  |/               #/             /
  * </pre>
  * 
  * @author unknown
@@ -58,7 +58,7 @@ public class VArrowHeadType {
 
 	/**
 	 * Normally, this constructor is not called directly. Use
-	 * {@link ShapesRegistry.registerShape} instead to define a new ArrowShape.
+	 * {@link VShapeRegistry.registerShape} instead to define a new ArrowShape.
 	 */
 	public VArrowHeadType(Shape shape, FillType fillType, int gap) {
 		this.shape = shape;
@@ -69,7 +69,7 @@ public class VArrowHeadType {
 
 	/**
 	 * Normally, this constructor is not called directly. Use
-	 * {@link ShapesRegistry.registerShape} instead to define a new ArrowShape.
+	 * {@link VShapeRegistry.registerShape} instead to define a new ArrowShape.
 	 */
 	public VArrowHeadType(Shape shape, FillType fillType) {
 		this.shape = shape;

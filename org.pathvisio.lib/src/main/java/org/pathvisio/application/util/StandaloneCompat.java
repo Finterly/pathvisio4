@@ -18,9 +18,9 @@ package org.pathvisio.application.util;
 
 import javax.swing.JOptionPane;
 
-import org.pathvisio.core.data.GdbEvent;
-import org.pathvisio.core.data.GdbManager.GdbEventListener;
-import org.pathvisio.desktop.PvDesktop;
+import org.pathvisio.application.PvDesktop;
+import org.pathvisio.controller.data.GdbEvent;
+import org.pathvisio.controller.data.GdbManager.GdbEventListener;
 
 /**
  * Collection of compatibility "hacks" for the standalone PathVisio app.

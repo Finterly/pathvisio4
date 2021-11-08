@@ -20,8 +20,7 @@ import java.awt.Color;
 import java.io.File;
 
 import org.pathvisio.core.util.ColorConverter;
-import org.pathvisio.core.util.Utils;
-import org.pathvisio.util.ColorUtils;
+import org.pathvisio.util.Utils;
 
 /**
  * Type-safe set of preferences.

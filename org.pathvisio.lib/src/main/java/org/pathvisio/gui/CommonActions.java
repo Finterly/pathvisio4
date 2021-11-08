@@ -62,7 +62,7 @@ import org.pathvisio.view.model.VLabel;
 import org.pathvisio.view.model.VPathwayElement;
 import org.pathvisio.view.model.VPathwayModel;
 import org.pathvisio.view.model.ViewActions;
-import org.pathvisio.view.model.shape.MIMShapes;
+import org.pathvisio.view.model.shape.MIMShape;
 
 /**
  * A collection of {@link Action}s that may be used throughout the program (e.g.
@@ -252,7 +252,7 @@ public class CommonActions implements ApplicationEventListener {
 				new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.HEXAGON)),
 //				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.EDGE)),
 				new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.BRACE)),
-				new NewElementAction(e, new DefaultTemplates.ShapeTemplate(MIMShapes.MIM_DEGRADATION_SHAPE)), };
+				new NewElementAction(e, new DefaultTemplates.ShapeTemplate(MIMShape.MIM_DEGRADATION_SHAPE)), };
 
 		// actions for "Basic interactions" section
 		newInteractionActions = new Action[] {
@@ -331,28 +331,28 @@ public class CommonActions implements ApplicationEventListener {
 		newMIMInteractionActions = new Action[] {
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Necessary stimulation", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_NECESSARY_STIMULATION, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_NECESSARY_STIMULATION, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Binding", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_BINDING, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_BINDING, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Conversion", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_CONVERSION, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_CONVERSION, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Stimulation", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_STIMULATION, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_STIMULATION, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Modification", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_MODIFICATION, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_MODIFICATION, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Catalysis", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_CATALYSIS, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_CATALYSIS, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Inhibition", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_INHIBITION, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_INHIBITION, ConnectorType.STRAIGHT)),
 				new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Cleavage", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_CLEAVAGE, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_CLEAVAGE, ConnectorType.STRAIGHT)),
 				/*
 				 * new NewElementAction(e, new DefaultTemplates.LineTemplate( "Covalent bond",
 				 * LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, MIMShapes.MIM_COVALENT_BOND,
@@ -364,12 +364,12 @@ public class CommonActions implements ApplicationEventListener {
 				 * ConnectorType.STRAIGHT) ),
 				 */ new NewElementAction(e,
 						new DefaultTemplates.InteractionTemplate("Transcription-translation", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
-								MIMShapes.MIM_TRANSLATION, ConnectorType.STRAIGHT)),
+								MIMShape.MIM_TRANSLATION, ConnectorType.STRAIGHT)),
 				/*
 				 * new NewElementAction(e, new DefaultTemplates.LineTemplate( "Gap",
 				 * LineStyleType.SOLID, ArrowHeadType.UNDIRECTED, MIMShapes.MIM_GAP, ConnectorType.STRAIGHT) ),
 				 */ new NewElementAction(e, new DefaultTemplates.InteractionTemplate("Translocation", LineStyleType.SOLID,
-						ArrowHeadType.UNDIRECTED, MIMShapes.MIM_TRANSLOCATION, ConnectorType.STRAIGHT)), };
+						ArrowHeadType.UNDIRECTED, MIMShape.MIM_TRANSLOCATION, ConnectorType.STRAIGHT)), };
 
 		saveAction = new SaveAction(se, true, false);
 		saveAsAction = new SaveAction(se, true, true);

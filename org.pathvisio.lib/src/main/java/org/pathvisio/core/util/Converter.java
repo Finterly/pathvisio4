@@ -114,7 +114,7 @@ public class Converter {
 		
 		//Enable MiM support (for export to graphics formats)
 		PreferenceManager.getCurrent().setBoolean(GlobalPreference.MIM_SUPPORT, true);
-		MIMShapes.registerShapes();
+		MIMShape.registerShapes();
 
         File inputFile = null;
         File outputFile = null;

@@ -16,11 +16,6 @@
  ******************************************************************************/
 package org.pathvisio.application;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -56,10 +51,15 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.pathvisio.core.preferences.Preference;
-import org.pathvisio.core.preferences.PreferenceManager;
 import org.pathvisio.core.util.ColorConverter;
 import org.pathvisio.gui.SwingEngine;
+import org.pathvisio.util.preferences.Preference;
+import org.pathvisio.util.preferences.PreferenceManager;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * Global dialog for setting the user preferences.

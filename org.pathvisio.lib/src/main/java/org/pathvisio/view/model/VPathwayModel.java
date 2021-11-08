@@ -44,8 +44,8 @@ import javax.swing.Timer;
 
 import org.pathvisio.controller.Engine;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.events.PathwayEvent;
-import org.pathvisio.events.PathwayListener;
+import org.pathvisio.event.PathwayEvent;
+import org.pathvisio.event.PathwayListener;
 //import org.pathvisio.model.Pathway.StatusFlagEvent;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.DataNode.State;

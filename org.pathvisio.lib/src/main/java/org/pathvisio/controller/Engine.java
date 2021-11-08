@@ -31,10 +31,11 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.pathvisio.debug.Logger;
+import org.pathvisio.event.PathwayExporter;
+import org.pathvisio.event.PathwayImporter;
 import org.pathvisio.io.ConverterException;
+import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayModel;
-import org.pathvisio.events.PathwayExporter;
-import org.pathvisio.events.PathwayImporter;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.model.VPathwayModel;
@@ -147,7 +148,7 @@ public class Engine {
 	}
 
 	/**
-	 * Opens pathway model from memory
+	 * Opens pathway model from memory.
 	 * 
 	 * @param pathwayModel
 	 * @throws ConverterException
@@ -157,7 +158,7 @@ public class Engine {
 	}
 
 	/**
-	 * Opens a pathway from a gpml file
+	 * Opens a pathway from a gpml file.
 	 */
 	public void openPathway(File pathwayFile) throws ConverterException {
 		String pwf = pathwayFile.toString();

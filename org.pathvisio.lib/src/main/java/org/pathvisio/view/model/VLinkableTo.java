@@ -19,6 +19,7 @@ package org.pathvisio.view.model;
 import org.pathvisio.model.DataNode;
 import org.pathvisio.model.GraphLink.LinkableTo;
 import org.pathvisio.model.LineElement.LinePoint;
+import org.pathvisio.model.PathwayObject;
 
 
 /**
@@ -33,7 +34,7 @@ public interface VLinkableTo {
 	
 	abstract int getZOrder();
 	
-	abstract LinkableTo getPathwayElement(); 
+	abstract PathwayObject getPathwayElement(); 
 	
 	public VPathwayModel getDrawing();
 

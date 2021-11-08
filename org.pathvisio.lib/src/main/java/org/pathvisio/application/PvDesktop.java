@@ -29,16 +29,6 @@ import javax.swing.JTabbedPane;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.pathvisio.controller.ApplicationEvent;
-import org.pathvisio.controller.Engine.ApplicationEventListener;
-import org.pathvisio.controller.data.GdbEvent;
-import org.pathvisio.controller.data.GdbManager.GdbEventListener;
-import org.pathvisio.debug.Logger;
-import org.pathvisio.model.PathwayModel;
-import org.pathvisio.util.preferences.GlobalPreference;
-import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.model.VPathwayModel;
-import org.pathvisio.data.DataException;
 import org.pathvisio.application.data.DBConnDerby;
 import org.pathvisio.application.data.DBConnectorSwing;
 import org.pathvisio.application.gex.CachedData;
@@ -48,8 +38,18 @@ import org.pathvisio.application.plugin.PluginRepoPreference;
 import org.pathvisio.application.util.StandaloneCompat;
 import org.pathvisio.application.visualization.VisualizationEvent;
 import org.pathvisio.application.visualization.VisualizationManager;
+import org.pathvisio.controller.ApplicationEvent;
+import org.pathvisio.controller.Engine.ApplicationEventListener;
+import org.pathvisio.controller.data.GdbEvent;
+import org.pathvisio.controller.data.GdbManager.GdbEventListener;
+import org.pathvisio.data.DataException;
+import org.pathvisio.debug.Logger;
 import org.pathvisio.gui.PathwayElementMenuListener.PathwayElementMenuHook;
 import org.pathvisio.gui.SwingEngine;
+import org.pathvisio.model.PathwayModel;
+import org.pathvisio.util.preferences.GlobalPreference;
+import org.pathvisio.util.preferences.PreferenceManager;
+import org.pathvisio.view.model.VPathwayModel;
 
 /**
  * PvDesktop ties together several other important singletons and provides
@@ -59,6 +59,8 @@ import org.pathvisio.gui.SwingEngine;
  * cached when a suitable pgdb, pgex and gpml are loaded.
  * <p>
  * PvDesktop is a singleton: There should be always exactly one instance of it.
+ * 
+ * @author unknown
  */
 public class PvDesktop
 		implements ApplicationEventListener, GdbEventListener, VisualizationManager.VisualizationListener {

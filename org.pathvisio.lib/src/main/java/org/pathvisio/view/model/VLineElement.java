@@ -43,8 +43,9 @@ import org.pathvisio.model.type.ArrowHeadType;
 import org.pathvisio.model.type.LineStyleType;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
-import org.pathvisio.view.model.shape.ShapesRegistry;
 import org.pathvisio.view.model.shape.VArrowHeadType;
+import org.pathvisio.view.model.shape.VDefaultShapeType;
+import org.pathvisio.view.model.shape.VShapeRegistry;
 
 /**
  * This class represents a Line {@link LineElement} on the pathway, or rather a
@@ -89,7 +90,7 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 	/**
 	 * Gets the model representation (PathwayElement) of this class
 	 * 
-	 * @return dataNode
+	 * @return
 	 */
 	@Override
 	public LineElement getPathwayElement() {
@@ -223,11 +224,11 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 
 		double gap = 0;
 		if (type == null) {
-			gap = ShapesRegistry.getArrow("Default").getGap();
+			gap = VShapeRegistry.getArrow("Default").getGap();
 		} else if (type.getName().equals("Line")) {
 			gap = 0;
 		} else {
-			gap = ShapesRegistry.getArrow(type.getName()).getGap();
+			gap = VShapeRegistry.getArrow(type.getName()).getGap();
 		}
 		return gap;
 
@@ -440,6 +441,8 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 				g.draw(head.getShape());
 				break;
 			default:
+				//TODO 
+				VDefaultShapeType.getPluggableGraphic(VDefaultShapeType.Internal.DEFAULT_ARROWHEAD, g);
 				assert (false);
 			}
 		}
@@ -461,11 +464,11 @@ public class VLineElement extends VPathwayElement implements Adjustable, VGroupa
 
 		VArrowHeadType h;
 		if (type == null) {
-			h = ShapesRegistry.getArrow("Default");
+			h = VShapeRegistry.getArrow("Default");
 		} else if (type.getName().equals("Line")) {
 			h = null;
 		} else {
-			h = ShapesRegistry.getArrow(type.getName());
+			h = VShapeRegistry.getArrow(type.getName());
 		}
 
 		if (h != null) {

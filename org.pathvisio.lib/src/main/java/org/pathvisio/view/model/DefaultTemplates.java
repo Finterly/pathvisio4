@@ -49,7 +49,7 @@ import org.pathvisio.util.ColorUtils;
 import org.pathvisio.util.preferences.GlobalPreference;
 import org.pathvisio.util.preferences.PreferenceManager;
 import org.pathvisio.view.Template;
-import org.pathvisio.view.model.shape.MIMShapes;
+import org.pathvisio.view.model.shape.MIMShape;
 
 /**
  * Contains a set of templates, patterns of PathwayElements that can be added to
@@ -179,41 +179,6 @@ public abstract class DefaultTemplates {
 	}
 
 	/**
-	 * Template for adding a Label to a Pathway
-	 */
-	public static class LabelTemplate extends SingleElementTemplate {
-
-		public Label[] addElements(PathwayModel p, double mx, double my) {
-			// instantiate a label
-			Label e = new Label("Label");
-			// rect props
-			e.setCenterX(mx);
-			e.setCenterY(my);
-			e.setWidth(LABEL_WIDTH);
-			e.setHeight(LABEL_HEIGHT);
-			// font props: default fontName, fontStyle, fontDecoration, fontStrikeThru,
-			// fontSize, hAlign, vAlign
-			e.setTextColor(COLOR_LABEL);
-			// shape style props: default borderColor, borderStyle, borderWidth, fillColor
-			// TODO
-			e.setShapeType(ShapeType.NONE);
-			e.setZOrder(Z_ORDER_LABEL);
-			// add label to pathway model
-			p.addLabel(e);
-			lastAdded = e;
-			return new Label[] { e };
-		}
-
-		public VElement getDragElement(VPathwayModel vp) {
-			return null; // Don't drag label on insert
-		}
-
-		public String getName() {
-			return "Label";
-		}
-	}
-
-	/**
 	 * Template for adding a DataNode to a Pathway. Pass a DataNodeType upon
 	 * creation
 	 */
@@ -270,6 +235,41 @@ public abstract class DefaultTemplates {
 
 		public String getName() {
 			return type.toString();
+		}
+	}
+
+	/**
+	 * Template for adding a Label to a Pathway
+	 */
+	public static class LabelTemplate extends SingleElementTemplate {
+	
+		public Label[] addElements(PathwayModel p, double mx, double my) {
+			// instantiate a label
+			Label e = new Label("Label");
+			// rect props
+			e.setCenterX(mx);
+			e.setCenterY(my);
+			e.setWidth(LABEL_WIDTH);
+			e.setHeight(LABEL_HEIGHT);
+			// font props: default fontName, fontStyle, fontDecoration, fontStrikeThru,
+			// fontSize, hAlign, vAlign
+			e.setTextColor(COLOR_LABEL);
+			// shape style props: default borderColor, borderStyle, borderWidth, fillColor
+			// TODO
+			e.setShapeType(ShapeType.NONE);
+			e.setZOrder(Z_ORDER_LABEL);
+			// add label to pathway model
+			p.addLabel(e);
+			lastAdded = e;
+			return new Label[] { e };
+		}
+	
+		public VElement getDragElement(VPathwayModel vp) {
+			return null; // Don't drag label on insert
+		}
+	
+		public String getName() {
+			return "Label";
 		}
 	}
 
@@ -372,9 +372,7 @@ public abstract class DefaultTemplates {
 			// line style props: default lineColor, lineWidth
 			e.setLineStyle(lineStyle);
 			e.setConnectorType(connectorType);
-
 			setInitialSize(e);
-
 			p.addInteraction(e);
 			lastAdded = e;
 			return new Interaction[] { e };
@@ -502,7 +500,7 @@ public abstract class DefaultTemplates {
 		@Override
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
-			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_INHIBITION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShape.MIM_INHIBITION);
 			return new PathwayElement[] { lastLine, lastStartNode, lastEndNode };
 		}
 
@@ -520,7 +518,7 @@ public abstract class DefaultTemplates {
 		@Override
 		public PathwayElement[] addElements(PathwayModel p, double mx, double my) {
 			super.addElements(p, mx, my);
-			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_STIMULATION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShape.MIM_STIMULATION);
 			return new PathwayElement[] { lastLine, lastStartNode, lastEndNode };
 		}
 
@@ -545,7 +543,7 @@ public abstract class DefaultTemplates {
 			lastEndNode.setType(DataNodeType.PROTEIN);
 			lastStartNode.setTextLabel("Protein");
 			lastEndNode.setTextLabel("P-Protein");
-			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_MODIFICATION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShape.MIM_MODIFICATION);
 
 			// instantiates a state
 			State e = lastEndNode.addState("P", StateType.PROTEIN_MODIFICATION, 1.0, 1.0);
@@ -595,7 +593,7 @@ public abstract class DefaultTemplates {
 			lastEndNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastEndNode.setTextLabel("Product");
 
-			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShape.MIM_CONVERSION);
 			Anchor anchor = lastLine.addAnchor(0.5, AnchorShapeType.SQUARE);
 
 			InteractionTemplate lnt = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
@@ -604,7 +602,7 @@ public abstract class DefaultTemplates {
 
 			lastCatLine.getStartLinePoint().linkTo(lastCatalyst, 0, 1);
 			lastCatLine.getEndLinePoint().linkTo(anchor, 0, 0);
-			lastCatLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CATALYSIS);
+			lastCatLine.getEndLinePoint().setArrowHead(MIMShape.MIM_CATALYSIS);
 
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine, lastCatalyst };
 		}
@@ -646,7 +644,7 @@ public abstract class DefaultTemplates {
 			lastEndNode.setTextColor(COLOR_METABOLITE);
 			lastEndNode.setShapeType(ShapeType.ROUNDED_RECTANGLE);
 			lastEndNode.setTextLabel("Metabolite 2");
-			lastLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
+			lastLine.getEndLinePoint().setArrowHead(MIMShape.MIM_CONVERSION);
 
 			Anchor anchor = lastLine.addAnchor(0.5, AnchorShapeType.SQUARE);
 
@@ -656,7 +654,7 @@ public abstract class DefaultTemplates {
 
 			lastCatLine.getStartLinePoint().linkTo(lastCatalyst, 0, 1);
 			lastCatLine.getEndLinePoint().linkTo(anchor, 0, 0);
-			lastCatLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CATALYSIS);
+			lastCatLine.getEndLinePoint().setArrowHead(MIMShape.MIM_CATALYSIS);
 
 			InteractionTemplate rev = new InteractionTemplate("line", LineStyleType.SOLID, ArrowHeadType.UNDIRECTED,
 					ArrowHeadType.UNDIRECTED, ConnectorType.STRAIGHT);
@@ -664,7 +662,7 @@ public abstract class DefaultTemplates {
 
 			lastReverseLine.getStartLinePoint().linkTo(lastEndNode, -1, 0.5);
 			lastReverseLine.getEndLinePoint().linkTo(lastStartNode, 1, 0.5);
-			lastReverseLine.getEndLinePoint().setArrowHead(MIMShapes.MIM_CONVERSION);
+			lastReverseLine.getEndLinePoint().setArrowHead(MIMShape.MIM_CONVERSION);
 
 			Anchor anchor2 = lastReverseLine.addAnchor(0.5, AnchorShapeType.SQUARE);
 
@@ -674,7 +672,7 @@ public abstract class DefaultTemplates {
 
 			lastCatLine2.getStartLinePoint().linkTo(lastCatalyst2, 0, -1);
 			lastCatLine2.getEndLinePoint().linkTo(anchor2, 0, 0);
-			lastCatLine2.getEndLinePoint().setArrowHead(MIMShapes.MIM_CATALYSIS);
+			lastCatLine2.getEndLinePoint().setArrowHead(MIMShape.MIM_CATALYSIS);
 
 			return new PathwayElement[] { lastStartNode, lastEndNode, lastLine, lastCatalyst, lastCatalyst2 }; // These
 																												// elements
